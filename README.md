@@ -36,7 +36,7 @@ A comprehensive task management system built with Spring Boot, PostgreSQL, and J
 
 ```bash
 git clone https://github.com/nwenner/resonant
-cd task-manager
+cd backend/docker
 ```
 
 ### 2. Start the Database
@@ -185,7 +185,7 @@ src/main/java/com/taskmanager/
 
 ### Build Docker Image
 ```bash
-docker build -t task-manager:latest .
+docker build -t resonant:latest .
 ```
 
 ### Run with Docker Compose

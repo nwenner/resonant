@@ -6,9 +6,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
-public class TaskManagerApplication {
+public class ResonantApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(TaskManagerApplication.class, args);
+        SpringApplication.run(ResonantApplication.class, args);
     }
 }
