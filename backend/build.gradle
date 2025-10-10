@@ -4,11 +4,13 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.4'
 }
 
-group = 'com.wenroe.resonant'
+group = 'com.wenroe'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    sourceCompatibility = '17'
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 configurations {
@@ -22,64 +24,53 @@ repositories {
 }
 
 dependencies {
-    dependencies {
-        // WebFlux (REPLACE spring-boot-starter-web)
-        implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    // Spring Web (MVC)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 
-        // R2DBC (REPLACE spring-boot-starter-data-jpa)
-        implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
-        implementation 'org.postgresql:r2dbc-postgresql:1.0.2.RELEASE'
+    // Spring Data JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-        // Flyway for migrations (needs JDBC driver)
-//        implementation 'org.flywaydb:flyway-core'
-//        implementation 'org.flywaydb:flyway-database-postgresql'
-        runtimeOnly 'org.postgresql:postgresql'
+    // PostgreSQL JDBC Driver
+    runtimeOnly 'org.postgresql:postgresql'
 
-        // Security
-        implementation 'org.springframework.boot:spring-boot-starter-security'
+    // Flyway
+    implementation 'org.flywaydb:flyway-core'
 
-        // Validation
-        implementation 'org.springframework.boot:spring-boot-starter-validation'
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-        // Actuator
-        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // Actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-        // JWT
-        implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
-        runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
-        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+    // Swagger/OpenAPI
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 
-        // Lombok
-        compileOnly 'org.projectlombok:lombok'
-        annotationProcessor 'org.projectlombok:lombok'
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-        // MapStruct (optional, but you had it)
-        implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-        annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    // Test Dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
 
-        // Springdoc OpenAPI for WebFlux (DIFFERENT from webmvc version!)
-        implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.3.0'
-
-        // AWS SDK v2
-        implementation platform('software.amazon.awssdk:bom:2.21.0')
-        implementation 'software.amazon.awssdk:ec2'
-        implementation 'software.amazon.awssdk:s3'
-        implementation 'software.amazon.awssdk:rds'
-        implementation 'software.amazon.awssdk:lambda'
-        implementation 'software.amazon.awssdk:dynamodb'
-        implementation 'software.amazon.awssdk:sts'
-        implementation 'software.amazon.awssdk:resourcegroupstaggingapi'
-
-        // Testing
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
-        testImplementation 'io.projectreactor:reactor-test'
-        testImplementation 'org.springframework.security:spring-security-test'
-        testImplementation 'com.h2database:h2'
-        testImplementation 'org.testcontainers:testcontainers:1.19.3'
-        testImplementation 'org.testcontainers:postgresql:1.19.3'
-        testImplementation 'org.testcontainers:junit-jupiter:1.19.3'
-        testImplementation 'org.testcontainers:r2dbc:1.19.3'
+// Load .env file and pass to bootRun
+def envFile = file('.env')
+def envMap = [:]
+if (envFile.exists()) {
+    envFile.eachLine { line ->
+        line = line.trim()
+        if (line && !line.startsWith('#') && line.contains('=')) {
+            def parts = line.split('=', 2)
+            if (parts.length == 2) {
+                envMap[parts[0].trim()] = parts[1].trim()
+            }
+        }
     }
+    println "Loaded ${envMap.size()} variables from .env"
+}
+
+bootRun {
+    environment = envMap
 }
 
 tasks.named('test') {
