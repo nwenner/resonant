@@ -22,39 +22,64 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot Starters
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    dependencies {
+        // WebFlux (REPLACE spring-boot-starter-web)
+        implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    // Database
-    runtimeOnly 'org.postgresql:postgresql'
+        // R2DBC (REPLACE spring-boot-starter-data-jpa)
+        implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+        implementation 'org.postgresql:r2dbc-postgresql:1.0.2.RELEASE'
 
-    // JWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+        // Flyway for migrations (needs JDBC driver)
+//        implementation 'org.flywaydb:flyway-core'
+//        implementation 'org.flywaydb:flyway-database-postgresql'
+        runtimeOnly 'org.postgresql:postgresql'
 
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+        // Security
+        implementation 'org.springframework.boot:spring-boot-starter-security'
 
-    // MapStruct for DTO mapping
-    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+        // Validation
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    // Springdoc OpenAPI (Swagger)
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+        // Actuator
+        implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-    // Testing
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testImplementation 'com.h2database:h2'
-    testImplementation 'org.testcontainers:testcontainers:1.19.3'
-    testImplementation 'org.testcontainers:postgresql:1.19.3'
-    testImplementation 'org.testcontainers:junit-jupiter:1.19.3'
+        // JWT
+        implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+        runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+        // Lombok
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+
+        // MapStruct (optional, but you had it)
+        implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+        annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+        // Springdoc OpenAPI for WebFlux (DIFFERENT from webmvc version!)
+        implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.3.0'
+
+        // AWS SDK v2
+        implementation platform('software.amazon.awssdk:bom:2.21.0')
+        implementation 'software.amazon.awssdk:ec2'
+        implementation 'software.amazon.awssdk:s3'
+        implementation 'software.amazon.awssdk:rds'
+        implementation 'software.amazon.awssdk:lambda'
+        implementation 'software.amazon.awssdk:dynamodb'
+        implementation 'software.amazon.awssdk:sts'
+        implementation 'software.amazon.awssdk:resourcegroupstaggingapi'
+
+        // Testing
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'io.projectreactor:reactor-test'
+        testImplementation 'org.springframework.security:spring-security-test'
+        testImplementation 'com.h2database:h2'
+        testImplementation 'org.testcontainers:testcontainers:1.19.3'
+        testImplementation 'org.testcontainers:postgresql:1.19.3'
+        testImplementation 'org.testcontainers:junit-jupiter:1.19.3'
+        testImplementation 'org.testcontainers:r2dbc:1.19.3'
+    }
 }
 
 tasks.named('test') {
