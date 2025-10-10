@@ -20,12 +20,23 @@ api.interceptors.request.use(
 );
 
 // Response interceptor to handle 401 errors
+// Response interceptor to handle 401 errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Only redirect on 401 if we're not already on the login/register page
+    // and if there was a token (meaning we were authenticated)
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      const token = localStorage.getItem('token');
+      const isAuthEndpoint = error.config?.url?.includes('/auth/login') || 
+                            error.config?.url?.includes('/auth/register');
+      
+      // Only redirect if we had a token and this isn't a login/register attempt
+      if (token && !isAuthEndpoint) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
