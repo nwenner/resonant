@@ -59,11 +59,11 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
-          <Tag className="h-10 w-10 text-blue-600 mr-3" />
-          <h1 className="text-3xl font-bold text-slate-900">Resonant</h1>
+          <Tag className="h-10 w-10 text-blue-600 dark:text-blue-400 mr-3" />
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Resonant</h1>
         </div>
         
         <Card>
@@ -80,7 +80,7 @@ export const Register = () => {
               )}
               
               <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-slate-700">
+                <label htmlFor="name" className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Full Name
                 </label>
                 <Input

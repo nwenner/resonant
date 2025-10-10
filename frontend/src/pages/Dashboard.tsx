@@ -1,11 +1,14 @@
 import { useAuthStore } from '@/store/authStore';
+import { useThemeStore } from '@/store/themeStore';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Tag, Shield, Activity, AlertTriangle, LogOut, User } from 'lucide-react';
+import { DropdownMenu, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/DropdownMenu';
+import { Tag, Shield, Activity, AlertTriangle, LogOut, User, Moon, Sun, ChevronDown } from 'lucide-react';
 
 export const Dashboard = () => {
   const { user, clearAuth } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -49,30 +52,57 @@ export const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Navigation Bar */}
-      <nav className="bg-white border-b border-slate-200">
+      <nav className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Tag className="h-8 w-8 text-blue-600 mr-3" />
-              <span className="text-xl font-bold text-slate-900">Resonant</span>
+              <Tag className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-3" />
+              <span className="text-xl font-bold text-slate-900 dark:text-white">Resonant</span>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-slate-600">
-                <User className="h-4 w-4" />
-                <span>{user?.name}</span>
-                {user?.role === 'ADMIN' && (
-                  <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded">
-                    Admin
-                  </span>
-                )}
-              </div>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
+              <DropdownMenu
+                trigger={
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">{user?.name}</span>
+                    {user?.role === 'ADMIN' && (
+                      <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
+                        Admin
+                      </span>
+                    )}
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                }
+              >
+                <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-700">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">{user?.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{user?.email}</p>
+                </div>
+                
+                <DropdownMenuItem onClick={toggleTheme}>
+                  {theme === 'light' ? (
+                    <>
+                      <Moon className="h-4 w-4 mr-2" />
+                      Dark Mode
+                    </>
+                  ) : (
+                    <>
+                      <Sun className="h-4 w-4 mr-2" />
+                      Light Mode
+                    </>
+                  )}
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -82,10 +112,10 @@ export const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
             Welcome back, {user?.name?.split(' ')[0]}
           </h1>
-          <p className="text-slate-600 mt-2">
+          <p className="text-slate-600 dark:text-slate-400 mt-2">
             Here's an overview of your AWS tag compliance status
           </p>
         </div>
@@ -97,7 +127,7 @@ export const Dashboard = () => {
             return (
               <Card key={stat.title}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-slate-600">
+                  <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
                     {stat.title}
                   </CardTitle>
                   <div className={`p-2 rounded-lg ${stat.bgColor}`}>
@@ -105,8 +135,8 @@ export const Dashboard = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-slate-900">{stat.value}</div>
-                  <p className="text-xs text-slate-500 mt-1">{stat.description}</p>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{stat.description}</p>
                 </CardContent>
               </Card>
             );
@@ -127,12 +157,12 @@ export const Dashboard = () => {
                   { name: 'lambda-data-processor', type: 'Lambda', missing: 'Owner, Team' },
                   { name: 's3-backup-bucket', type: 'S3', missing: 'DataClassification' },
                 ].map((resource, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                     <div>
-                      <p className="font-medium text-slate-900">{resource.name}</p>
-                      <p className="text-sm text-slate-500">Missing: {resource.missing}</p>
+                      <p className="font-medium text-slate-900 dark:text-white">{resource.name}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Missing: {resource.missing}</p>
                     </div>
-                    <span className="px-2 py-1 text-xs font-medium bg-slate-200 text-slate-700 rounded">
+                    <span className="px-2 py-1 text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
                       {resource.type}
                     </span>
                   </div>
@@ -153,20 +183,20 @@ export const Dashboard = () => {
                   { name: 'Cost Allocation Tags', resources: 456, compliance: 85 },
                   { name: 'Security Classification', resources: 189, compliance: 78 },
                 ].map((policy, idx) => (
-                  <div key={idx} className="p-3 bg-slate-50 rounded-lg">
+                  <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-slate-900">{policy.name}</p>
-                      <span className="text-sm font-semibold text-slate-700">
+                      <p className="font-medium text-slate-900 dark:text-white">{policy.name}</p>
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                         {policy.compliance}%
                       </span>
                     </div>
-                    <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                       <div
-                        className="bg-blue-600 h-2 rounded-full"
+                        className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full"
                         style={{ width: `${policy.compliance}%` }}
                       />
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                       {policy.resources} resources
                     </p>
                   </div>

@@ -14,7 +14,17 @@ export const useAuthStore = create<AuthState>((set) => {
   // Initialize from localStorage
   const token = localStorage.getItem('token');
   const userJson = localStorage.getItem('user');
-  const user = userJson ? JSON.parse(userJson) : null;
+  
+  // Safe JSON parsing - only parse if userJson exists and is not null
+  let user = null;
+  if (userJson) {
+    try {
+      user = JSON.parse(userJson);
+    } catch (error) {
+      console.error('Failed to parse user from localStorage:', error);
+      localStorage.removeItem('user');
+    }
+  }
 
   return {
     user,
