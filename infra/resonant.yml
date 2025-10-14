@@ -1,0 +1,224 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Resonant IAM Role'
+
+Parameters:
+  ExternalId:
+    Type: String
+    Description: "External ID for security"
+    Default: "resonant-local-dev-12345678"
+    MinLength: 16
+    MaxLength: 64
+
+  RoleName:
+    Type: String
+    Default: "ResonantReadOnlyRole"
+
+  IncludeLambda:
+    Type: String
+    Description: "Include Lambda function scanning"
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+
+  IncludeECS:
+    Type: String
+    Description: "Include ECS/Fargate scanning"
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+
+Conditions:
+  EnableLambda: !Equals [!Ref IncludeLambda, "true"]
+  EnableECS: !Equals [!Ref IncludeECS, "true"]
+
+Resources:
+  ReadOnlyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub "${RoleName}-Policy"
+      Description: "Read-only permissions for Resonant to scan AWS resources"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # EC2 Permissions
+          - Sid: EC2ReadOnly
+            Effect: Allow
+            Action:
+              - ec2:DescribeInstances
+              - ec2:DescribeVolumes
+              - ec2:DescribeSnapshots
+              - ec2:DescribeImages
+              - ec2:DescribeSecurityGroups
+              - ec2:DescribeVpcs
+              - ec2:DescribeSubnets
+              - ec2:DescribeNetworkInterfaces
+              - ec2:DescribeTags
+              - ec2:DescribeRegions
+              - ec2:DescribeAvailabilityZones
+              - ec2:GetConsoleOutput
+              - ec2:GetConsoleScreenshot
+            Resource: "*"
+
+          # S3 Permissions
+          - Sid: S3ReadOnly
+            Effect: Allow
+            Action:
+              - s3:ListAllMyBuckets
+              - s3:ListBucket
+              - s3:GetBucketLocation
+              - s3:GetBucketTagging
+              - s3:GetBucketVersioning
+              - s3:GetBucketEncryption
+              - s3:GetBucketPublicAccessBlock
+              - s3:GetBucketLogging
+              - s3:GetBucketPolicy
+              - s3:GetBucketAcl
+              - s3:GetBucketCORS
+              - s3:GetBucketWebsite
+              - s3:GetBucketNotification
+              - s3:GetBucketRequestPayment
+              - s3:GetBucketLifecycleConfiguration
+              - s3:GetBucketReplication
+            Resource: "*"
+
+          # RDS Permissions
+          - Sid: RDSReadOnly
+            Effect: Allow
+            Action:
+              - rds:DescribeDBInstances
+              - rds:DescribeDBClusters
+              - rds:DescribeDBSnapshots
+              - rds:DescribeDBClusterSnapshots
+              - rds:DescribeDBParameterGroups
+              - rds:DescribeDBSubnetGroups
+              - rds:ListTagsForResource
+            Resource: "*"
+
+          # Lambda Permissions (Conditional)
+          - !If
+            - EnableLambda
+            - Sid: LambdaReadOnly
+              Effect: Allow
+              Action:
+                - lambda:ListFunctions
+                - lambda:GetFunction
+                - lambda:GetFunctionConfiguration
+                - lambda:GetPolicy
+                - lambda:ListTags
+                - lambda:ListVersionsByFunction
+                - lambda:ListAliases
+              Resource: "*"
+            - !Ref AWS::NoValue
+
+          # ECS/Fargate Permissions (Conditional)
+          - !If
+            - EnableECS
+            - Sid: ECSReadOnly
+              Effect: Allow
+              Action:
+                - ecs:ListClusters
+                - ecs:ListServices
+                - ecs:ListTasks
+                - ecs:ListTaskDefinitions
+                - ecs:DescribeClusters
+                - ecs:DescribeServices
+                - ecs:DescribeTasks
+                - ecs:DescribeTaskDefinition
+                - ecs:ListTagsForResource
+              Resource: "*"
+            - !Ref AWS::NoValue
+
+          # ElastiCache Permissions
+          - Sid: ElastiCacheReadOnly
+            Effect: Allow
+            Action:
+              - elasticache:DescribeCacheClusters
+              - elasticache:DescribeReplicationGroups
+              - elasticache:DescribeCacheSubnetGroups
+              - elasticache:ListTagsForResource
+            Resource: "*"
+
+          # DynamoDB Permissions
+          - Sid: DynamoDBReadOnly
+            Effect: Allow
+            Action:
+              - dynamodb:ListTables
+              - dynamodb:DescribeTable
+              - dynamodb:DescribeContinuousBackups
+              - dynamodb:DescribeTimeToLive
+              - dynamodb:ListTagsOfResource
+            Resource: "*"
+
+          # EBS Permissions
+          - Sid: EBSReadOnly
+            Effect: Allow
+            Action:
+              - ec2:DescribeVolumes
+              - ec2:DescribeSnapshots
+              - ec2:DescribeVolumeStatus
+            Resource: "*"
+
+          # CloudFront Permissions
+          - Sid: CloudFrontReadOnly
+            Effect: Allow
+            Action:
+              - cloudfront:ListDistributions
+              - cloudfront:GetDistribution
+              - cloudfront:GetDistributionConfig
+              - cloudfront:ListTagsForResource
+            Resource: "*"
+
+          # ELB/ALB Permissions
+          - Sid: ELBReadOnly
+            Effect: Allow
+            Action:
+              - elasticloadbalancing:DescribeLoadBalancers
+              - elasticloadbalancing:DescribeTargetGroups
+              - elasticloadbalancing:DescribeListeners
+              - elasticloadbalancing:DescribeTags
+            Resource: "*"
+
+          # API Gateway Permissions
+          - Sid: APIGatewayReadOnly
+            Effect: Allow
+            Action:
+              - apigateway:GET
+            Resource: "*"
+
+  ResonantRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleName
+      Description: "Allows Resonant to scan AWS resources"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              # Trust any principal in this account (your AWS CLI user, EC2 roles, etc.)
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                sts:ExternalId: !Ref ExternalId
+      ManagedPolicyArns:
+        - !Ref ReadOnlyPolicy
+      MaxSessionDuration: 3600
+
+Outputs:
+  RoleArn:
+    Description: "Copy this to Resonant"
+    Value: !GetAtt ResonantRole.Arn
+
+  ExternalId:
+    Description: "Use this External ID"
+    Value: !Ref ExternalId
+
+  Instructions:
+    Value: !Sub |
+      1. Copy Role ARN: ${ResonantRole.Arn}
+      2. Ensure AWS CLI is configured: aws sts get-caller-identity
+      3. Spring Boot will use your AWS CLI credentials to assume this role
+      4. No need to set AWS_ACCESS_KEY_ID in .env - just use defaults!
