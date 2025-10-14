@@ -44,9 +44,12 @@ jwt:
   secret: ${JWT_SECRET:your-secret-key-change-this-in-production-minimum-256-bits}
   expiration: 86400000  # 24 hours in milliseconds
 
-#aws:
-#  account-id: ${AWS_ACCOUNT_ID:}
-#  region: ${AWS_REGION:us-east-1}
+resonant:
+  encryption:
+    key: ${RESONANT_ENCRYPTION_KEY:not-needed-for-roles-only}
+  aws:
+    account-id: ${AWS_ACCOUNT_ID:123456789012}
+    session-duration: 3600
 
 logging:
   level:

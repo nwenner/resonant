@@ -2,15 +2,12 @@ package com.wenroe.resonant.repository;
 
 import com.wenroe.resonant.model.entity.ComplianceViolation;
 import com.wenroe.resonant.model.entity.TagPolicy;
-import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
