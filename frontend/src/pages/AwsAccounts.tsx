@@ -1,7 +1,7 @@
 // src/pages/AwsAccounts.tsx
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from '@/lib/api';
+import { awsAccountsService, AwsAccount } from '@/services/awsAccountsService';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -26,31 +26,6 @@ import {
   XCircle,
   AlertCircle
 } from 'lucide-react';
-
-// Types
-interface AwsAccount {
-  id: string;
-  accountId: string;
-  accountAlias: string;
-  roleArn: string;
-  credentialType: string;
-  status: 'ACTIVE' | 'INVALID' | 'EXPIRED' | 'TESTING';
-  lastSyncedAt: string | null;
-  createdAt: string;
-}
-
-interface ExternalIdResponse {
-  externalId: string;
-  instructions: string;
-}
-
-interface TestConnectionResponse {
-  success: boolean;
-  message: string;
-  accountId: string;
-  assumedRoleArn: string;
-  availableRegionCount: number;
-}
 
 const CLOUDFORMATION_TEMPLATE = `AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Resonant AWS Account Integration Role'
@@ -119,16 +94,14 @@ export const AwsAccounts = () => {
   const { data: accounts = [], isLoading } = useQuery<AwsAccount[]>({
     queryKey: ['aws-accounts'],
     queryFn: async () => {
-      const { data } = await axios.get('/api/aws-accounts');
-      return data;
+      return await awsAccountsService.listAccounts();
     }
   });
 
   // Mutations
   const generateExternalIdMutation = useMutation({
     mutationFn: async () => {
-      const { data } = await axios.post<ExternalIdResponse>('/api/aws-accounts/external-id');
-      return data;
+      return await awsAccountsService.generateExternalId()
     },
     onSuccess: (data) => {
       setExternalId(data.externalId);
@@ -145,8 +118,7 @@ export const AwsAccounts = () => {
 
   const addAccountMutation = useMutation({
     mutationFn: async (payload: typeof formData & { externalId: string }) => {
-      const { data } = await axios.post('/api/aws-accounts/role', payload);
-      return data;
+      return await awsAccountsService.createAccount(payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });
@@ -167,8 +139,7 @@ export const AwsAccounts = () => {
 
   const testConnectionMutation = useMutation({
     mutationFn: async (accountId: string) => {
-      const { data } = await axios.post<TestConnectionResponse>(`/api/aws-accounts/${accountId}/test`);
-      return data;
+      return await awsAccountsService.testConnection(accountId);
     },
     onSuccess: (data) => {
       toast({
@@ -189,7 +160,7 @@ export const AwsAccounts = () => {
   const updateAliasMutation = useMutation({
     mutationFn: async ({ id, alias }: { id: string; alias: string }) => {
       const { data } = await axios.patch(`/api/aws-accounts/${id}/alias`, { accountAlias: alias });
-      return data;
+      return await awsAccountsService.updateAlias(id, { accountAlias: alias });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });
@@ -211,7 +182,7 @@ export const AwsAccounts = () => {
 
   const deleteAccountMutation = useMutation({
     mutationFn: async (accountId: string) => {
-      await axios.delete(`/api/aws-accounts/${accountId}`);
+      await awsAccountsService.deleteAccount(accountId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });

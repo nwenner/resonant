@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { authApi } from '@/lib/api';
+import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,9 +16,9 @@ export const Login = () => {
   const [error, setError] = useState('');
 
   const loginMutation = useMutation({
-    mutationFn: authApi.login,
+    mutationFn: authService.login,
     onSuccess: (response) => {
-      setAuth(response.data.user, response.data.token);
+      setAuth(response.user, response.token);
       navigate('/dashboard');
     },
     onError: (error: any) => {

@@ -2,7 +2,7 @@
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import axios from '@/lib/api';
+import { awsAccountsService } from '@/services/awsAccountsService';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,8 +23,7 @@ export const Dashboard = () => {
   const { data: accounts = [] } = useQuery<AwsAccount[]>({
     queryKey: ['aws-accounts'],
     queryFn: async () => {
-      const { data } = await axios.get('/api/aws-accounts');
-      return data;
+      return await awsAccountsService.listAccounts();
     }
   });
 
