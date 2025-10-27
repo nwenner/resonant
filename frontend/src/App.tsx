@@ -3,7 +3,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Login } from '@/pages/Login';
 import { Register } from '@/pages/Register';
 import { Dashboard } from '@/pages/Dashboard';
+import { AwsAccounts } from '@/pages/AwsAccounts';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { Toaster } from '@/components/ui/toaster';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,11 +26,13 @@ function App() {
           
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/aws-accounts" element={<AwsAccounts />} />
           </Route>
           
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        <Toaster />
       </BrowserRouter>
     </QueryClientProvider>
   );

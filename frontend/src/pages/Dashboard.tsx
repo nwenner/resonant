@@ -1,114 +1,81 @@
 import { useAuthStore } from '@/store/authStore';
-import { useThemeStore } from '@/store/themeStore';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { DropdownMenu, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/DropdownMenu';
-import { Tag, Shield, Activity, AlertTriangle, LogOut, User, Moon, Sun, ChevronDown } from 'lucide-react';
+import { Layout } from '@/components/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tag, Shield, Activity, AlertTriangle, Cloud, ArrowRight } from 'lucide-react';
 
 export const Dashboard = () => {
-  const { user, clearAuth } = useAuthStore();
-  const { theme, toggleTheme } = useThemeStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    clearAuth();
-    navigate('/login');
-  };
 
   const stats = [
     {
-      title: 'Total Resources',
-      value: '1,247',
-      description: 'Across all AWS accounts',
-      icon: Tag,
+      title: 'Connected Accounts',
+      value: '0',
+      description: 'No AWS accounts connected',
+      icon: Cloud,
       color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
     },
     {
       title: 'Compliance Rate',
-      value: '87%',
-      description: '+5% from last week',
+      value: '0%',
+      description: 'Awaiting first scan',
       icon: Shield,
       color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      bgColor: 'bg-green-50 dark:bg-green-900/20',
     },
     {
       title: 'Active Policies',
-      value: '12',
-      description: '3 custom, 9 standard',
+      value: '0',
+      description: 'No policies configured',
       icon: Activity,
       color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
     },
     {
       title: 'Non-Compliant',
-      value: '162',
-      description: 'Requires attention',
+      value: '0',
+      description: 'No violations detected',
       icon: AlertTriangle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    },
+  ];
+
+  const quickActions = [
+    {
+      title: 'AWS Accounts',
+      description: 'Connect and manage your AWS accounts for compliance monitoring',
+      icon: Cloud,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100 dark:bg-blue-900',
+      action: () => navigate('/aws-accounts'),
+      enabled: true,
+    },
+    {
+      title: 'Tag Policies',
+      description: 'Define required tags and validation rules for your resources',
+      icon: Tag,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100 dark:bg-purple-900',
+      action: () => {},
+      enabled: false,
+    },
+    {
+      title: 'Compliance Reports',
+      description: 'View detailed reports and track compliance trends over time',
+      icon: Shield,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100 dark:bg-green-900',
+      action: () => {},
+      enabled: false,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Navigation Bar */}
-      <nav className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Tag className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-3" />
-              <span className="text-xl font-bold text-slate-900 dark:text-white">Resonant</span>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <DropdownMenu
-                trigger={
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                    <User className="h-4 w-4" />
-                    <span className="hidden sm:inline">{user?.name}</span>
-                    {user?.role === 'ADMIN' && (
-                      <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
-                        Admin
-                      </span>
-                    )}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                }
-              >
-                <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-700">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">{user?.name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{user?.email}</p>
-                </div>
-                
-                <DropdownMenuItem onClick={toggleTheme}>
-                  {theme === 'light' ? (
-                    <>
-                      <Moon className="h-4 w-4 mr-2" />
-                      Dark Mode
-                    </>
-                  ) : (
-                    <>
-                      <Sun className="h-4 w-4 mr-2" />
-                      Light Mode
-                    </>
-                  )}
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator />
-                
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenu>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
+    <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
@@ -143,69 +110,92 @@ export const Dashboard = () => {
           })}
         </div>
 
-        {/* Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Non-Compliant Resources</CardTitle>
-              <CardDescription>Resources that need tag updates</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { name: 'prod-db-instance-1', type: 'RDS', missing: 'CostCenter, Environment' },
-                  { name: 'lambda-data-processor', type: 'Lambda', missing: 'Owner, Team' },
-                  { name: 's3-backup-bucket', type: 'S3', missing: 'DataClassification' },
-                ].map((resource, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div>
-                      <p className="font-medium text-slate-900 dark:text-white">{resource.name}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Missing: {resource.missing}</p>
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Card 
+                  key={action.title}
+                  className={`${action.enabled ? 'hover:shadow-lg cursor-pointer transition-shadow' : 'opacity-60'}`}
+                  onClick={action.enabled ? action.action : undefined}
+                >
+                  <CardHeader>
+                    <div className={`w-10 h-10 rounded-lg ${action.bgColor} flex items-center justify-center mb-3`}>
+                      <Icon className={`h-5 w-5 ${action.color}`} />
                     </div>
-                    <span className="px-2 py-1 text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
-                      {resource.type}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Tag Policies</CardTitle>
-              <CardDescription>Active compliance policies</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { name: 'Production Environment Tags', resources: 234, compliance: 92 },
-                  { name: 'Cost Allocation Tags', resources: 456, compliance: 85 },
-                  { name: 'Security Classification', resources: 189, compliance: 78 },
-                ].map((policy, idx) => (
-                  <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-slate-900 dark:text-white">{policy.name}</p>
-                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        {policy.compliance}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full"
-                        style={{ width: `${policy.compliance}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      {policy.resources} resources
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                    <CardTitle className="text-lg">{action.title}</CardTitle>
+                    <CardDescription>{action.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-between group"
+                      disabled={!action.enabled}
+                      onClick={action.enabled ? action.action : undefined}
+                    >
+                      {action.enabled ? 'Get Started' : 'Coming Soon'}
+                      {action.enabled && (
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Getting Started Guide */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Getting Started</CardTitle>
+            <CardDescription>Follow these steps to start monitoring your AWS resources</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                1
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-1">Connect AWS Account</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                  Link your AWS account using IAM roles for secure, read-only access
+                </p>
+                <Button size="sm" onClick={() => navigate('/aws-accounts')}>
+                  Connect Now
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 opacity-50">
+              <div className="w-8 h-8 bg-slate-300 dark:bg-slate-700 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                2
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-1">Create Tag Policies</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Define required tags and validation rules for different resource types
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 opacity-50">
+              <div className="w-8 h-8 bg-slate-300 dark:bg-slate-700 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                3
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-1">Monitor Compliance</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  View real-time compliance status and receive alerts for violations
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </Layout>
   );
 };

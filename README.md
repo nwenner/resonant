@@ -68,10 +68,10 @@ export JWT_SECRET=your-very-secure-secret-key-at-least-256-bits-long
 ### 5. Run the Application
 
 ```bash
-./gradlew bootRun --args='--spring.profiles.active=dev'
+./gradlew bootRun
 ```
 
-The API will be available at: `http://localhost:8080/api/v1`
+The API will be available at: `http://localhost:8080/swagger-ui/index.html`
 
 ### 6. Access API Documentation
 
