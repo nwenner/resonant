@@ -1,4 +1,3 @@
-// src/components/Layout.tsx
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -36,10 +35,14 @@ export const Layout = ({ children }: LayoutProps) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-8">
-              <div className="flex items-center">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center cursor-pointer focus:outline-none -ml-2"
+                aria-label="Go to dashboard"
+              >
                 <Tag className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-3" />
                 <span className="text-xl font-bold text-slate-900 dark:text-white">Resonant</span>
-              </div>
+              </button>
               
               {/* Navigation Links */}
               <div className="hidden md:flex space-x-1">

@@ -1,6 +1,5 @@
 import api from '@/lib/api';
 
-// Types
 export interface User {
   id: string;
   email: string;
@@ -20,21 +19,44 @@ export interface RegisterRequest {
   password: string;
 }
 
+export interface BackendAuthResponse {
+  token: string;
+  type: string; // "Bearer"
+  id: string;
+  name: string;
+  email: string;
+  role?: 'USER' | 'ADMIN';
+  enabled?: boolean;
+}
+
 export interface AuthResponse {
   token: string;
   user: User;
 }
 
+const transformAuthResponse = (backendData: BackendAuthResponse): AuthResponse => {
+  return {
+    token: backendData.token,
+    user: {
+      id: backendData.id,
+      email: backendData.email,
+      name: backendData.name,
+      role: backendData.role || 'USER',
+      enabled: backendData.enabled ?? true,
+    },
+  };
+};
+
 // Auth API Service
 export const authService = {
   login: async (data: LoginRequest): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/login', data);
-    return response.data;
+    const response = await api.post<BackendAuthResponse>('/auth/login', data);
+    return transformAuthResponse(response.data);
   },
   
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/register', data);
-    return response.data;
+    const response = await api.post<BackendAuthResponse>('/auth/register', data);
+    return transformAuthResponse(response.data);
   },
   
   getCurrentUser: async (): Promise<User> => {

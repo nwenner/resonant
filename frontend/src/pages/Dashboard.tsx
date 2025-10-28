@@ -103,7 +103,7 @@ export const Dashboard = () => {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            Welcome back, {user?.name?.split(' ')[0]}
+            Welcome back, {user?.name}
           </h1>
           <p className="text-slate-600 dark:text-slate-400 mt-2">
             Here's an overview of your AWS tag compliance status
