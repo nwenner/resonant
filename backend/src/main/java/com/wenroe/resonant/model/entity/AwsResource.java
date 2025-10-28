@@ -43,7 +43,7 @@ public class AwsResource {
      * Format: {"Environment": "prod", "Owner": "john@example.com", "CostCenter": "engineering"}
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column
     private Map<String, String> tags;
 
     /**
@@ -54,7 +54,7 @@ public class AwsResource {
      * RDS: {"engine": "postgres", "engineVersion": "14.5"}
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column
     private Map<String, Object> metadata;
 
     @CreationTimestamp

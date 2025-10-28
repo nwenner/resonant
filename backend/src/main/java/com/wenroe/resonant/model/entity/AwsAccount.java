@@ -33,10 +33,10 @@ public class AwsAccount {
     @Column(name = "external_id", length = 64)
     private String externalId;
 
-    @Column(name = "access_key_encrypted", columnDefinition = "TEXT")
+    @Column(name = "access_key_encrypted", length = 1000)
     private String accessKeyEncrypted;
 
-    @Column(name = "secret_key_encrypted", columnDefinition = "TEXT")
+    @Column(name = "secret_key_encrypted", length = 1000)
     private String secretKeyEncrypted;
 
     @Enumerated(EnumType.STRING)

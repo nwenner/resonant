@@ -36,7 +36,7 @@ public class ComplianceViolation {
      * Format: ["Environment", "Owner", "CostCenter"]
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "missing_tags", columnDefinition = "jsonb")
+    @Column(name = "missing_tags")
     private List<String> missingTags;
 
     @Enumerated(EnumType.STRING)
@@ -54,7 +54,7 @@ public class ComplianceViolation {
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
-    @Column(name = "remediation_action", columnDefinition = "TEXT")
+    @Column(name = "remediation_action", length = 2000)
     private String remediationAction;
 
     @ManyToOne(fetch = FetchType.LAZY)

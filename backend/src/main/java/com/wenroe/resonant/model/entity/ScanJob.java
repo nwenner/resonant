@@ -32,7 +32,7 @@ public class ScanJob {
      * Format: ["us-east-1", "us-west-2", "eu-west-1"]
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(nullable = false, columnDefinition = "jsonb")
+    @Column(nullable = false)
     private List<String> regions;
 
     /**
@@ -40,7 +40,7 @@ public class ScanJob {
      * Format: ["ec2:instance", "s3:bucket", "rds:db-instance"]
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "resource_types", nullable = false, columnDefinition = "jsonb")
+    @Column(name = "resource_types", nullable = false)
     private List<String> resourceTypes;
 
     @Enumerated(EnumType.STRING)
@@ -53,7 +53,7 @@ public class ScanJob {
     @Column(name = "violations_found", nullable = false)
     private Integer violationsFound = 0;
 
-    @Column(name = "error_message", columnDefinition = "TEXT")
+    @Column(name = "error_message", length = 2000)
     private String errorMessage;
 
     @CreationTimestamp

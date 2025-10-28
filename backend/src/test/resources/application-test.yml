@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -12,13 +12,26 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+        globally_quoted_identifiers: true
+
+  flyway:
+    enabled: false
 
 jwt:
   secret: test-secret-key-for-testing-purposes-only-must-be-long-enough
   expiration: 3600000
-  refresh-expiration: 7200000
+
+resonant:
+  encryption:
+    # Valid 256-bit AES key encoded in Base64 for testing
+    # Generated with: openssl rand -base64 32
+    key: dGVzdC1lbmNyeXB0aW9uLWtleS1mb3ItdGVzdGluZy1vbmx5LTMyYnl0ZXM=
+  aws:
+    account-id: 123456789012
+    session-duration: 3600
 
 logging:
   level:
     root: WARN
-    com.taskmanager: DEBUG
+    com.wenroe.resonant: DEBUG
+    org.hibernate.SQL: DEBUG

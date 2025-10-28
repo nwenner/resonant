@@ -28,7 +28,7 @@ public class TagPolicy {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 2000)
     private String description;
 
     /**
@@ -37,7 +37,7 @@ public class TagPolicy {
      * null value = any value is acceptable, just tag must exist
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "required_tags", nullable = false, columnDefinition = "jsonb")
+    @Column(name = "required_tags", nullable = false)
     private Map<String, List<String>> requiredTags;
 
     /**
@@ -45,7 +45,7 @@ public class TagPolicy {
      * Format: ["ec2:instance", "s3:bucket", "rds:db-instance", "lambda:function"]
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "resource_types", nullable = false, columnDefinition = "jsonb")
+    @Column(name = "resource_types", nullable = false)
     private List<String> resourceTypes;
 
     @Enumerated(EnumType.STRING)
