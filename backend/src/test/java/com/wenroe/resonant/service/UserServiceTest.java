@@ -3,6 +3,7 @@ package com.wenroe.resonant.service;
 import com.wenroe.resonant.model.entity.User;
 import com.wenroe.resonant.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.*;
  * Unit tests for UserService.
  */
 @ExtendWith(MockitoExtension.class)
+@DisplayName("UserService Tests")
 class UserServiceTest {
 
     @Mock
@@ -49,7 +51,8 @@ class UserServiceTest {
     }
 
     @Test
-    void getAllUsers_ShouldReturnAllUsers() {
+    @DisplayName("Should return all users")
+    void getAllUsers_Success() {
         // Given
         User user2 = User.builder()
                 .id(UUID.randomUUID())
@@ -69,11 +72,12 @@ class UserServiceTest {
         // Then
         assertThat(result).hasSize(2);
         assertThat(result).contains(testUser, user2);
-        verify(userRepository, times(1)).findAll();
+        verify(userRepository).findAll();
     }
 
     @Test
-    void getUserById_WhenUserExists_ShouldReturnUser() {
+    @DisplayName("Should return user by ID when user exists")
+    void getUserById_WhenExists() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
 
@@ -83,11 +87,12 @@ class UserServiceTest {
         // Then
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo(testUser);
-        verify(userRepository, times(1)).findById(testUserId);
+        verify(userRepository).findById(testUserId);
     }
 
     @Test
-    void getUserById_WhenUserDoesNotExist_ShouldReturnEmpty() {
+    @DisplayName("Should return empty when user does not exist")
+    void getUserById_WhenNotExists() {
         // Given
         UUID nonExistentId = UUID.randomUUID();
         when(userRepository.findById(nonExistentId)).thenReturn(Optional.empty());
@@ -97,11 +102,12 @@ class UserServiceTest {
 
         // Then
         assertThat(result).isEmpty();
-        verify(userRepository, times(1)).findById(nonExistentId);
+        verify(userRepository).findById(nonExistentId);
     }
 
     @Test
-    void getUserByEmail_WhenUserExists_ShouldReturnUser() {
+    @DisplayName("Should return user by email when user exists")
+    void getUserByEmail_WhenExists() {
         // Given
         String email = "test@example.com";
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(testUser));
@@ -112,11 +118,12 @@ class UserServiceTest {
         // Then
         assertThat(result).isPresent();
         assertThat(result.get().getEmail()).isEqualTo(email);
-        verify(userRepository, times(1)).findByEmail(email);
+        verify(userRepository).findByEmail(email);
     }
 
     @Test
-    void getUsersByRole_ShouldReturnUsersWithRole() {
+    @DisplayName("Should return users by role")
+    void getUsersByRole_Success() {
         // Given
         List<User> users = List.of(testUser);
         when(userRepository.findByRole(User.UserRole.USER)).thenReturn(users);
@@ -127,11 +134,12 @@ class UserServiceTest {
         // Then
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getRole()).isEqualTo(User.UserRole.USER);
-        verify(userRepository, times(1)).findByRole(User.UserRole.USER);
+        verify(userRepository).findByRole(User.UserRole.USER);
     }
 
     @Test
-    void createUser_WithValidData_ShouldSaveAndReturnUser() {
+    @DisplayName("Should create user with valid data")
+    void createUser_Success() {
         // Given
         User newUser = User.builder()
                 .email("new@example.com")
@@ -150,12 +158,13 @@ class UserServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getEmail()).isEqualTo("new@example.com");
-        verify(userRepository, times(1)).existsByEmail(newUser.getEmail());
-        verify(userRepository, times(1)).save(newUser);
+        verify(userRepository).existsByEmail(newUser.getEmail());
+        verify(userRepository).save(newUser);
     }
 
     @Test
-    void createUser_WithDuplicateEmail_ShouldThrowException() {
+    @DisplayName("Should throw exception when creating user with duplicate email")
+    void createUser_DuplicateEmail() {
         // Given
         User newUser = User.builder()
                 .email("test@example.com")
@@ -172,12 +181,13 @@ class UserServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("already exists");
 
-        verify(userRepository, times(1)).existsByEmail(newUser.getEmail());
+        verify(userRepository).existsByEmail(newUser.getEmail());
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
-    void updateUser_WhenUserExists_ShouldUpdateAndReturnUser() {
+    @DisplayName("Should update user when user exists")
+    void updateUser_Success() {
         // Given
         User updatedData = User.builder()
                 .email("updated@example.com")
@@ -195,12 +205,13 @@ class UserServiceTest {
 
         // Then
         assertThat(result).isNotNull();
-        verify(userRepository, times(1)).findById(testUserId);
-        verify(userRepository, times(1)).save(testUser);
+        verify(userRepository).findById(testUserId);
+        verify(userRepository).save(testUser);
     }
 
     @Test
-    void updateUser_WhenUserDoesNotExist_ShouldThrowException() {
+    @DisplayName("Should throw exception when updating non-existent user")
+    void updateUser_UserNotFound() {
         // Given
         UUID nonExistentId = UUID.randomUUID();
         User updatedData = User.builder()
@@ -218,12 +229,13 @@ class UserServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("not found");
 
-        verify(userRepository, times(1)).findById(nonExistentId);
+        verify(userRepository).findById(nonExistentId);
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
-    void deleteUser_WhenUserExists_ShouldDeleteUser() {
+    @DisplayName("Should delete user when user exists")
+    void deleteUser_Success() {
         // Given
         when(userRepository.existsById(testUserId)).thenReturn(true);
         doNothing().when(userRepository).deleteById(testUserId);
@@ -232,12 +244,13 @@ class UserServiceTest {
         userService.deleteUser(testUserId);
 
         // Then
-        verify(userRepository, times(1)).existsById(testUserId);
-        verify(userRepository, times(1)).deleteById(testUserId);
+        verify(userRepository).existsById(testUserId);
+        verify(userRepository).deleteById(testUserId);
     }
 
     @Test
-    void deleteUser_WhenUserDoesNotExist_ShouldThrowException() {
+    @DisplayName("Should throw exception when deleting non-existent user")
+    void deleteUser_UserNotFound() {
         // Given
         UUID nonExistentId = UUID.randomUUID();
         when(userRepository.existsById(nonExistentId)).thenReturn(false);
@@ -247,12 +260,13 @@ class UserServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("not found");
 
-        verify(userRepository, times(1)).existsById(nonExistentId);
+        verify(userRepository).existsById(nonExistentId);
         verify(userRepository, never()).deleteById(any(UUID.class));
     }
 
     @Test
-    void existsByEmail_WhenUserExists_ShouldReturnTrue() {
+    @DisplayName("Should return true when user exists by email")
+    void existsByEmail_WhenExists() {
         // Given
         String email = "test@example.com";
         when(userRepository.existsByEmail(email)).thenReturn(true);
@@ -262,11 +276,12 @@ class UserServiceTest {
 
         // Then
         assertThat(result).isTrue();
-        verify(userRepository, times(1)).existsByEmail(email);
+        verify(userRepository).existsByEmail(email);
     }
 
     @Test
-    void existsByEmail_WhenUserDoesNotExist_ShouldReturnFalse() {
+    @DisplayName("Should return false when user does not exist by email")
+    void existsByEmail_WhenNotExists() {
         // Given
         String email = "nonexistent@example.com";
         when(userRepository.existsByEmail(email)).thenReturn(false);
@@ -276,6 +291,6 @@ class UserServiceTest {
 
         // Then
         assertThat(result).isFalse();
-        verify(userRepository, times(1)).existsByEmail(email);
+        verify(userRepository).existsByEmail(email);
     }
 }
