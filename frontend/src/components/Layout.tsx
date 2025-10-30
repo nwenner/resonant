@@ -24,7 +24,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
     { path: '/aws-accounts', label: 'AWS Accounts', icon: Cloud },
-    { path: '/policies', label: 'Tag Policies', icon: Shield, disabled: true },
+    { path: '/tag-policies', label: 'Tag Policies', icon: Shield },
     { path: '/settings', label: 'Settings', icon: Settings, disabled: true },
   ];
 

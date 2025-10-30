@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { awsAccountsService } from '@/services/awsAccountsService';
+import { tagPolicyService } from '@/services/tagPolicyService';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +28,15 @@ export const Dashboard = () => {
     }
   });
 
+  // Fetch tag policy stats
+  const { data: policyStats } = useQuery({
+    queryKey: ['tag-policies-stats'],
+    queryFn: () => tagPolicyService.getStats(),
+  });
+
   const hasAccounts = accounts.length > 0;
+  const hasPolicies = (policyStats?.total ?? 0) > 0;
+  const enabledPolicies = policyStats?.enabled ?? 0;
 
   const stats = [
     {
@@ -48,8 +57,8 @@ export const Dashboard = () => {
     },
     {
       title: 'Active Policies',
-      value: '0',
-      description: 'No policies configured',
+      value: enabledPolicies.toString(),
+      description: hasPolicies ? `${enabledPolicies} of ${policyStats.total} enabled` : 'No policies configured',
       icon: Activity,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50 dark:bg-purple-900/20',
@@ -67,8 +76,8 @@ export const Dashboard = () => {
   const quickActions = [
     {
       title: 'AWS Accounts',
-      description: hasAccounts 
-        ? `Manage ${accounts.length} connected account${accounts.length !== 1 ? 's' : ''}` 
+      description: hasAccounts
+        ? `Manage ${accounts.length} connected account${accounts.length !== 1 ? 's' : ''}`
         : 'Connect and manage your AWS accounts for compliance monitoring',
       icon: Cloud,
       color: 'text-blue-600',
@@ -79,12 +88,15 @@ export const Dashboard = () => {
     },
     {
       title: 'Tag Policies',
-      description: 'Define required tags and validation rules for your resources',
+      description: hasPolicies
+        ? `Manage ${policyStats.total} tag compliance ${policyStats.total === 1 ? 'policy' : 'policies'}`
+        : 'Define required tags and validation rules for your resources',
       icon: Tag,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100 dark:bg-purple-900',
-      action: () => {},
-      enabled: false,
+      action: () => navigate('/tag-policies'),
+      enabled: true,
+      badge: hasPolicies ? policyStats.total.toString() : undefined,
     },
     {
       title: 'Compliance Reports',
@@ -140,7 +152,7 @@ export const Dashboard = () => {
             {quickActions.map((action) => {
               const Icon = action.icon;
               return (
-                <Card 
+                <Card
                   key={action.title}
                   className={`${action.enabled ? 'hover:shadow-lg cursor-pointer transition-shadow' : 'opacity-60'}`}
                   onClick={action.enabled ? action.action : undefined}
@@ -160,13 +172,15 @@ export const Dashboard = () => {
                     <CardDescription>{action.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className="w-full justify-between group"
                       disabled={!action.enabled}
                       onClick={action.enabled ? action.action : undefined}
                     >
-                      {action.enabled ? (hasAccounts && action.title === 'AWS Accounts' ? 'Manage Accounts' : 'Get Started') : 'Coming Soon'}
+                      {action.enabled ? (
+                        action.badge ? 'Manage' : 'Get Started'
+                      ) : 'Coming Soon'}
                       {action.enabled && (
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       )}
@@ -202,7 +216,7 @@ export const Dashboard = () => {
                   )}
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                  {hasAccounts 
+                  {hasAccounts
                     ? `${accounts.length} AWS account${accounts.length !== 1 ? 's' : ''} connected and ready for scanning`
                     : 'Link your AWS account using IAM roles for secure, read-only access'
                   }
@@ -222,33 +236,50 @@ export const Dashboard = () => {
             {/* Step 2 - Create Tag Policies */}
             <div className={`flex items-start gap-4 ${!hasAccounts ? 'opacity-50' : ''}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shrink-0 ${
-                hasAccounts ? 'bg-blue-600 dark:bg-blue-500' : 'bg-slate-300 dark:bg-slate-700'
+                hasPolicies ? 'bg-green-600 dark:bg-green-500' : hasAccounts ? 'bg-blue-600 dark:bg-blue-500' : 'bg-slate-300 dark:bg-slate-700'
               }`}>
-                2
+                {hasPolicies ? <CheckCircle className="w-5 h-5" /> : '2'}
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold text-slate-900 dark:text-white mb-1">Create Tag Policies</h4>
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-semibold text-slate-900 dark:text-white">Create Tag Policies</h4>
+                  {hasPolicies && (
+                    <span className="px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded">
+                      Complete
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                  Define required tags and validation rules for different resource types
+                  {hasPolicies
+                    ? `${policyStats.total} ${policyStats.total === 1 ? 'policy' : 'policies'} configured (${enabledPolicies} active)`
+                    : 'Define required tags and validation rules for different resource types'
+                  }
                 </p>
                 {hasAccounts && (
-                  <Button size="sm" disabled>
-                    Coming Soon
+                  <Button size="sm" onClick={() => navigate('/tag-policies')}>
+                    {hasPolicies ? 'Manage Policies' : 'Create Policy'}
                   </Button>
                 )}
               </div>
             </div>
 
             {/* Step 3 - Monitor Compliance */}
-            <div className="flex items-start gap-4 opacity-50">
-              <div className="w-8 h-8 bg-slate-300 dark:bg-slate-700 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+            <div className={`flex items-start gap-4 ${!hasPolicies ? 'opacity-50' : ''}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shrink-0 ${
+                hasPolicies ? 'bg-blue-600 dark:bg-blue-500' : 'bg-slate-300 dark:bg-slate-700'
+              }`}>
                 3
               </div>
               <div className="flex-1">
                 <h4 className="font-semibold text-slate-900 dark:text-white mb-1">Monitor Compliance</h4>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
                   View real-time compliance status and receive alerts for violations
                 </p>
+                {hasPolicies && (
+                  <Button size="sm" disabled>
+                    Coming Soon
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
