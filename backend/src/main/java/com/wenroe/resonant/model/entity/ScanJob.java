@@ -3,11 +3,9 @@ package com.wenroe.resonant.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -27,25 +25,9 @@ public class ScanJob {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    /**
-     * AWS regions scanned in this job
-     * Format: ["us-east-1", "us-west-2", "eu-west-1"]
-     */
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(nullable = false)
-    private List<String> regions;
-
-    /**
-     * Resource types scanned
-     * Format: ["ec2:instance", "s3:bucket", "rds:db-instance"]
-     */
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "resource_types", nullable = false)
-    private List<String> resourceTypes;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status = Status.PENDING;
+    private ScanStatus status = ScanStatus.PENDING;
 
     @Column(name = "resources_scanned", nullable = false)
     private Integer resourcesScanned = 0;
@@ -53,46 +35,64 @@ public class ScanJob {
     @Column(name = "violations_found", nullable = false)
     private Integer violationsFound = 0;
 
-    @Column(name = "error_message", length = 2000)
-    private String errorMessage;
+    @Column(name = "violations_resolved", nullable = false)
+    private Integer violationsResolved = 0;
 
-    @CreationTimestamp
-    @Column(name = "started_at", nullable = false, updatable = false)
+    @Column(name = "started_at")
     private LocalDateTime startedAt;
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
-    public enum Status {
-        PENDING,    // Job created but not started
-        RUNNING,    // Currently scanning
-        COMPLETED,  // Successfully completed
-        FAILED,     // Failed with error
-        CANCELLED   // Cancelled by user
+    @Column(name = "error_message", length = 2000)
+    private String errorMessage;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    public enum ScanStatus {
+        PENDING,   // Created but not started
+        RUNNING,   // Currently scanning
+        SUCCESS,   // Completed successfully
+        FAILED     // Failed with error
     }
 
     public void start() {
-        this.status = Status.RUNNING;
+        this.status = ScanStatus.RUNNING;
+        this.startedAt = LocalDateTime.now();
     }
 
-    public void complete(int resourcesScanned, int violationsFound) {
-        this.status = Status.COMPLETED;
+    public void complete(int resourcesScanned, int violationsFound, int violationsResolved) {
+        this.status = ScanStatus.SUCCESS;
+        this.completedAt = LocalDateTime.now();
         this.resourcesScanned = resourcesScanned;
         this.violationsFound = violationsFound;
-        this.completedAt = LocalDateTime.now();
+        this.violationsResolved = violationsResolved;
     }
 
     public void fail(String errorMessage) {
-        this.status = Status.FAILED;
-        this.errorMessage = errorMessage;
+        this.status = ScanStatus.FAILED;
         this.completedAt = LocalDateTime.now();
+        this.errorMessage = errorMessage;
     }
 
     public boolean isRunning() {
-        return status == Status.RUNNING;
+        return status == ScanStatus.RUNNING;
     }
 
     public boolean isCompleted() {
-        return status == Status.COMPLETED;
+        return status == ScanStatus.SUCCESS || status == ScanStatus.FAILED;
+    }
+
+    public Long getDurationSeconds() {
+        if (startedAt == null || completedAt == null) {
+            return null;
+        }
+        return java.time.Duration.between(startedAt, completedAt).getSeconds();
     }
 }

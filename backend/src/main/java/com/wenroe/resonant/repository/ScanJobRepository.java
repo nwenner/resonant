@@ -7,17 +7,41 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface ScanJobRepository extends JpaRepository<ScanJob, UUID> {
-    List<ScanJob> findByAwsAccountIdOrderByStartedAtDesc(UUID awsAccountId);
-    List<ScanJob> findByUserIdOrderByStartedAtDesc(UUID userId);
-    List<ScanJob> findByStatus(ScanJob.Status status);
 
-    @Query("SELECT sj FROM ScanJob sj WHERE sj.user.id = :userId ORDER BY sj.startedAt DESC")
-    List<ScanJob> findRecentByUserId(@Param("userId") UUID userId);
+    /**
+     * Find all scan jobs for a user.
+     */
+    List<ScanJob> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
-    @Query("SELECT sj FROM ScanJob sj WHERE sj.awsAccount.id = :accountId ORDER BY sj.startedAt DESC")
-    List<ScanJob> findRecentByAccountId(@Param("accountId") UUID accountId);
+    /**
+     * Find all scan jobs for a specific AWS account.
+     */
+    List<ScanJob> findByAwsAccountIdOrderByCreatedAtDesc(UUID accountId);
+
+    /**
+     * Find the most recent scan job for an account.
+     */
+    Optional<ScanJob> findFirstByAwsAccountIdOrderByCreatedAtDesc(UUID accountId);
+
+    /**
+     * Find running scan jobs.
+     */
+    @Query("SELECT s FROM ScanJob s WHERE s.status = 'RUNNING'")
+    List<ScanJob> findRunningJobs();
+
+    /**
+     * Find running scan job for a specific account.
+     */
+    @Query("SELECT s FROM ScanJob s WHERE s.awsAccount.id = :accountId AND s.status = 'RUNNING'")
+    Optional<ScanJob> findRunningScanForAccount(@Param("accountId") UUID accountId);
+
+    /**
+     * Count total scans for a user.
+     */
+    long countByUserId(UUID userId);
 }

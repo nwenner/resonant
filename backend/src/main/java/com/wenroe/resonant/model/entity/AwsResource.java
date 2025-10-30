@@ -61,6 +61,7 @@ public class AwsResource {
     @Column(name = "discovered_at", nullable = false, updatable = false)
     private LocalDateTime discoveredAt;
 
+    @CreationTimestamp
     @Column(name = "last_seen_at", nullable = false)
     private LocalDateTime lastSeenAt;
 

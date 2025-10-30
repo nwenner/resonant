@@ -3,11 +3,12 @@ package com.wenroe.resonant.model.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -27,25 +28,29 @@ public class ComplianceViolation {
     @JoinColumn(name = "tag_policy_id", nullable = false)
     private TagPolicy tagPolicy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "scan_job_id")
+    private ScanJob scanJob;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "violation_type", nullable = false)
-    private ViolationType violationType;
+    @Column(nullable = false)
+    private ViolationStatus status = ViolationStatus.OPEN;
 
     /**
-     * List of missing or invalid tag keys
-     * Format: ["Environment", "Owner", "CostCenter"]
+     * Details about what tags are missing or invalid.
+     * Format: {
+     *   "missingTags": ["Environment", "Owner"],
+     *   "invalidTags": {
+     *     "CostCenter": {
+     *       "current": "marketing",
+     *       "allowed": ["eng", "sales", "ops"]
+     *     }
+     *   }
+     * }
      */
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "missing_tags")
-    private List<String> missingTags;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TagPolicy.Severity severity;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status = Status.OPEN;
+    @Column(name = "violation_details", nullable = false)
+    private Map<String, Object> violationDetails;
 
     @CreationTimestamp
     @Column(name = "detected_at", nullable = false, updatable = false)
@@ -54,41 +59,31 @@ public class ComplianceViolation {
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
-    @Column(name = "remediation_action", length = 2000)
-    private String remediationAction;
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "resolved_by")
-    private User resolvedBy;
-
-    public enum ViolationType {
-        MISSING_TAG,    // Required tag is missing
-        INVALID_VALUE,  // Tag exists but value not in allowed list
-        UNTAGGED        // Resource has no tags at all
-    }
-
-    public enum Status {
-        OPEN,        // Violation detected and not resolved
-        REMEDIATED,  // Tags have been added/fixed
-        IGNORED,     // User chose to ignore this violation
-        RESOLVED     // Violation no longer applies (policy changed, resource deleted, etc)
+    public enum ViolationStatus {
+        OPEN,      // Active violation
+        RESOLVED,  // Resource is now compliant
+        IGNORED    // User manually ignored this violation
     }
 
     public boolean isOpen() {
-        return status == Status.OPEN;
+        return status == ViolationStatus.OPEN;
     }
 
-    public void resolve(User user, String action) {
-        this.status = Status.RESOLVED;
+    public void resolve() {
+        this.status = ViolationStatus.OPEN;
         this.resolvedAt = LocalDateTime.now();
-        this.resolvedBy = user;
-        this.remediationAction = action;
     }
 
-    public void ignore(User user) {
-        this.status = Status.IGNORED;
-        this.resolvedAt = LocalDateTime.now();
-        this.resolvedBy = user;
-        this.remediationAction = "Violation ignored by user";
+    public void ignore() {
+        this.status = ViolationStatus.IGNORED;
+    }
+
+    public void reopen() {
+        this.status = ViolationStatus.OPEN;
+        this.resolvedAt = null;
     }
 }
