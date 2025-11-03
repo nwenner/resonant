@@ -1,6 +1,7 @@
 // src/pages/AwsAccounts.tsx
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { awsAccountsService, AwsAccount } from '@/services/awsAccountsService';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -76,6 +77,7 @@ Outputs:
 export const AwsAccounts = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   
   // State
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -504,12 +506,16 @@ export const AwsAccounts = () => {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {accounts.map((account) => (
-            <Card key={account.id}>
+            <Card 
+              key={account.id}
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => navigate(`/aws-accounts/${account.id}`)}
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     {editingAccountId === account.id ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <Input
                           value={newAlias}
                           onChange={(e) => setNewAlias(e.target.value)}
@@ -530,7 +536,8 @@ export const AwsAccounts = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setEditingAccountId(account.id);
                             setNewAlias(account.accountAlias);
                           }}
@@ -564,7 +571,10 @@ export const AwsAccounts = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => testConnectionMutation.mutate(account.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    testConnectionMutation.mutate(account.id);
+                  }}
                   disabled={testConnectionMutation.isPending}
                   className="flex-1"
                 >
@@ -574,7 +584,8 @@ export const AwsAccounts = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     if (confirm('Are you sure you want to disconnect this account?')) {
                       deleteAccountMutation.mutate(account.id);
                     }

@@ -4,6 +4,7 @@ import { Login } from '@/pages/Login';
 import { Register } from '@/pages/Register';
 import { Dashboard } from '@/pages/Dashboard';
 import { AwsAccounts } from '@/pages/AwsAccounts';
+import { AwsAccountDetail } from '@/pages/AwsAccountDetail';
 import { TagPolicies } from '@/pages/TagPolicies';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Toaster } from '@/components/ui/toaster';
@@ -28,6 +29,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/aws-accounts" element={<AwsAccounts />} />
+            <Route path="/aws-accounts/:accountId" element={<AwsAccountDetail />} />
             <Route path="/tag-policies" element={<TagPolicies />} />
           </Route>
           
