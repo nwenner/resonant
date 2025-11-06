@@ -29,25 +29,31 @@ public class S3ResourceScanner {
 
     /**
      * Scans all S3 buckets for an AWS account.
-     * Note: S3 is global, but we need to use a specific region client.
+     * Note: S3 is global, but we need to use region-specific clients for operations.
      */
     public List<AwsResource> scanS3Buckets(AwsAccount account) {
         List<AwsResource> resources = new ArrayList<>();
 
-        try (S3Client s3Client = clientFactory.createS3Client(account, "us-east-1")) {
+        try (S3Client globalClient = clientFactory.createS3Client(account, "us-east-1")) {
 
-            // List all buckets
-            ListBucketsResponse bucketsResponse = s3Client.listBuckets();
+            // List all buckets (works from any region)
+            ListBucketsResponse bucketsResponse = globalClient.listBuckets();
             log.info("Found {} S3 buckets in account {}",
                     bucketsResponse.buckets().size(), account.getAccountId());
 
             for (Bucket bucket : bucketsResponse.buckets()) {
                 try {
-                    AwsResource resource = scanBucket(s3Client, account, bucket);
-                    resources.add(resource);
-                    log.debug("Scanned S3 bucket: {}", bucket.name());
+                    // Get bucket region first
+                    String region = getBucketRegion(globalClient, bucket.name());
+
+                    // Create region-specific client for this bucket
+                    try (S3Client regionalClient = clientFactory.createS3Client(account, region)) {
+                        AwsResource resource = scanBucket(regionalClient, account, bucket, region);
+                        resources.add(resource);
+                        log.debug("Scanned S3 bucket: {} in region {}", bucket.name(), region);
+                    }
                 } catch (Exception e) {
-                    log.error("Failed to scan S3 bucket {}: {}", bucket.name(), e.getMessage());
+                    log.error("Failed to scan S3 bucket {}: {}", bucket.name(), e.getMessage(), e);
                 }
             }
 
@@ -63,15 +69,12 @@ public class S3ResourceScanner {
     /**
      * Scans a single S3 bucket and retrieves its tags and metadata.
      */
-    private AwsResource scanBucket(S3Client s3Client, AwsAccount account, Bucket bucket) {
+    private AwsResource scanBucket(S3Client s3Client, AwsAccount account, Bucket bucket, String region) {
         AwsResource resource = new AwsResource();
         resource.setAwsAccount(account);
         resource.setResourceId(bucket.name());
         resource.setResourceType(RESOURCE_TYPE);
         resource.setName(bucket.name());
-
-        // S3 buckets don't have regions in the standard sense, but we can get location
-        String region = getBucketRegion(s3Client, bucket.name());
         resource.setRegion(region);
 
         // Build ARN
@@ -96,26 +99,21 @@ public class S3ResourceScanner {
      * Gets the region/location of an S3 bucket.
      */
     private String getBucketRegion(S3Client s3Client, String bucketName) {
-        try {
-            GetBucketLocationResponse locationResponse = s3Client.getBucketLocation(
-                    GetBucketLocationRequest.builder()
-                            .bucket(bucketName)
-                            .build()
-            );
+        GetBucketLocationResponse locationResponse = s3Client.getBucketLocation(
+                GetBucketLocationRequest.builder()
+                        .bucket(bucketName)
+                        .build()
+        );
 
-            String locationConstraint = locationResponse.locationConstraintAsString();
+        String locationConstraint = locationResponse.locationConstraintAsString();
 
-            // S3 returns null for us-east-1, empty string for us-east-1 in some cases
-            if (locationConstraint == null || locationConstraint.isEmpty() ||
-                    locationConstraint.equals("null")) {
-                return "us-east-1";
-            }
-
-            return locationConstraint;
-        } catch (Exception e) {
-            log.warn("Failed to get location for bucket {}: {}", bucketName, e.getMessage());
-            return "unknown";
+        // S3 returns null for us-east-1, empty string for us-east-1 in some cases
+        if (locationConstraint == null || locationConstraint.isEmpty() ||
+                locationConstraint.equals("null")) {
+            return "us-east-1";
         }
+
+        return locationConstraint;
     }
 
     /**

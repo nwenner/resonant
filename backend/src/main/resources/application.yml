@@ -16,7 +16,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate  # Flyway handles schema, so just validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
