@@ -99,7 +99,6 @@ public class SecurityConfig {
                 "Access-Control-Request-Headers"
         ));
 
-        // Expose these headers to the frontend
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type"

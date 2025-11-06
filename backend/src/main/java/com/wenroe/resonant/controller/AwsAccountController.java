@@ -5,6 +5,7 @@ import com.wenroe.resonant.model.entity.AwsAccount;
 import com.wenroe.resonant.model.entity.User;
 import com.wenroe.resonant.service.AwsAccountService;
 import com.wenroe.resonant.service.aws.AwsConnectionTester;
+import com.wenroe.resonant.util.OwnershipVerificationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,9 +17,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST controller for managing AWS account connections.
- */
 @RestController
 @RequestMapping("/api/aws-accounts")
 @RequiredArgsConstructor
@@ -27,18 +25,12 @@ public class AwsAccountController {
 
     private final AwsAccountService awsAccountService;
 
-    /**
-     * Generate a new external ID for IAM role setup.
-     */
     @PostMapping("/external-id")
     public ResponseEntity<ExternalIdResponse> generateExternalId() {
         String externalId = awsAccountService.generateExternalId();
         return ResponseEntity.ok(new ExternalIdResponse(externalId));
     }
 
-    /**
-     * Create a new AWS account connection with IAM role (recommended).
-     */
     @PostMapping("/role")
     public ResponseEntity<AwsAccountResponse> createAccountWithRole(
             @AuthenticationPrincipal User user,
@@ -58,9 +50,6 @@ public class AwsAccountController {
                 .body(AwsAccountResponse.fromEntity(account));
     }
 
-    /**
-     * Test connection to an AWS account.
-     */
     @PostMapping("/{id}/test")
     public ResponseEntity<ConnectionTestResponse> testConnection(
             @AuthenticationPrincipal User user,
@@ -70,8 +59,7 @@ public class AwsAccountController {
 
         AwsAccount account = awsAccountService.getAccountById(id);
 
-        // Verify ownership
-        if (!account.getUser().getId().equals(user.getId())) {
+        if (OwnershipVerificationUtil.unverifiedOwnership(user, account)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -89,9 +77,6 @@ public class AwsAccountController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get all AWS accounts for the authenticated user.
-     */
     @GetMapping
     public ResponseEntity<List<AwsAccountResponse>> getAccounts(
             @AuthenticationPrincipal User user) {
@@ -104,9 +89,6 @@ public class AwsAccountController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get a specific AWS account by ID.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<AwsAccountResponse> getAccount(
             @AuthenticationPrincipal User user,
@@ -114,17 +96,13 @@ public class AwsAccountController {
 
         AwsAccount account = awsAccountService.getAccountById(id);
 
-        // Verify ownership
-        if (!account.getUser().getId().equals(user.getId())) {
+        if (OwnershipVerificationUtil.unverifiedOwnership(user, account)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         return ResponseEntity.ok(AwsAccountResponse.fromEntity(account));
     }
 
-    /**
-     * Update AWS account alias.
-     */
     @PatchMapping("/{id}/alias")
     public ResponseEntity<AwsAccountResponse> updateAlias(
             @AuthenticationPrincipal User user,
@@ -133,8 +111,7 @@ public class AwsAccountController {
 
         AwsAccount account = awsAccountService.getAccountById(id);
 
-        // Verify ownership
-        if (!account.getUser().getId().equals(user.getId())) {
+        if (OwnershipVerificationUtil.unverifiedOwnership(user, account)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -142,9 +119,6 @@ public class AwsAccountController {
         return ResponseEntity.ok(AwsAccountResponse.fromEntity(updated));
     }
 
-    /**
-     * Delete an AWS account connection.
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAccount(
             @AuthenticationPrincipal User user,
@@ -153,13 +127,5 @@ public class AwsAccountController {
         log.info("Deleting AWS account connection: {}", id);
         awsAccountService.deleteAccount(id, user.getId());
         return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * Request DTO for updating alias.
-     */
-    @lombok.Data
-    public static class UpdateAliasRequest {
-        private String alias;
     }
 }

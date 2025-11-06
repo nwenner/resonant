@@ -1,9 +1,11 @@
 package com.wenroe.resonant.controller;
 
 import com.wenroe.resonant.dto.aws.AwsResourceResponse;
+import com.wenroe.resonant.dto.aws.ResourceStats;
 import com.wenroe.resonant.model.entity.AwsResource;
 import com.wenroe.resonant.model.entity.User;
 import com.wenroe.resonant.repository.AwsResourceRepository;
+import com.wenroe.resonant.util.OwnershipVerificationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,9 +18,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST controller for AWS resources.
- */
 @RestController
 @RequestMapping("/api/resources")
 @RequiredArgsConstructor
@@ -27,9 +26,6 @@ public class AwsResourceController {
 
     private final AwsResourceRepository resourceRepository;
 
-    /**
-     * Gets all resources for the authenticated user.
-     */
     @GetMapping
     public ResponseEntity<List<AwsResourceResponse>> getAllResources(
             @AuthenticationPrincipal User user,
@@ -43,7 +39,7 @@ public class AwsResourceController {
         if (type != null && !type.isEmpty()) {
             resources = resources.stream()
                     .filter(r -> r.getResourceType().equalsIgnoreCase(type))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         List<AwsResourceResponse> response = resources.stream()
@@ -53,9 +49,6 @@ public class AwsResourceController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Gets a specific resource by ID.
-     */
     @GetMapping("/{id}")
     public ResponseEntity<AwsResourceResponse> getResource(
             @AuthenticationPrincipal User user,
@@ -64,17 +57,13 @@ public class AwsResourceController {
         AwsResource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Resource not found"));
 
-        // Verify ownership
-        if (!resource.getAwsAccount().getUser().getId().equals(user.getId())) {
+        if (OwnershipVerificationUtil.unverifiedOwnership(user, resource)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         return ResponseEntity.ok(AwsResourceResponse.fromEntity(resource));
     }
 
-    /**
-     * Gets resources for a specific AWS account.
-     */
     @GetMapping("/accounts/{accountId}")
     public ResponseEntity<List<AwsResourceResponse>> getResourcesByAccount(
             @AuthenticationPrincipal User user,
@@ -84,10 +73,9 @@ public class AwsResourceController {
 
         List<AwsResource> resources = resourceRepository.findByAwsAccountId(accountId);
 
-        // Verify ownership
         if (!resources.isEmpty()) {
-            UUID ownerId = resources.get(0).getAwsAccount().getUser().getId();
-            if (!ownerId.equals(user.getId())) {
+            UUID ownerId = resources.getFirst().getAwsAccount().getUser().getId();
+            if (OwnershipVerificationUtil.unverifiedOwnershipById(ownerId, user)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
@@ -99,9 +87,6 @@ public class AwsResourceController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Gets resource statistics for the user.
-     */
     @GetMapping("/stats")
     public ResponseEntity<ResourceStats> getResourceStats(
             @AuthenticationPrincipal User user) {
@@ -120,11 +105,5 @@ public class AwsResourceController {
         stats.setByType(typeCounts);
 
         return ResponseEntity.ok(stats);
-    }
-
-    @lombok.Data
-    public static class ResourceStats {
-        private long total;
-        private Map<String, Long> byType;
     }
 }
