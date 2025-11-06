@@ -1,5 +1,6 @@
 package com.wenroe.resonant.model.entity;
 
+import com.wenroe.resonant.model.enums.Severity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -62,10 +63,6 @@ public class TagPolicy {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    public enum Severity {
-        LOW, MEDIUM, HIGH, CRITICAL
-    }
 
     public boolean appliesToResourceType(String resourceType) {
         return resourceTypes.contains(resourceType);

@@ -2,6 +2,8 @@ package com.wenroe.resonant.service;
 
 import com.wenroe.resonant.model.entity.AwsAccount;
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.AwsAccountStatus;
+import com.wenroe.resonant.model.enums.CredentialType;
 import com.wenroe.resonant.repository.AwsAccountRepository;
 import com.wenroe.resonant.repository.UserRepository;
 import com.wenroe.resonant.service.aws.AwsConnectionTester;
@@ -48,8 +50,8 @@ public class AwsAccountService {
         account.setAccountAlias(accountAlias);
         account.setRoleArn(roleArn);
         account.setExternalId(externalId);
-        account.setCredentialType(AwsAccount.CredentialType.ROLE);
-        account.setStatus(AwsAccount.Status.TESTING);
+        account.setCredentialType(CredentialType.ROLE);
+        account.setStatus(AwsAccountStatus.TESTING);
 
         AwsAccount saved = awsAccountRepository.save(account);
         log.info("Created AWS account connection for user {} with account {}", userId, accountId);
@@ -81,8 +83,8 @@ public class AwsAccountService {
         account.setAccountAlias(accountAlias);
         account.setAccessKeyEncrypted(encryptedAccessKey);
         account.setSecretKeyEncrypted(encryptedSecretKey);
-        account.setCredentialType(AwsAccount.CredentialType.ACCESS_KEY);
-        account.setStatus(AwsAccount.Status.TESTING);
+        account.setCredentialType(CredentialType.ACCESS_KEY);
+        account.setStatus(AwsAccountStatus.TESTING);
 
         AwsAccount saved = awsAccountRepository.save(account);
         log.info("Created AWS account connection with access keys for user {} with account {}", userId, accountId);
@@ -109,10 +111,10 @@ public class AwsAccountService {
         AwsConnectionTester.ConnectionTestResult result = connectionTester.testConnection(account);
 
         if (result.isSuccess()) {
-            account.setStatus(AwsAccount.Status.ACTIVE);
+            account.setStatus(AwsAccountStatus.ACTIVE);
             log.info("AWS account {} is now ACTIVE", account.getAccountId());
         } else {
-            account.setStatus(AwsAccount.Status.INVALID);
+            account.setStatus(AwsAccountStatus.INVALID);
             log.warn("AWS account {} connection failed: {}", account.getAccountId(), result.getErrorMessage());
         }
 

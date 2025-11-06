@@ -1,6 +1,6 @@
 package com.wenroe.resonant.dto.policy;
 
-import com.wenroe.resonant.model.entity.TagPolicy;
+import com.wenroe.resonant.model.enums.Severity;
 import lombok.Data;
 
 import java.util.List;
@@ -13,6 +13,6 @@ public class UpdateTagPolicyRequest {
     private String description;
     private Map<String, List<String>> requiredTags;
     private List<String> resourceTypes;
-    private TagPolicy.Severity severity;
+    private Severity severity;
     private Boolean enabled;
 }

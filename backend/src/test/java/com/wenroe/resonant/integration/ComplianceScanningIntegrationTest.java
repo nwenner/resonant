@@ -1,9 +1,9 @@
 package com.wenroe.resonant.integration;
 
 import com.wenroe.resonant.model.entity.*;
+import com.wenroe.resonant.model.enums.*;
 import com.wenroe.resonant.repository.*;
 import com.wenroe.resonant.service.ComplianceEvaluationService;
-import com.wenroe.resonant.service.ScanOrchestrationService;
 import com.wenroe.resonant.service.TagPolicyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -70,7 +70,7 @@ class ComplianceScanningIntegrationTest {
         testUser.setEmail("test@example.com");
         testUser.setName("Test User");
         testUser.setPasswordHash(passwordEncoder.encode("password123"));
-        testUser.setRole(User.UserRole.USER);
+        testUser.setRole(UserRole.USER);
         testUser.setEnabled(true);
         testUser = userRepository.save(testUser);
 
@@ -81,8 +81,8 @@ class ComplianceScanningIntegrationTest {
         testAccount.setAccountAlias("test-account");
         testAccount.setRoleArn("arn:aws:iam::123456789012:role/TestRole");
         testAccount.setExternalId("test-external-id");
-        testAccount.setCredentialType(AwsAccount.CredentialType.ROLE);
-        testAccount.setStatus(AwsAccount.Status.ACTIVE);
+        testAccount.setCredentialType(CredentialType.ROLE);
+        testAccount.setStatus(AwsAccountStatus.ACTIVE);
         testAccount = accountRepository.save(testAccount);
 
         // Create tag policy
@@ -97,7 +97,7 @@ class ComplianceScanningIntegrationTest {
         testPolicy.setRequiredTags(requiredTags);
 
         testPolicy.setResourceTypes(List.of("s3:bucket"));
-        testPolicy.setSeverity(TagPolicy.Severity.HIGH);
+        testPolicy.setSeverity(Severity.HIGH);
         testPolicy.setEnabled(true);
         testPolicy = tagPolicyService.createPolicy(testUser.getId(), testPolicy);
     }
@@ -114,8 +114,8 @@ class ComplianceScanningIntegrationTest {
 
         // Verify violation was created
         assertThat(violations).hasSize(1);
-        ComplianceViolation violation = violations.get(0);
-        assertThat(violation.getStatus()).isEqualTo(ComplianceViolation.ViolationStatus.OPEN);
+        ComplianceViolation violation = violations.getFirst();
+        assertThat(violation.getStatus()).isEqualTo(ViolationStatus.OPEN);
         assertThat(violation.getTagPolicy().getId()).isEqualTo(testPolicy.getId());
 
         @SuppressWarnings("unchecked")
@@ -145,7 +145,7 @@ class ComplianceScanningIntegrationTest {
         assertThat(violations).hasSize(1);
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> details = violations.get(0).getViolationDetails();
+        Map<String, Object> details = violations.getFirst().getViolationDetails();
         assertThat(details).containsKey("invalidTags");
     }
 
@@ -176,8 +176,8 @@ class ComplianceScanningIntegrationTest {
         complianceEvaluationService.evaluateResource(resource, List.of(testPolicy));
 
         assertThat(violationRepository.findAll()).hasSize(1);
-        assertThat(violationRepository.findAll().get(0).getStatus())
-                .isEqualTo(ComplianceViolation.ViolationStatus.OPEN);
+        assertThat(violationRepository.findAll().getFirst().getStatus())
+                .isEqualTo(ViolationStatus.OPEN);
 
         // Update resource to be compliant
         Map<String, String> tags = new HashMap<>();
@@ -193,9 +193,9 @@ class ComplianceScanningIntegrationTest {
         // Verify violation was auto-resolved
         List<ComplianceViolation> violations = violationRepository.findAll();
         assertThat(violations).hasSize(1);
-        assertThat(violations.get(0).getStatus())
-                .isEqualTo(ComplianceViolation.ViolationStatus.RESOLVED);
-        assertThat(violations.get(0).getResolvedAt()).isNotNull();
+        assertThat(violations.getFirst().getStatus())
+                .isEqualTo(ViolationStatus.RESOLVED);
+        assertThat(violations.getFirst().getResolvedAt()).isNotNull();
     }
 
     @Test
@@ -206,7 +206,7 @@ class ComplianceScanningIntegrationTest {
         List<ComplianceViolation> violations = complianceEvaluationService
                 .evaluateResource(resource, List.of(testPolicy));
 
-        UUID violationId = violations.get(0).getId();
+        UUID violationId = violations.getFirst().getId();
         complianceEvaluationService.ignoreViolation(violationId);
 
         // Make resource compliant
@@ -222,7 +222,7 @@ class ComplianceScanningIntegrationTest {
 
         // Verify violation is still IGNORED
         ComplianceViolation violation = violationRepository.findById(violationId).orElseThrow();
-        assertThat(violation.getStatus()).isEqualTo(ComplianceViolation.ViolationStatus.IGNORED);
+        assertThat(violation.getStatus()).isEqualTo(ViolationStatus.IGNORED);
     }
 
     @Test
@@ -233,7 +233,7 @@ class ComplianceScanningIntegrationTest {
 
         complianceEvaluationService.evaluateResource(resource, List.of(testPolicy));
         assertThat(violationRepository.findAll()).hasSize(1);
-        UUID violationId = violationRepository.findAll().get(0).getId();
+        UUID violationId = violationRepository.findAll().getFirst().getId();
 
         // Make it compliant (auto-resolve)
         Map<String, String> tags = new HashMap<>();
@@ -245,7 +245,7 @@ class ComplianceScanningIntegrationTest {
         complianceEvaluationService.evaluateResource(resource, List.of(testPolicy));
 
         ComplianceViolation violation = violationRepository.findById(violationId).orElseThrow();
-        assertThat(violation.getStatus()).isEqualTo(ComplianceViolation.ViolationStatus.RESOLVED);
+        assertThat(violation.getStatus()).isEqualTo(ViolationStatus.RESOLVED);
 
         // Make it non-compliant again
         resource.setTags(new HashMap<>());
@@ -255,7 +255,7 @@ class ComplianceScanningIntegrationTest {
 
         // Verify violation was reopened
         violation = violationRepository.findById(violationId).orElseThrow();
-        assertThat(violation.getStatus()).isEqualTo(ComplianceViolation.ViolationStatus.OPEN);
+        assertThat(violation.getStatus()).isEqualTo(ViolationStatus.OPEN);
         assertThat(violation.getResolvedAt()).isNull();
     }
 
@@ -268,7 +268,7 @@ class ComplianceScanningIntegrationTest {
         policy2.setName("Cost Center Policy");
         policy2.setRequiredTags(Map.of("CostCenter", List.of("eng", "sales")));
         policy2.setResourceTypes(List.of("s3:bucket"));
-        policy2.setSeverity(TagPolicy.Severity.MEDIUM);
+        policy2.setSeverity(Severity.MEDIUM);
         policy2.setEnabled(true);
         policy2 = tagPolicyService.createPolicy(testUser.getId(), policy2);
 
@@ -300,7 +300,7 @@ class ComplianceScanningIntegrationTest {
         mediumPolicy.setRequiredTags(mediumRequiredTags);
 
         mediumPolicy.setResourceTypes(List.of("s3:bucket"));
-        mediumPolicy.setSeverity(TagPolicy.Severity.MEDIUM);
+        mediumPolicy.setSeverity(Severity.MEDIUM);
         mediumPolicy.setEnabled(true);
         mediumPolicy = tagPolicyService.createPolicy(testUser.getId(), mediumPolicy);
 
@@ -329,13 +329,13 @@ class ComplianceScanningIntegrationTest {
         complianceEvaluationService.evaluateResource(resource, List.of(testPolicy));
 
         assertThat(violationRepository.findAll()).hasSize(1);
-        UUID firstViolationId = violationRepository.findAll().get(0).getId();
+        UUID firstViolationId = violationRepository.findAll().getFirst().getId();
 
         // Re-evaluate (should update existing, not create new)
         complianceEvaluationService.evaluateResource(resource, List.of(testPolicy));
 
         assertThat(violationRepository.findAll()).hasSize(1);
-        assertThat(violationRepository.findAll().get(0).getId()).isEqualTo(firstViolationId);
+        assertThat(violationRepository.findAll().getFirst().getId()).isEqualTo(firstViolationId);
     }
 
     private AwsResource createS3Resource(String bucketName, Map<String, String> tags) {

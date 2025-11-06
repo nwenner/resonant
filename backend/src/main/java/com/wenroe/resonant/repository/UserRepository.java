@@ -1,6 +1,7 @@
 package com.wenroe.resonant.repository;
 
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -28,7 +29,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      * @param role the role to filter by
      * @return List of Users with the specified role
      */
-    List<User> findByRole(User.UserRole role);
+    List<User> findByRole(UserRole role);
 
     /**
      * Find all enabled users.

@@ -1,6 +1,7 @@
 package com.wenroe.resonant.service;
 
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.UserRole;
 import com.wenroe.resonant.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,7 +44,7 @@ class UserServiceTest {
                 .email("test@example.com")
                 .name("Test User")
                 .passwordHash("hashed_password")
-                .role(User.UserRole.USER)
+                .role(UserRole.USER)
                 .enabled(true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -59,7 +60,7 @@ class UserServiceTest {
                 .email("admin@example.com")
                 .name("Admin User")
                 .passwordHash("hashed_password")
-                .role(User.UserRole.ADMIN)
+                .role(UserRole.ADMIN)
                 .enabled(true)
                 .build();
 
@@ -126,15 +127,15 @@ class UserServiceTest {
     void getUsersByRole_Success() {
         // Given
         List<User> users = List.of(testUser);
-        when(userRepository.findByRole(User.UserRole.USER)).thenReturn(users);
+        when(userRepository.findByRole(UserRole.USER)).thenReturn(users);
 
         // When
-        List<User> result = userService.getUsersByRole(User.UserRole.USER);
+        List<User> result = userService.getUsersByRole(UserRole.USER);
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getRole()).isEqualTo(User.UserRole.USER);
-        verify(userRepository).findByRole(User.UserRole.USER);
+        assertThat(result.getFirst().getRole()).isEqualTo(UserRole.USER);
+        verify(userRepository).findByRole(UserRole.USER);
     }
 
     @Test
@@ -145,7 +146,7 @@ class UserServiceTest {
                 .email("new@example.com")
                 .name("New User")
                 .passwordHash("hashed_password")
-                .role(User.UserRole.USER)
+                .role(UserRole.USER)
                 .enabled(true)
                 .build();
 
@@ -170,7 +171,7 @@ class UserServiceTest {
                 .email("test@example.com")
                 .name("Test User")
                 .passwordHash("hashed_password")
-                .role(User.UserRole.USER)
+                .role(UserRole.USER)
                 .enabled(true)
                 .build();
 
@@ -193,7 +194,7 @@ class UserServiceTest {
                 .email("updated@example.com")
                 .name("Updated User")
                 .passwordHash("new_hashed_password")
-                .role(User.UserRole.ADMIN)
+                .role(UserRole.ADMIN)
                 .enabled(false)
                 .build();
 
@@ -218,7 +219,7 @@ class UserServiceTest {
                 .email("updated@example.com")
                 .name("Updated User")
                 .passwordHash("hashed_password")
-                .role(User.UserRole.USER)
+                .role(UserRole.USER)
                 .enabled(true)
                 .build();
 

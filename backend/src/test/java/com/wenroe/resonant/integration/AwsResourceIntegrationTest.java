@@ -4,6 +4,9 @@ import com.wenroe.resonant.dto.aws.ResourceStats;
 import com.wenroe.resonant.model.entity.AwsAccount;
 import com.wenroe.resonant.model.entity.AwsResource;
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.AwsAccountStatus;
+import com.wenroe.resonant.model.enums.CredentialType;
+import com.wenroe.resonant.model.enums.UserRole;
 import com.wenroe.resonant.repository.AwsAccountRepository;
 import com.wenroe.resonant.repository.AwsResourceRepository;
 import com.wenroe.resonant.repository.UserRepository;
@@ -17,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +64,7 @@ class AwsResourceIntegrationTest {
         testUser.setEmail("test@example.com");
         testUser.setName("Test User");
         testUser.setPasswordHash(passwordEncoder.encode("password123"));
-        testUser.setRole(User.UserRole.USER);
+        testUser.setRole(UserRole.USER);
         testUser.setEnabled(true);
         testUser = userRepository.save(testUser);
 
@@ -73,8 +75,8 @@ class AwsResourceIntegrationTest {
         testAccount.setAccountAlias("Test Account");
         testAccount.setRoleArn("arn:aws:iam::123456789012:role/TestRole");
         testAccount.setExternalId("external-id-12345");
-        testAccount.setCredentialType(AwsAccount.CredentialType.ROLE);
-        testAccount.setStatus(AwsAccount.Status.ACTIVE);
+        testAccount.setCredentialType(CredentialType.ROLE);
+        testAccount.setStatus(AwsAccountStatus.ACTIVE);
         testAccount = accountRepository.save(testAccount);
     }
 
@@ -125,7 +127,7 @@ class AwsResourceIntegrationTest {
         // Filter by EC2
         List<AwsResource> ec2Resources = resourceService.getAllResources(testUser.getId(), "ec2:instance");
         assertThat(ec2Resources).hasSize(1);
-        assertThat(ec2Resources.get(0).getResourceType()).isEqualTo("ec2:instance");
+        assertThat(ec2Resources.getFirst().getResourceType()).isEqualTo("ec2:instance");
     }
 
     @Test
@@ -138,7 +140,7 @@ class AwsResourceIntegrationTest {
         // Filter with different case
         List<AwsResource> resources = resourceService.getAllResources(testUser.getId(), "S3:BUCKET");
         assertThat(resources).hasSize(1);
-        assertThat(resources.get(0).getResourceType()).isEqualTo("s3:bucket");
+        assertThat(resources.getFirst().getResourceType()).isEqualTo("s3:bucket");
     }
 
     @Test
@@ -313,7 +315,7 @@ class AwsResourceIntegrationTest {
         otherUser.setEmail("other@example.com");
         otherUser.setName("Other User");
         otherUser.setPasswordHash(passwordEncoder.encode("password123"));
-        otherUser.setRole(User.UserRole.USER);
+        otherUser.setRole(UserRole.USER);
         otherUser.setEnabled(true);
         otherUser = userRepository.save(otherUser);
 
@@ -324,8 +326,8 @@ class AwsResourceIntegrationTest {
         otherAccount.setAccountAlias("Other Account");
         otherAccount.setRoleArn("arn:aws:iam::987654321098:role/OtherRole");
         otherAccount.setExternalId("other-external-id");
-        otherAccount.setCredentialType(AwsAccount.CredentialType.ROLE);
-        otherAccount.setStatus(AwsAccount.Status.ACTIVE);
+        otherAccount.setCredentialType(CredentialType.ROLE);
+        otherAccount.setStatus(AwsAccountStatus.ACTIVE);
         otherAccount = accountRepository.save(otherAccount);
 
         // Create resources for both users
@@ -338,8 +340,8 @@ class AwsResourceIntegrationTest {
 
         assertThat(testUserResources).hasSize(1);
         assertThat(otherUserResources).hasSize(1);
-        assertThat(testUserResources.get(0).getName()).isEqualTo("bucket-1");
-        assertThat(otherUserResources.get(0).getName()).isEqualTo("bucket-2");
+        assertThat(testUserResources.getFirst().getName()).isEqualTo("bucket-1");
+        assertThat(otherUserResources.getFirst().getName()).isEqualTo("bucket-2");
     }
 
     private AwsResource createTestResource(String resourceType, String name, String region) {

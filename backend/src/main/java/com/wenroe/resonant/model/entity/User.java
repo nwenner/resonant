@@ -1,6 +1,7 @@
 package com.wenroe.resonant.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.wenroe.resonant.model.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -63,14 +64,6 @@ public class User implements UserDetails {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    /**
-     * User roles in the system.
-     */
-    public enum UserRole {
-        USER,
-        ADMIN
-    }
 
     // UserDetails implementation
     @Override

@@ -1,5 +1,7 @@
 package com.wenroe.resonant.model.entity;
 
+import com.wenroe.resonant.model.enums.AwsAccountStatus;
+import com.wenroe.resonant.model.enums.CredentialType;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -45,7 +47,7 @@ public class AwsAccount {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status = Status.ACTIVE;
+    private AwsAccountStatus status = AwsAccountStatus.ACTIVE;
 
     @Column(name = "last_scan_at")
     private LocalDateTime lastScanAt;
@@ -58,20 +60,8 @@ public class AwsAccount {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public enum CredentialType {
-        ROLE,        // Cross-account IAM role (recommended)
-        ACCESS_KEY   // IAM user access keys (encrypted)
-    }
-
-    public enum Status {
-        ACTIVE,      // Account is working and can be scanned
-        INVALID,     // Credentials are invalid
-        EXPIRED,     // Credentials have expired
-        TESTING      // Initial connection test in progress
-    }
-
     public boolean isActive() {
-        return status == Status.ACTIVE;
+        return status == AwsAccountStatus.ACTIVE;
     }
 
     public boolean usesRole() {

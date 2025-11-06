@@ -2,6 +2,8 @@ package com.wenroe.resonant.integration;
 
 import com.wenroe.resonant.model.entity.TagPolicy;
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.Severity;
+import com.wenroe.resonant.model.enums.UserRole;
 import com.wenroe.resonant.repository.TagPolicyRepository;
 import com.wenroe.resonant.repository.UserRepository;
 import com.wenroe.resonant.service.TagPolicyService;
@@ -51,7 +53,7 @@ class TagPolicyIntegrationTest {
         testUser.setEmail("test@example.com");
         testUser.setName("Test User");
         testUser.setPasswordHash(passwordEncoder.encode("password123"));
-        testUser.setRole(User.UserRole.USER);
+        testUser.setRole(UserRole.USER);
         testUser.setEnabled(true);
         testUser = userRepository.save(testUser);
     }
@@ -69,7 +71,7 @@ class TagPolicyIntegrationTest {
         policy.setRequiredTags(requiredTags);
 
         policy.setResourceTypes(List.of("ec2:instance"));
-        policy.setSeverity(TagPolicy.Severity.HIGH);
+        policy.setSeverity(Severity.HIGH);
         policy.setEnabled(true);
 
         TagPolicy created = tagPolicyService.createPolicy(testUser.getId(), policy);
@@ -170,7 +172,7 @@ class TagPolicyIntegrationTest {
         policy.setDescription("Test policy");
         policy.setRequiredTags(Map.of("Environment", List.of("prod")));
         policy.setResourceTypes(List.of("ec2:instance"));
-        policy.setSeverity(TagPolicy.Severity.MEDIUM);
+        policy.setSeverity(Severity.MEDIUM);
         policy.setEnabled(enabled);
         return tagPolicyService.createPolicy(testUser.getId(), policy);
     }

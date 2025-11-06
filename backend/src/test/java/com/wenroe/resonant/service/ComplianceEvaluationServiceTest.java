@@ -3,6 +3,8 @@ package com.wenroe.resonant.service;
 import com.wenroe.resonant.model.entity.AwsResource;
 import com.wenroe.resonant.model.entity.ComplianceViolation;
 import com.wenroe.resonant.model.entity.TagPolicy;
+import com.wenroe.resonant.model.enums.Severity;
+import com.wenroe.resonant.model.enums.ViolationStatus;
 import com.wenroe.resonant.repository.ComplianceViolationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +58,7 @@ class ComplianceEvaluationServiceTest {
         testPolicy.setRequiredTags(requiredTags);
 
         testPolicy.setResourceTypes(List.of("s3:bucket"));
-        testPolicy.setSeverity(TagPolicy.Severity.HIGH);
+        testPolicy.setSeverity(Severity.HIGH);
         testPolicy.setEnabled(true);
     }
 
@@ -75,8 +77,8 @@ class ComplianceEvaluationServiceTest {
 
         // Then
         assertThat(violations).hasSize(1);
-        ComplianceViolation violation = violations.get(0);
-        assertThat(violation.getStatus()).isEqualTo(ComplianceViolation.ViolationStatus.OPEN);
+        ComplianceViolation violation = violations.getFirst();
+        assertThat(violation.getStatus()).isEqualTo(ViolationStatus.OPEN);
 
         @SuppressWarnings("unchecked")
         Map<String, Object> details = violation.getViolationDetails();
@@ -111,7 +113,7 @@ class ComplianceEvaluationServiceTest {
         assertThat(violations).hasSize(1);
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> details = violations.get(0).getViolationDetails();
+        Map<String, Object> details = violations.getFirst().getViolationDetails();
         assertThat(details).containsKey("invalidTags");
 
         @SuppressWarnings("unchecked")
@@ -154,7 +156,7 @@ class ComplianceEvaluationServiceTest {
 
         ComplianceViolation existingViolation = new ComplianceViolation();
         existingViolation.setId(UUID.randomUUID());
-        existingViolation.setStatus(ComplianceViolation.ViolationStatus.OPEN);
+        existingViolation.setStatus(ViolationStatus.OPEN);
         existingViolation.setAwsResource(testResource);
         existingViolation.setTagPolicy(testPolicy);
 
@@ -170,7 +172,7 @@ class ComplianceEvaluationServiceTest {
         // Then
         assertThat(violations).isEmpty();
         verify(violationRepository).save(argThat(v ->
-                v.getStatus() == ComplianceViolation.ViolationStatus.RESOLVED &&
+                v.getStatus() == ViolationStatus.RESOLVED &&
                         v.getResolvedAt() != null
         ));
     }
@@ -186,7 +188,7 @@ class ComplianceEvaluationServiceTest {
 
         ComplianceViolation ignoredViolation = new ComplianceViolation();
         ignoredViolation.setId(UUID.randomUUID());
-        ignoredViolation.setStatus(ComplianceViolation.ViolationStatus.IGNORED);
+        ignoredViolation.setStatus(ViolationStatus.IGNORED);
 
         when(violationRepository.findByAwsResourceIdAndTagPolicyId(resourceId, policyId))
                 .thenReturn(Optional.of(ignoredViolation));
@@ -206,7 +208,7 @@ class ComplianceEvaluationServiceTest {
         // Given - resource has missing tags again
         ComplianceViolation resolvedViolation = new ComplianceViolation();
         resolvedViolation.setId(UUID.randomUUID());
-        resolvedViolation.setStatus(ComplianceViolation.ViolationStatus.RESOLVED);
+        resolvedViolation.setStatus(ViolationStatus.RESOLVED);
         resolvedViolation.setAwsResource(testResource);
         resolvedViolation.setTagPolicy(testPolicy);
 
@@ -222,7 +224,7 @@ class ComplianceEvaluationServiceTest {
         // Then
         assertThat(violations).hasSize(1);
         verify(violationRepository).save(argThat(v ->
-                v.getStatus() == ComplianceViolation.ViolationStatus.OPEN &&
+                v.getStatus() == ViolationStatus.OPEN &&
                         v.getResolvedAt() == null
         ));
     }
@@ -269,7 +271,7 @@ class ComplianceEvaluationServiceTest {
         UUID violationId = UUID.randomUUID();
         ComplianceViolation violation = new ComplianceViolation();
         violation.setId(violationId);
-        violation.setStatus(ComplianceViolation.ViolationStatus.OPEN);
+        violation.setStatus(ViolationStatus.OPEN);
 
         when(violationRepository.findById(violationId)).thenReturn(Optional.of(violation));
         when(violationRepository.save(any(ComplianceViolation.class)))
@@ -279,7 +281,7 @@ class ComplianceEvaluationServiceTest {
         ComplianceViolation result = complianceEvaluationService.ignoreViolation(violationId);
 
         // Then
-        assertThat(result.getStatus()).isEqualTo(ComplianceViolation.ViolationStatus.IGNORED);
+        assertThat(result.getStatus()).isEqualTo(ViolationStatus.IGNORED);
         verify(violationRepository).save(violation);
     }
 
@@ -290,7 +292,7 @@ class ComplianceEvaluationServiceTest {
         UUID violationId = UUID.randomUUID();
         ComplianceViolation violation = new ComplianceViolation();
         violation.setId(violationId);
-        violation.setStatus(ComplianceViolation.ViolationStatus.RESOLVED);
+        violation.setStatus(ViolationStatus.RESOLVED);
 
         when(violationRepository.findById(violationId)).thenReturn(Optional.of(violation));
         when(violationRepository.save(any(ComplianceViolation.class)))
@@ -300,7 +302,7 @@ class ComplianceEvaluationServiceTest {
         ComplianceViolation result = complianceEvaluationService.reopenViolation(violationId);
 
         // Then
-        assertThat(result.getStatus()).isEqualTo(ComplianceViolation.ViolationStatus.OPEN);
+        assertThat(result.getStatus()).isEqualTo(ViolationStatus.OPEN);
         assertThat(result.getResolvedAt()).isNull();
         verify(violationRepository).save(violation);
     }
@@ -326,8 +328,8 @@ class ComplianceEvaluationServiceTest {
         when(violationRepository.countOpenViolationsByUserId(userId)).thenReturn(5L);
         when(violationRepository.countOpenViolationsBySeverity(userId))
                 .thenReturn(List.of(
-                        new Object[]{TagPolicy.Severity.HIGH, 3L},
-                        new Object[]{TagPolicy.Severity.MEDIUM, 2L}
+                        new Object[]{Severity.HIGH, 3L},
+                        new Object[]{Severity.MEDIUM, 2L}
                 ));
 
         // When

@@ -1,6 +1,7 @@
 package com.wenroe.resonant.repository;
 
 import com.wenroe.resonant.model.entity.AwsAccount;
+import com.wenroe.resonant.model.enums.AwsAccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,5 +13,5 @@ import java.util.UUID;
 public interface AwsAccountRepository extends JpaRepository<AwsAccount, UUID> {
     List<AwsAccount> findByUserId(UUID userId);
     Optional<AwsAccount> findByUserIdAndAccountId(UUID userId, String accountId);
-    List<AwsAccount> findByStatus(AwsAccount.Status status);
+    List<AwsAccount> findByStatus(AwsAccountStatus status);
 }

@@ -1,6 +1,7 @@
 package com.wenroe.resonant.service;
 
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.UserRole;
 import com.wenroe.resonant.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +61,7 @@ public class UserService {
      * @param role the role
      * @return List of users with the specified role
      */
-    public List<User> getUsersByRole(User.UserRole role) {
+    public List<User> getUsersByRole(UserRole role) {
         log.debug("Fetching users by role: {}", role);
         return userRepository.findByRole(role);
     }

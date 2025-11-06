@@ -4,6 +4,7 @@ import com.wenroe.resonant.dto.aws.ResourceStats;
 import com.wenroe.resonant.model.entity.AwsAccount;
 import com.wenroe.resonant.model.entity.AwsResource;
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.UserRole;
 import com.wenroe.resonant.repository.AwsResourceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -47,7 +48,7 @@ class AwsResourceServiceTest {
         testUser.setId(userId);
         testUser.setEmail("test@example.com");
         testUser.setName("Test User");
-        testUser.setRole(User.UserRole.USER);
+        testUser.setRole(UserRole.USER);
         testUser.setEnabled(true);
 
         // Setup test AWS account
@@ -82,9 +83,9 @@ class AwsResourceServiceTest {
 
         // Then
         assertThat(resources).hasSize(1);
-        assertThat(resources.get(0)).isEqualTo(testResource);
-        assertThat(resources.get(0).getResourceArn()).isEqualTo("arn:aws:s3:::my-bucket");
-        assertThat(resources.get(0).getResourceType()).isEqualTo("s3:bucket");
+        assertThat(resources.getFirst()).isEqualTo(testResource);
+        assertThat(resources.getFirst().getResourceArn()).isEqualTo("arn:aws:s3:::my-bucket");
+        assertThat(resources.getFirst().getResourceType()).isEqualTo("s3:bucket");
         verify(resourceRepository).findByUserId(userId);
     }
 
@@ -108,7 +109,7 @@ class AwsResourceServiceTest {
 
         // Then
         assertThat(resources).hasSize(1);
-        assertThat(resources.get(0).getResourceType()).isEqualTo("s3:bucket");
+        assertThat(resources.getFirst().getResourceType()).isEqualTo("s3:bucket");
         verify(resourceRepository).findByUserId(userId);
     }
 
@@ -127,7 +128,7 @@ class AwsResourceServiceTest {
 
         // Then
         assertThat(resources).hasSize(1);
-        assertThat(resources.get(0).getResourceType()).isEqualTo("s3:bucket");
+        assertThat(resources.getFirst().getResourceType()).isEqualTo("s3:bucket");
     }
 
     @Test
@@ -338,7 +339,7 @@ class AwsResourceServiceTest {
 
         // Then
         assertThat(resources).hasSize(1);
-        assertThat(resources.get(0)).isEqualTo(testResource);
+        assertThat(resources.getFirst()).isEqualTo(testResource);
     }
 
     @Test
@@ -356,7 +357,7 @@ class AwsResourceServiceTest {
 
         // Then
         assertThat(resources).hasSize(1);
-        assertThat(resources.get(0).getTags()).isNull();
+        assertThat(resources.getFirst().getTags()).isNull();
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.wenroe.resonant.dto.AuthResponse;
 import com.wenroe.resonant.dto.LoginRequest;
 import com.wenroe.resonant.dto.RegisterRequest;
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.UserRole;
 import com.wenroe.resonant.repository.UserRepository;
 import com.wenroe.resonant.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,8 +20,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -97,7 +96,7 @@ class AuthIntegrationTest {
         existingUser.setEmail("existing@example.com");
         existingUser.setName("Existing User");
         existingUser.setPasswordHash(passwordEncoder.encode("password123"));
-        existingUser.setRole(User.UserRole.USER);
+        existingUser.setRole(UserRole.USER);
         existingUser.setEnabled(true);
         userRepository.save(existingUser);
 
@@ -122,7 +121,7 @@ class AuthIntegrationTest {
         user.setEmail("login@example.com");
         user.setName("Login User");
         user.setPasswordHash(passwordEncoder.encode("password123"));
-        user.setRole(User.UserRole.USER);
+        user.setRole(UserRole.USER);
         user.setEnabled(true);
         userRepository.save(user);
 
@@ -156,7 +155,7 @@ class AuthIntegrationTest {
         user.setEmail("user@example.com");
         user.setName("User");
         user.setPasswordHash(passwordEncoder.encode("correctPassword"));
-        user.setRole(User.UserRole.USER);
+        user.setRole(UserRole.USER);
         user.setEnabled(true);
         userRepository.save(user);
 

@@ -1,6 +1,8 @@
 package com.wenroe.resonant.service;
 
 import com.wenroe.resonant.model.entity.*;
+import com.wenroe.resonant.model.enums.AwsAccountStatus;
+import com.wenroe.resonant.model.enums.ScanStatus;
 import com.wenroe.resonant.repository.*;
 import com.wenroe.resonant.service.aws.scanners.S3ResourceScanner;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +65,7 @@ class ScanOrchestrationServiceTest {
         testAccount.setId(accountId);
         testAccount.setUser(testUser);
         testAccount.setAccountId("123456789012");
-        testAccount.setStatus(AwsAccount.Status.ACTIVE);
+        testAccount.setStatus(AwsAccountStatus.ACTIVE);
     }
 
     @Test
@@ -120,7 +122,7 @@ class ScanOrchestrationServiceTest {
     @DisplayName("Should throw exception when account not active")
     void initiateScan_AccountNotActive() {
         // Given
-        testAccount.setStatus(AwsAccount.Status.INVALID);
+        testAccount.setStatus(AwsAccountStatus.INVALID);
         when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
 
         // When & Then
@@ -134,7 +136,7 @@ class ScanOrchestrationServiceTest {
     void initiateScan_AlreadyRunning() {
         // Given
         ScanJob runningScan = new ScanJob();
-        runningScan.setStatus(ScanJob.ScanStatus.RUNNING);
+        runningScan.setStatus(ScanStatus.RUNNING);
 
         when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
         when(scanJobRepository.findRunningScanForAccount(accountId))
@@ -154,7 +156,7 @@ class ScanOrchestrationServiceTest {
         scanJob.setId(UUID.randomUUID());
         scanJob.setAwsAccount(testAccount);
         scanJob.setUser(testUser);
-        scanJob.setStatus(ScanJob.ScanStatus.PENDING);
+        scanJob.setStatus(ScanStatus.PENDING);
 
         TagPolicy policy = new TagPolicy();
         policy.setId(UUID.randomUUID());
@@ -183,7 +185,7 @@ class ScanOrchestrationServiceTest {
         verify(awsResourceRepository).save(resource);
         verify(complianceEvaluationService).evaluateResource(resource, List.of(policy));
         verify(scanJobRepository, atLeastOnce()).save(argThat(job ->
-                job.getStatus() == ScanJob.ScanStatus.SUCCESS
+                job.getStatus() == ScanStatus.SUCCESS
         ));
     }
 
@@ -242,7 +244,7 @@ class ScanOrchestrationServiceTest {
                 .isInstanceOf(RuntimeException.class);
 
         verify(scanJobRepository, atLeastOnce()).save(argThat(job ->
-                job.getStatus() == ScanJob.ScanStatus.FAILED &&
+                job.getStatus() == ScanStatus.FAILED &&
                         job.getErrorMessage() != null
         ));
     }

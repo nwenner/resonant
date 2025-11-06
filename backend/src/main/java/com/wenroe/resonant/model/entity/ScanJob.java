@@ -1,5 +1,6 @@
 package com.wenroe.resonant.model.entity;
 
+import com.wenroe.resonant.model.enums.ScanStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -54,13 +55,6 @@ public class ScanJob {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    public enum ScanStatus {
-        PENDING,   // Created but not started
-        RUNNING,   // Currently scanning
-        SUCCESS,   // Completed successfully
-        FAILED     // Failed with error
-    }
 
     public void start() {
         this.status = ScanStatus.RUNNING;

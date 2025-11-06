@@ -1,17 +1,14 @@
 package com.wenroe.resonant.security;
 
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.UserRole;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.*;
@@ -39,7 +36,7 @@ class JwtUtilTest {
         testUser = new User();
         testUser.setEmail("test@example.com");
         testUser.setName("Test User");
-        testUser.setRole(User.UserRole.USER);
+        testUser.setRole(UserRole.USER);
         testUser.setEnabled(true);
     }
 

@@ -1,5 +1,6 @@
 package com.wenroe.resonant.model.entity;
 
+import com.wenroe.resonant.model.enums.ViolationStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -62,12 +63,6 @@ public class ComplianceViolation {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    public enum ViolationStatus {
-        OPEN,      // Active violation
-        RESOLVED,  // Resource is now compliant
-        IGNORED    // User manually ignored this violation
-    }
 
     public boolean isOpen() {
         return status == ViolationStatus.OPEN;

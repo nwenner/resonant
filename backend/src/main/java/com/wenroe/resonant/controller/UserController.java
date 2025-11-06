@@ -1,6 +1,7 @@
 package com.wenroe.resonant.controller;
 
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.UserRole;
 import com.wenroe.resonant.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +71,7 @@ public class UserController {
      * @return List of users with the specified role
      */
     @GetMapping("/role/{role}")
-    public ResponseEntity<List<User>> getUsersByRole(@PathVariable User.UserRole role) {
+    public ResponseEntity<List<User>> getUsersByRole(@PathVariable UserRole role) {
         log.info("GET /api/users/role/{} - Fetching users by role", role);
         List<User> users = userService.getUsersByRole(role);
         return ResponseEntity.ok(users);

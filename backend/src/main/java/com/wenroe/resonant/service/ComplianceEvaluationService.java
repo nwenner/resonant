@@ -3,6 +3,8 @@ package com.wenroe.resonant.service;
 import com.wenroe.resonant.model.entity.AwsResource;
 import com.wenroe.resonant.model.entity.ComplianceViolation;
 import com.wenroe.resonant.model.entity.TagPolicy;
+import com.wenroe.resonant.model.enums.Severity;
+import com.wenroe.resonant.model.enums.ViolationStatus;
 import com.wenroe.resonant.repository.ComplianceViolationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -105,7 +107,7 @@ public class ComplianceEvaluationService {
             violation.setViolationDetails(violationDetails);
 
             // If it was resolved, reopen it
-            if (violation.getStatus() == ComplianceViolation.ViolationStatus.RESOLVED) {
+            if (violation.getStatus() == ViolationStatus.RESOLVED) {
                 violation.reopen();
                 log.info("Reopened violation for resource {} - policy {}",
                         resource.getResourceArn(), policy.getName());
@@ -118,7 +120,7 @@ public class ComplianceEvaluationService {
             violation.setAwsResource(resource);
             violation.setTagPolicy(policy);
             violation.setViolationDetails(violationDetails);
-            violation.setStatus(ComplianceViolation.ViolationStatus.OPEN);
+            violation.setStatus(ViolationStatus.OPEN);
 
             log.info("Created new violation for resource {} - policy {}",
                     resource.getResourceArn(), policy.getName());
@@ -138,8 +140,8 @@ public class ComplianceEvaluationService {
             ComplianceViolation violation = existing.get();
 
             // Only auto-resolve if it's currently OPEN (don't touch IGNORED violations)
-            if (violation.getStatus() == ComplianceViolation.ViolationStatus.OPEN) {
-                violation.setStatus(ComplianceViolation.ViolationStatus.RESOLVED);
+            if (violation.getStatus() == ViolationStatus.OPEN) {
+                violation.setStatus(ViolationStatus.RESOLVED);
                 violation.setResolvedAt(LocalDateTime.now());
                 violationRepository.save(violation);
 
@@ -192,7 +194,7 @@ public class ComplianceEvaluationService {
         List<Object[]> bySeverity = violationRepository.countOpenViolationsBySeverity(userId);
         Map<String, Long> severityCounts = new HashMap<>();
         for (Object[] row : bySeverity) {
-            TagPolicy.Severity severity = (TagPolicy.Severity) row[0];
+            Severity severity = (Severity) row[0];
             Long count = (Long) row[1];
             severityCounts.put(severity.name(), count);
         }

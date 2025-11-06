@@ -1,6 +1,6 @@
 package com.wenroe.resonant.dto.policy;
 
-import com.wenroe.resonant.model.entity.TagPolicy;
+import com.wenroe.resonant.model.enums.Severity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -35,7 +35,7 @@ public class CreateTagPolicyRequest {
     private List<String> resourceTypes;
 
     @NotNull(message = "Severity must be specified")
-    private TagPolicy.Severity severity;
+    private Severity severity;
 
     private Boolean enabled = true;
 }

@@ -1,8 +1,8 @@
 package com.wenroe.resonant.service;
 
 import com.wenroe.resonant.model.entity.*;
+import com.wenroe.resonant.model.enums.ScanStatus;
 import com.wenroe.resonant.repository.*;
-import com.wenroe.resonant.service.aws.scanners.S3ResourceScanner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,7 +62,7 @@ public class ScanOrchestrationService {
         ScanJob scanJob = new ScanJob();
         scanJob.setAwsAccount(account);
         scanJob.setUser(user);
-        scanJob.setStatus(ScanJob.ScanStatus.PENDING);
+        scanJob.setStatus(ScanStatus.PENDING);
         ScanJob savedJob = scanJobRepository.save(scanJob);
 
         log.info("Created scan job {} for account {}", savedJob.getId(), account.getAccountId());

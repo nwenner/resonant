@@ -2,6 +2,7 @@ package com.wenroe.resonant.service;
 
 import com.wenroe.resonant.model.entity.TagPolicy;
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.Severity;
 import com.wenroe.resonant.repository.TagPolicyRepository;
 import com.wenroe.resonant.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +62,7 @@ class TagPolicyServiceTest {
         testPolicy.setRequiredTags(requiredTags);
 
         testPolicy.setResourceTypes(List.of("ec2:instance", "s3:bucket"));
-        testPolicy.setSeverity(TagPolicy.Severity.HIGH);
+        testPolicy.setSeverity(Severity.HIGH);
         testPolicy.setEnabled(true);
     }
 
@@ -130,7 +131,7 @@ class TagPolicyServiceTest {
         TagPolicy updates = new TagPolicy();
         updates.setName("Updated Name");
         updates.setDescription("Updated Description");
-        updates.setSeverity(TagPolicy.Severity.CRITICAL);
+        updates.setSeverity(Severity.CRITICAL);
 
         when(tagPolicyRepository.findById(policyId)).thenReturn(Optional.of(testPolicy));
         when(tagPolicyRepository.save(any(TagPolicy.class))).thenReturn(testPolicy);
@@ -174,7 +175,7 @@ class TagPolicyServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isEqualTo(testPolicy);
+        assertThat(result.getFirst()).isEqualTo(testPolicy);
         verify(tagPolicyRepository).findByUserId(userId);
     }
 
@@ -190,7 +191,7 @@ class TagPolicyServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getEnabled()).isTrue();
+        assertThat(result.getFirst().getEnabled()).isTrue();
         verify(tagPolicyRepository).findEnabledPoliciesByUserId(userId);
     }
 

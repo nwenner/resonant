@@ -2,6 +2,9 @@ package com.wenroe.resonant.service;
 
 import com.wenroe.resonant.model.entity.AwsAccount;
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.AwsAccountStatus;
+import com.wenroe.resonant.model.enums.CredentialType;
+import com.wenroe.resonant.model.enums.UserRole;
 import com.wenroe.resonant.repository.AwsAccountRepository;
 import com.wenroe.resonant.repository.UserRepository;
 import com.wenroe.resonant.service.aws.AwsConnectionTester;
@@ -57,7 +60,7 @@ class AwsAccountServiceTest {
         testUser.setId(userId);
         testUser.setEmail("test@example.com");
         testUser.setName("Test User");
-        testUser.setRole(User.UserRole.USER);
+        testUser.setRole(UserRole.USER);
         testUser.setEnabled(true);
 
         // Setup test AWS account
@@ -68,8 +71,8 @@ class AwsAccountServiceTest {
         testAccount.setAccountAlias("Test Account");
         testAccount.setRoleArn("arn:aws:iam::123456789012:role/TestRole");
         testAccount.setExternalId("external-id-12345");
-        testAccount.setCredentialType(AwsAccount.CredentialType.ROLE);
-        testAccount.setStatus(AwsAccount.Status.ACTIVE);
+        testAccount.setCredentialType(CredentialType.ROLE);
+        testAccount.setStatus(AwsAccountStatus.ACTIVE);
     }
 
     @Test
@@ -82,8 +85,8 @@ class AwsAccountServiceTest {
         savedAccount.setAccountAlias("Test Account");
         savedAccount.setRoleArn("arn:aws:iam::123456789012:role/TestRole");
         savedAccount.setExternalId("external-id-12345");
-        savedAccount.setCredentialType(AwsAccount.CredentialType.ROLE);
-        savedAccount.setStatus(AwsAccount.Status.TESTING);
+        savedAccount.setCredentialType(CredentialType.ROLE);
+        savedAccount.setStatus(AwsAccountStatus.TESTING);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
         when(awsAccountRepository.findByUserIdAndAccountId(userId, "123456789012"))
@@ -100,7 +103,7 @@ class AwsAccountServiceTest {
 
         assertThat(result).isNotNull();
         assertThat(result.getAccountId()).isEqualTo("123456789012");
-        assertThat(result.getCredentialType()).isEqualTo(AwsAccount.CredentialType.ROLE);
+        assertThat(result.getCredentialType()).isEqualTo(CredentialType.ROLE);
 
         verify(userRepository).findById(userId);
         verify(awsAccountRepository).findByUserIdAndAccountId(userId, "123456789012");
@@ -122,7 +125,7 @@ class AwsAccountServiceTest {
         verify(awsAccountRepository).save(accountCaptor.capture());
 
         AwsAccount savedAccount = accountCaptor.getValue();
-        assertThat(savedAccount.getStatus()).isEqualTo(AwsAccount.Status.TESTING);
+        assertThat(savedAccount.getStatus()).isEqualTo(AwsAccountStatus.TESTING);
     }
 
     @Test
@@ -188,7 +191,7 @@ class AwsAccountServiceTest {
         AwsAccount savedAccount = accountCaptor.getValue();
         assertThat(savedAccount.getAccessKeyEncrypted()).isEqualTo(encryptedAccess);
         assertThat(savedAccount.getSecretKeyEncrypted()).isEqualTo(encryptedSecret);
-        assertThat(savedAccount.getCredentialType()).isEqualTo(AwsAccount.CredentialType.ACCESS_KEY);
+        assertThat(savedAccount.getCredentialType()).isEqualTo(CredentialType.ACCESS_KEY);
     }
 
     @Test
@@ -246,7 +249,7 @@ class AwsAccountServiceTest {
 
         ArgumentCaptor<AwsAccount> accountCaptor = ArgumentCaptor.forClass(AwsAccount.class);
         verify(awsAccountRepository).save(accountCaptor.capture());
-        assertThat(accountCaptor.getValue().getStatus()).isEqualTo(AwsAccount.Status.ACTIVE);
+        assertThat(accountCaptor.getValue().getStatus()).isEqualTo(AwsAccountStatus.ACTIVE);
     }
 
     @Test
@@ -268,7 +271,7 @@ class AwsAccountServiceTest {
 
         ArgumentCaptor<AwsAccount> accountCaptor = ArgumentCaptor.forClass(AwsAccount.class);
         verify(awsAccountRepository).save(accountCaptor.capture());
-        assertThat(accountCaptor.getValue().getStatus()).isEqualTo(AwsAccount.Status.INVALID);
+        assertThat(accountCaptor.getValue().getStatus()).isEqualTo(AwsAccountStatus.INVALID);
     }
 
     @Test

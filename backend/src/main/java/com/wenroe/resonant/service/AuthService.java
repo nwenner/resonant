@@ -4,6 +4,7 @@ import com.wenroe.resonant.dto.AuthResponse;
 import com.wenroe.resonant.dto.LoginRequest;
 import com.wenroe.resonant.dto.RegisterRequest;
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.UserRole;
 import com.wenroe.resonant.repository.UserRepository;
 import com.wenroe.resonant.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class AuthService {
                 .name(request.getName())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(User.UserRole.USER)
+                .role(UserRole.USER)
                 .enabled(true)
                 .build();
 

@@ -4,6 +4,7 @@ import com.wenroe.resonant.dto.AuthResponse;
 import com.wenroe.resonant.dto.LoginRequest;
 import com.wenroe.resonant.dto.RegisterRequest;
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.model.enums.UserRole;
 import com.wenroe.resonant.repository.UserRepository;
 import com.wenroe.resonant.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +21,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
@@ -75,7 +75,7 @@ class AuthServiceTest {
         testUser.setName("Test User");
         testUser.setEmail("test@example.com");
         testUser.setPasswordHash("$2a$10$hashedPassword");
-        testUser.setRole(User.UserRole.USER);
+        testUser.setRole(UserRole.USER);
         testUser.setEnabled(true);
     }
 
@@ -146,7 +146,7 @@ class AuthServiceTest {
         verify(userRepository).save(userCaptor.capture());
 
         User savedUser = userCaptor.getValue();
-        assertThat(savedUser.getRole()).isEqualTo(User.UserRole.USER);
+        assertThat(savedUser.getRole()).isEqualTo(UserRole.USER);
         assertThat(savedUser.getEnabled()).isTrue();
     }
 
