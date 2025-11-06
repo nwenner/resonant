@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { violationService } from '@/services/violationService';
 import { ComplianceViolation } from '@/types/scan';
@@ -165,8 +165,8 @@ export const ViolationsTable = ({ accountId }: ViolationsTableProps) => {
                   const statusConfig = getStatusConfig(violation.status);
 
                   return (
-                    <>
-                      <TableRow key={violation.id} className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <React.Fragment key={violation.id}>
+                      <TableRow className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
                         <TableCell onClick={() => toggleRowExpansion(violation.id)}>
                           {isExpanded ? (
                             <ChevronUp className="h-4 w-4 text-slate-400" />
@@ -252,7 +252,7 @@ export const ViolationsTable = ({ accountId }: ViolationsTableProps) => {
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </React.Fragment>
                   );
                 })}
               </TableBody>

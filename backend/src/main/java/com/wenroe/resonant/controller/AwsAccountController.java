@@ -115,7 +115,7 @@ public class AwsAccountController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        AwsAccount updated = awsAccountService.updateAccountAlias(id, request.getAlias());
+        AwsAccount updated = awsAccountService.updateAccountAlias(id, request.getAccountAlias());
         return ResponseEntity.ok(AwsAccountResponse.fromEntity(updated));
     }
 

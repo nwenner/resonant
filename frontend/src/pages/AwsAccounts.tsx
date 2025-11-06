@@ -161,7 +161,6 @@ export const AwsAccounts = () => {
 
   const updateAliasMutation = useMutation({
     mutationFn: async ({ id, alias }: { id: string; alias: string }) => {
-      const { data } = await axios.patch(`/api/aws-accounts/${id}/alias`, { accountAlias: alias });
       return await awsAccountsService.updateAlias(id, { accountAlias: alias });
     },
     onSuccess: () => {
@@ -517,7 +516,7 @@ export const AwsAccounts = () => {
                     {editingAccountId === account.id ? (
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <Input
-                          value={newAlias}
+                          value={newAlias || ''}
                           onChange={(e) => setNewAlias(e.target.value)}
                           className="h-8"
                           placeholder="Account alias"
@@ -539,7 +538,7 @@ export const AwsAccounts = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             setEditingAccountId(account.id);
-                            setNewAlias(account.accountAlias);
+                            setNewAlias(account.accountAlias || '');
                           }}
                         >
                           <Edit2 className="w-3 h-3" />

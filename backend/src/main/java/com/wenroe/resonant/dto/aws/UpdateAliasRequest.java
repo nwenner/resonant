@@ -7,5 +7,5 @@ import lombok.Data;
  */
 @Data
 public class UpdateAliasRequest {
-    private String alias;
+    private String accountAlias;
 }

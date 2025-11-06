@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { resourceService } from '@/services/resourceService';
 import { AwsResource } from '@/types/scan';
@@ -104,9 +104,8 @@ export const ResourcesTable = ({ accountId }: ResourcesTableProps) => {
                   const isExpanded = expandedRows.has(resource.id);
 
                   return (
-                    <>
+                    <React.Fragment key={resource.id}>
                       <TableRow
-                        key={resource.id}
                         className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
                         onClick={() => toggleRowExpansion(resource.id)}
                       >
@@ -192,7 +191,7 @@ export const ResourcesTable = ({ accountId }: ResourcesTableProps) => {
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </React.Fragment>
                   );
                 })}
               </TableBody>
