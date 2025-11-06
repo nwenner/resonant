@@ -1,288 +1,383 @@
-# Task Manager API
+# Resonant
 
-A comprehensive task management system built with Spring Boot, PostgreSQL, and JWT authentication.
+> Enterprise AWS tag compliance platform with real-time monitoring and automated policy enforcement
 
-## Features
+[![License](https://img.shields.io/badge/License-Elastic_2.0-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-green.svg)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 
-- **User Authentication**: JWT-based authentication and authorization
-- **Task Management**: Create, update, delete, and track tasks
-- **Project Organization**: Organize tasks into projects
-- **Collaboration**: Comments, attachments, and task assignments
-- **Audit Trail**: Complete audit logging of all changes
-- **RESTful API**: Well-documented REST endpoints
-- **Security**: Role-based access control (RBAC)
-- **API Documentation**: Swagger/OpenAPI integration
+---
+
+## Overview
+
+Resonant helps organizations maintain AWS tagging compliance at scale. Define policies, connect AWS accounts, scan resources, and track violations—all from a centralized dashboard.
+
+**Key Features:**
+- Flexible tag policy engine with severity levels
+-  Multi-account AWS scanning via IAM role assumption
+- Real-time compliance monitoring across S3, EC2, RDS, Lambda
+- Violation tracking with ignore/reopen workflows
+- Secure credential management with JWT authentication
+- Compliance dashboards and reporting
+
+---
+
+## Screenshots
+
+### Dashboard
+![Dashboard](/docs/screenshots/dashboard.png)
+*Overview of compliance metrics and recent scans*
+
+### Tag Policies
+![Tag Policies](/docs/screenshots/policies.png)
+*Define and manage tagging requirements*
+
+### Violations
+![Violations](/docs/screenshots/violations.png)
+*Track non-compliant resources with detailed remediation info*
+
+---
 
 ## Tech Stack
 
-- **Backend**: Spring Boot 3.2.0
-- **Database**: PostgreSQL 16
-- **Security**: Spring Security + JWT
-- **ORM**: Spring Data JPA + Hibernate
-- **Build Tool**: Gradle 8.5
-- **Java Version**: 17
-- **Documentation**: SpringDoc OpenAPI
-- **Testing**: JUnit 5, Testcontainers
+### Backend
+- **Framework:** Spring Boot 3.2 (Java 21)
+- **Database:** PostgreSQL with Flyway migrations
+- **Security:** Spring Security + JWT
+- **AWS SDK:** v2 (STS, S3, EC2, RDS)
+- **API Docs:** OpenAPI/Swagger
+
+### Frontend
+- **Framework:** React 18 + TypeScript
+- **Build:** Vite
+- **State:** Zustand + TanStack Query
+- **UI:** Tailwind CSS + shadcn/ui components
+- **Routing:** React Router v6
+
+---
 
 ## Prerequisites
 
-- Java 17 or higher
-- Docker and Docker Compose
-- Gradle 8.5+ (or use the wrapper)
+- **Java 21+** - [Download](https://adoptium.net/)
+- **Node.js 18+** - [Download](https://nodejs.org/)
+- **Docker** - [Download](https://www.docker.com/products/docker-desktop)
+- **PostgreSQL** - (via Docker Compose)
+- **AWS Account** - With IAM permissions for resource tagging
+
+---
 
 ## Quick Start
 
-### 1. Clone the Repository
+### 1. Clone & Setup
 
 ```bash
-git clone https://github.com/nwenner/resonant
-cd backend/docker
+git clone https://github.com/yourorg/resonant.git
+cd resonant
 ```
 
-### 2. Start the Database
+### 2. Start Database
 
 ```bash
-docker-compose up -d postgres
-```
-
-This will start:
-- PostgreSQL on port 5432
-- PgAdmin on port 5050 (optional, for database management)
-
-### 3. Configure Environment Variables
-
-Create a `.env` file or set environment variables:
-
-```bash
-export DB_USERNAME=postgres
-export DB_PASSWORD=postgres
-export JWT_SECRET=your-very-secure-secret-key-at-least-256-bits-long
-```
-
-### 4. Build the Project
-
-```bash
-./gradlew clean build
-```
-
-### 5. Run the Application
-
-```bash
-./gradlew bootRun
-```
-
-The API will be available at: `http://localhost:8080/swagger-ui/index.html`
-
-### 6. Access API Documentation
-
-Open your browser and navigate to:
-```
-http://localhost:8080/api/v1/swagger-ui.html
-```
-
-## Development
-
-### Running with Different Profiles
-
-**Development Mode:**
-```bash
-./gradlew bootRun --args='--spring.profiles.active=dev'
-```
-
-**Test Mode:**
-```bash
-./gradlew test
-```
-
-### Database Management
-
-**Access PgAdmin:**
-- URL: http://localhost:5050
-- Email: admin@taskmanager.com
-- Password: admin
-
-**Connect to Database:**
-- Host: postgres (or localhost if connecting from host)
-- Port: 5432
-- Database: taskmanager
-- Username: postgres
-- Password: postgres
-
-### Project Structure
-
-```
-src/main/java/com/taskmanager/
-├── config/          # Configuration classes
-├── controller/      # REST controllers
-├── dto/            # Data Transfer Objects
-├── entity/         # JPA entities
-├── exception/      # Exception handling
-├── mapper/         # DTO mappers
-├── repository/     # Data repositories
-├── security/       # Security configuration
-├── service/        # Business logic
-└── util/           # Utility classes
-```
-
-## API Endpoints
-
-### Authentication
-- `POST /auth/register` - Register new user
-- `POST /auth/login` - Login and get JWT token
-- `POST /auth/refresh` - Refresh access token
-
-### Users
-- `GET /users/me` - Get current user profile
-- `PUT /users/me` - Update current user profile
-- `GET /users` - Get all users (Admin only)
-
-### Tasks
-- `GET /tasks` - Get all tasks (with filters)
-- `GET /tasks/{id}` - Get task by ID
-- `POST /tasks` - Create new task
-- `PUT /tasks/{id}` - Update task
-- `DELETE /tasks/{id}` - Delete task
-- `PATCH /tasks/{id}/status` - Update task status
-- `PATCH /tasks/{id}/assign` - Assign task to user
-
-### Projects
-- `GET /projects` - Get all projects
-- `GET /projects/{id}` - Get project by ID
-- `POST /projects` - Create new project
-- `PUT /projects/{id}` - Update project
-- `DELETE /projects/{id}` - Delete project
-- `GET /projects/{id}/tasks` - Get project tasks
-
-### Comments
-- `GET /tasks/{taskId}/comments` - Get task comments
-- `POST /tasks/{taskId}/comments` - Add comment to task
-- `PUT /comments/{id}` - Update comment
-- `DELETE /comments/{id}` - Delete comment
-
-### Attachments
-- `GET /tasks/{taskId}/attachments` - Get task attachments
-- `POST /tasks/{taskId}/attachments` - Upload attachment
-- `DELETE /attachments/{id}` - Delete attachment
-
-## Testing
-
-### Run All Tests
-```bash
-./gradlew test
-```
-
-### Run Specific Test Class
-```bash
-./gradlew test --tests TaskServiceTest
-```
-
-### Run Integration Tests
-```bash
-./gradlew test --tests *IntegrationTest
-```
-
-## Docker Deployment
-
-### Build Docker Image
-```bash
-docker build -t resonant:latest .
-```
-
-### Run with Docker Compose
-```bash
+cd backend
 docker-compose up -d
 ```
 
-This will start:
-- Application container
-- PostgreSQL database
-- PgAdmin (optional)
+### 3. Configure Backend
 
-### Stop Services
+Create `backend/.env`:
 ```bash
-docker-compose down
+DATABASE_URL=jdbc:postgresql://localhost:5432/resonant
+DATABASE_USERNAME=resonant_user
+DATABASE_PASSWORD=resonant_pass
+JWT_SECRET=your-base64-encoded-secret
+RESONANT_ENCRYPTION_KEY=your-base64-encoded-key  # Optional for access keys
 ```
 
-### Clean Up Volumes
+### 4. Run Backend
+
 ```bash
-docker-compose down -v
+cd backend
+./gradlew bootRun
 ```
 
-## Security
+Backend runs on `http://localhost:8080`
 
-### JWT Configuration
+### 5. Configure Frontend
 
-The application uses JWT tokens for authentication. Configure the secret key:
-
-```yaml
-jwt:
-  secret: ${JWT_SECRET:your-secret-key}
-  expiration: 86400000  # 24 hours
-  refresh-expiration: 604800000  # 7 days
-```
-
-**Important:** Always use a strong secret key (minimum 256 bits) in production.
-
-### Role-Based Access Control
-
-- **ADMIN**: Full system access
-- **MANAGER**: Can manage projects and assign tasks
-- **USER**: Can create and manage own tasks
-
-## Monitoring
-
-### Actuator Endpoints
-
-- Health: `http://localhost:8080/api/v1/actuator/health`
-- Info: `http://localhost:8080/api/v1/actuator/info`
-- Metrics: `http://localhost:8080/api/v1/actuator/metrics`
-
-## Troubleshooting
-
-### Database Connection Issues
-
-1. Check if PostgreSQL is running:
+Create `frontend/.env`:
 ```bash
-docker ps | grep postgres
+VITE_API_URL=http://localhost:8080
 ```
 
-2. Check logs:
+### 6. Run Frontend
+
 ```bash
-docker logs taskmanager-postgres
+cd frontend
+npm install
+npm run dev
 ```
 
-3. Verify connection settings in `application.yml`
+Frontend runs on `http://localhost:3000`
 
-### JWT Token Issues
+---
 
-1. Ensure JWT secret is properly configured
-2. Check token expiration time
-3. Verify token format in Authorization header: `Bearer <token>`
+## Usage
 
-### Build Issues
+### 1. Create Account
+Navigate to `http://localhost:3000/register` and create a user account.
 
-1. Clean and rebuild:
+### 2. Connect AWS Account
+- Go to **AWS Accounts** page
+- Provide AWS Account ID and IAM Role ARN
+- Use cross-account role assumption (recommended) or access keys
+- Test connection to verify
+
+### 3. Define Tag Policies
+- Go to **Tag Policies** page
+- Create policies with required tags and allowed values
+- Set severity levels (LOW, MEDIUM, HIGH, CRITICAL)
+- Choose target resource types (s3:bucket, ec2:instance, etc.)
+
+### 4. Scan Resources
+- Select an AWS account
+- Click **Scan Account**
+- Monitor real-time progress
+- View discovered resources and violations
+
+### 5. Manage Violations
+- Review non-compliant resources
+- See missing/invalid tags
+- Ignore false positives
+- Track remediation progress
+
+---
+
+## AWS IAM Setup
+
+## AWS IAM Setup
+
+### Automated Setup (Recommended)
+
+Resonant includes a **CloudFormation wizard** that automatically creates the required IAM role with proper permissions and trust policy.
+
+1. Navigate to **AWS Accounts** → **Connect Account**
+2. Click **Launch CloudFormation Template**
+3. Review and create stack in AWS Console
+4. Copy the Role ARN back to Resonant
+
+The CloudFormation template creates:
+- Cross-account IAM role with external ID
+- Read-only permissions for tagging APIs
+- Proper trust relationship
+
+### Manual Setup
+
+If you prefer manual configuration, create an IAM role with this trust policy:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::YOUR_RESONANT_ACCOUNT:root"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": {
+          "sts:ExternalId": "your-unique-external-id"
+        }
+      }
+    }
+  ]
+}
+```
+
+**Required Permissions:**
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListAllMyBuckets",
+        "s3:GetBucketTagging",
+        "s3:GetBucketLocation",
+        "ec2:DescribeInstances",
+        "ec2:DescribeTags",
+        "rds:DescribeDBInstances",
+        "rds:ListTagsForResource",
+        "lambda:ListFunctions",
+        "lambda:ListTags"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+---
+
+## API Documentation
+
+Swagger UI available at: `http://localhost:8080/swagger-ui.html`
+
+**Key Endpoints:**
+- `POST /api/auth/register` - Create account
+- `POST /api/auth/login` - Authenticate
+- `GET /api/tag-policies` - List policies
+- `POST /api/scans/accounts/{id}` - Trigger scan
+- `GET /api/violations?status=OPEN` - View violations
+- `GET /api/resources` - List discovered resources
+
+---
+
+## Development
+
+### Run Tests
+
 ```bash
-./gradlew clean build --refresh-dependencies
+# Backend
+cd backend
+./gradlew test
+
+# Frontend
+cd frontend
+npm test
 ```
 
-2. Clear Gradle cache:
+### Build for Production
+
 ```bash
-rm -rf ~/.gradle/caches/
+# Backend
+./gradlew clean build
+
+# Frontend
+npm run build
 ```
+
+### Database Migrations
+
+Flyway migrations in `backend/src/main/resources/db/migration/`
+
+```bash
+# Migrations run automatically on startup
+# To manually migrate:
+./gradlew flywayMigrate
+```
+
+---
+
+## Project Structure
+
+```
+resonant/
+├── backend/
+│   ├── src/main/java/com/wenroe/resonant/
+│   │   ├── controller/       # REST endpoints
+│   │   ├── service/          # Business logic
+│   │   ├── repository/       # Data access
+│   │   ├── model/entity/     # JPA entities
+│   │   ├── dto/              # Request/Response objects
+│   │   ├── security/         # JWT & auth
+│   │   └── config/           # Spring configuration
+│   ├── src/main/resources/
+│   │   └── db/migration/     # Flyway SQL scripts
+│   └── build.gradle
+│
+└── frontend/
+    ├── src/
+    │   ├── components/       # React components
+    │   ├── pages/            # Route pages
+    │   ├── store/            # Zustand stores
+    │   ├── lib/              # API client & utils
+    │   └── App.tsx
+    └── package.json
+```
+
+---
+
+## Environment Variables
+
+### Backend (.env)
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Yes |
+| `DATABASE_USERNAME` | Database user | Yes |
+| `DATABASE_PASSWORD` | Database password | Yes |
+| `JWT_SECRET` | Base64-encoded secret for JWT | Yes |
+| `RESONANT_ENCRYPTION_KEY` | Key for encrypting AWS credentials | No* |
+
+*Only required if using access keys instead of IAM roles
+
+### Frontend (.env)
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `VITE_API_URL` | Backend API base URL | Yes |
+
+---
+
+## Roadmap
+
+- [x] User authentication & authorization
+- [x] Tag policy management
+- [x] AWS account integration
+- [x] S3 resource scanning
+- [x] Compliance violation tracking
+- [ ] Dev Resource 
+- [ ] EC2, RDS, Lambda scanners
+- [ ] EC2 instance scheduler - Automated start/stop based on cron schedules to reduce costs
+- [ ] Scheduled/background scans
+- [ ] Automated remediation workflows
+- [ ] Email notifications
+- [ ] Cost allocation reports
+- [ ] Multi-region support
+- [ ] Audit logs
+
+---
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+This is a portfolio/commercial project. If you'd like to contribute or discuss licensing, please reach out.
+
+---
 
 ## License
 
-This project is licensed under the MIT License.
+Copyright © 2024 Wenroe Technologies LLC
 
-## Contact
+Licensed under the Elastic License 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-For questions or support, please contact the development team.
+    https://www.elastic.co/licensing/elastic-license
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+### What This Means
+
+- ✅ **You can**: View the code, learn from it, fork for personal projects
+- ✅ **You can**: Use internally at your company
+- ❌ **You cannot**: Host this as a competing SaaS service
+- ❌ **You cannot**: Remove licensing notices or rebrand as your own product
+
+For commercial licensing inquiries, contact: [contact@wenroe.com]
+
+---
+
+## Support
+
+- **Issues:** [GitHub Issues](https://github.com/nwenner/resonant/issues)
+- **Documentation:** [docs.resonantcloud.dev](https://docs.resonantcloud.dev)
+- **Website:** [resonantcloud.dev](https://resonantcloud.dev)
+
+---
+
+**Built & Maintained by Wenroe Technologies LLC**
