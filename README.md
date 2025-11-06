@@ -16,7 +16,7 @@ Resonant helps organizations maintain AWS tagging compliance at scale. Define po
 
 **Key Features:**
 - Flexible tag policy engine with severity levels
--  Multi-account AWS scanning via IAM role assumption
+- Multi-account AWS scanning via IAM role assumption
 - Real-time compliance monitoring across S3, EC2, RDS, Lambda
 - Violation tracking with ignore/reopen workflows
 - Secure credential management with JWT authentication
@@ -73,7 +73,7 @@ Resonant helps organizations maintain AWS tagging compliance at scale. Define po
 ### 1. Clone & Setup
 
 ```bash
-git clone https://github.com/yourorg/resonant.git
+git clone https://github.com/nwenner/resonant.git
 cd resonant
 ```
 
@@ -156,8 +156,6 @@ Navigate to `http://localhost:3000/register` and create a user account.
 
 ## AWS IAM Setup
 
-## AWS IAM Setup
-
 ### Automated Setup (Recommended)
 
 Resonant includes a **CloudFormation wizard** that automatically creates the required IAM role with proper permissions and trust policy.
@@ -224,14 +222,6 @@ If you prefer manual configuration, create an IAM role with this trust policy:
 ## API Documentation
 
 Swagger UI available at: `http://localhost:8080/swagger-ui.html`
-
-**Key Endpoints:**
-- `POST /api/auth/register` - Create account
-- `POST /api/auth/login` - Authenticate
-- `GET /api/tag-policies` - List policies
-- `POST /api/scans/accounts/{id}` - Trigger scan
-- `GET /api/violations?status=OPEN` - View violations
-- `GET /api/resources` - List discovered resources
 
 ---
 
