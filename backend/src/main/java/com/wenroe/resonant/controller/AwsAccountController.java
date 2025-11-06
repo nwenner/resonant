@@ -5,7 +5,6 @@ import com.wenroe.resonant.model.entity.AwsAccount;
 import com.wenroe.resonant.model.entity.User;
 import com.wenroe.resonant.service.AwsAccountService;
 import com.wenroe.resonant.service.aws.AwsConnectionTester;
-import com.wenroe.resonant.util.OwnershipVerificationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -55,31 +54,18 @@ public class AwsAccountController {
             @AuthenticationPrincipal User user,
             @PathVariable UUID id) {
 
-        log.info("Testing AWS account connection: {}", id);
+        log.info("Testing AWS account connection: {} (user: {})", id, user.getId());
 
-        AwsAccount account = awsAccountService.getAccountById(id);
+        AwsConnectionTester.ConnectionTestResult result = awsAccountService.testConnection(id, user.getId());
 
-        if (OwnershipVerificationUtil.unverifiedOwnership(user, account)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        AwsConnectionTester.ConnectionTestResult result = awsAccountService.testConnection(id);
-
-        ConnectionTestResponse response = new ConnectionTestResponse();
-        response.setSuccess(result.isSuccess());
-        response.setMessage(result.getMessage());
-        response.setErrorMessage(result.getErrorMessage());
-        response.setAccountId(result.getAccountId());
-        response.setAssumedRoleArn(result.getAssumedRoleArn());
-        response.setUserId(result.getUserId());
-        response.setAvailableRegionCount(result.getAvailableRegionCount());
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ConnectionTestResponse.fromResult(result));
     }
 
     @GetMapping
     public ResponseEntity<List<AwsAccountResponse>> getAccounts(
             @AuthenticationPrincipal User user) {
+
+        log.info("Fetching AWS accounts for user: {}", user.getId());
 
         List<AwsAccount> accounts = awsAccountService.getAccountsByUserId(user.getId());
         List<AwsAccountResponse> response = accounts.stream()
@@ -94,11 +80,9 @@ public class AwsAccountController {
             @AuthenticationPrincipal User user,
             @PathVariable UUID id) {
 
-        AwsAccount account = awsAccountService.getAccountById(id);
+        log.info("Fetching AWS account: {} (user: {})", id, user.getId());
 
-        if (OwnershipVerificationUtil.unverifiedOwnership(user, account)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        AwsAccount account = awsAccountService.getAccountByIdAndVerifyOwnership(id, user.getId());
 
         return ResponseEntity.ok(AwsAccountResponse.fromEntity(account));
     }
@@ -109,13 +93,10 @@ public class AwsAccountController {
             @PathVariable UUID id,
             @RequestBody UpdateAliasRequest request) {
 
-        AwsAccount account = awsAccountService.getAccountById(id);
+        log.info("Updating alias for AWS account: {} (user: {})", id, user.getId());
 
-        if (OwnershipVerificationUtil.unverifiedOwnership(user, account)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        AwsAccount updated = awsAccountService.updateAccountAlias(id, user.getId(), request.getAccountAlias());
 
-        AwsAccount updated = awsAccountService.updateAccountAlias(id, request.getAccountAlias());
         return ResponseEntity.ok(AwsAccountResponse.fromEntity(updated));
     }
 
@@ -124,8 +105,10 @@ public class AwsAccountController {
             @AuthenticationPrincipal User user,
             @PathVariable UUID id) {
 
-        log.info("Deleting AWS account connection: {}", id);
+        log.info("Deleting AWS account connection: {} (user: {})", id, user.getId());
+
         awsAccountService.deleteAccount(id, user.getId());
+
         return ResponseEntity.noContent().build();
     }
 }

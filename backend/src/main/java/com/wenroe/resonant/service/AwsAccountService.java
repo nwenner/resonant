@@ -101,11 +101,10 @@ public class AwsAccountService {
      * Tests the connection to an AWS account and updates status.
      */
     @Transactional
-    public AwsConnectionTester.ConnectionTestResult testConnection(UUID accountId) {
-        AwsAccount account = awsAccountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("AWS account not found"));
+    public AwsConnectionTester.ConnectionTestResult testConnection(UUID accountId, UUID userId) {
+        AwsAccount account = getAccountByIdAndVerifyOwnership(accountId, userId);
 
-        log.info("Testing connection for AWS account: {}", account.getAccountId());
+        log.info("Testing connection for AWS account: {} (user: {})", account.getAccountId(), userId);
 
         AwsConnectionTester.ConnectionTestResult result = connectionTester.testConnection(account);
 
@@ -129,7 +128,21 @@ public class AwsAccountService {
     }
 
     /**
-     * Gets a specific AWS account by ID.
+     * Gets a specific AWS account by ID and verifies user ownership.
+     */
+    public AwsAccount getAccountByIdAndVerifyOwnership(UUID accountId, UUID userId) {
+        AwsAccount account = awsAccountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("AWS account not found"));
+
+        if (!account.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized to access this AWS account");
+        }
+
+        return account;
+    }
+
+    /**
+     * Gets a specific AWS account by ID (no ownership check).
      */
     public AwsAccount getAccountById(UUID accountId) {
         return awsAccountRepository.findById(accountId)
@@ -151,14 +164,7 @@ public class AwsAccountService {
      */
     @Transactional
     public void deleteAccount(UUID accountId, UUID userId) {
-        AwsAccount account = awsAccountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("AWS account not found"));
-
-        // Verify ownership
-        if (!account.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized to delete this AWS account");
-        }
-
+        AwsAccount account = getAccountByIdAndVerifyOwnership(accountId, userId);
         awsAccountRepository.delete(account);
         log.info("Deleted AWS account {} for user {}", account.getAccountId(), userId);
     }
@@ -167,9 +173,10 @@ public class AwsAccountService {
      * Updates account alias.
      */
     @Transactional
-    public AwsAccount updateAccountAlias(UUID accountId, String newAlias) {
-        AwsAccount account = getAccountById(accountId);
+    public AwsAccount updateAccountAlias(UUID accountId, UUID userId, String newAlias) {
+        AwsAccount account = getAccountByIdAndVerifyOwnership(accountId, userId);
         account.setAccountAlias(newAlias);
+        log.info("Updated alias for AWS account {} to '{}' (user: {})", account.getAccountId(), newAlias, userId);
         return awsAccountRepository.save(account);
     }
 }
