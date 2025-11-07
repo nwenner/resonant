@@ -1,4 +1,3 @@
-// src/pages/Dashboard.tsx
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';

@@ -1,7 +1,6 @@
 import api from '@/lib/api';
 import { User } from './authService';
 
-// Users API Service
 export const usersService = {
   getAll: async (): Promise<User[]> => {
     const response = await api.get<User[]>('/users');
