@@ -31,6 +31,16 @@ variable "role_name" {
   }
 }
 
+variable "stage" {
+  description = "Environment for the application (dev, stg, prd)"
+  type        = string
+
+  validation {
+    condition = contains(["dev", "stg", "prd"], var.stage)
+    error_message = "Invalid stage. Please choose 1 of: dev, stg, prd"
+  }
+}
+
 variable "include_lambda" {
   description = "Include Lambda function scanning permissions"
   type        = bool
