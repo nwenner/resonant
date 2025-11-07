@@ -6,89 +6,30 @@ import { awsAccountsService, AwsAccount } from '@/services/awsAccountsService';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/useToast';
-import { 
-  Plus, 
-  RefreshCw, 
-  Trash2, 
-  Edit2, 
-  Download, 
-  Copy, 
-  Check, 
+import { AddAccountWizard } from '@/components/aws-accounts/AddAccountWizard';
+import {
+  Plus,
+  RefreshCw,
+  Trash2,
+  Edit2,
+  Check,
   Cloud,
-  Shield,
   CheckCircle2,
   XCircle,
   AlertCircle
 } from 'lucide-react';
 
-const CLOUDFORMATION_TEMPLATE = `AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Resonant AWS Account Integration Role'
-
-Parameters:
-  ExternalId:
-    Type: String
-    Description: External ID provided by Resonant
-    NoEcho: true
-
-Resources:
-  ResonantRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: ResonantComplianceRole
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: 'arn:aws:iam::YOUR_RESONANT_ACCOUNT:root'
-            Action: 'sts:AssumeRole'
-            Condition:
-              StringEquals:
-                'sts:ExternalId': !Ref ExternalId
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/ReadOnlyAccess'
-      Policies:
-        - PolicyName: ResonantTaggingPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'tag:GetResources'
-                  - 'tag:GetTagKeys'
-                  - 'tag:GetTagValues'
-                  - 'resourcegroupstaggingapi:*'
-                Resource: '*'
-
-Outputs:
-  RoleArn:
-    Description: ARN of the created IAM role
-    Value: !GetAtt ResonantRole.Arn
-    Export:
-      Name: ResonantRoleArn`;
-
 export const AwsAccounts = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  
+
   // State
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [addStep, setAddStep] = useState(1);
-  const [externalId, setExternalId] = useState<string>('');
-  const [copiedExternalId, setCopiedExternalId] = useState(false);
-  const [formData, setFormData] = useState({
-    accountId: '',
-    accountAlias: '',
-    roleArn: ''
-  });
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
   const [newAlias, setNewAlias] = useState('');
 
@@ -101,44 +42,6 @@ export const AwsAccounts = () => {
   });
 
   // Mutations
-  const generateExternalIdMutation = useMutation({
-    mutationFn: async () => {
-      return await awsAccountsService.generateExternalId()
-    },
-    onSuccess: (data) => {
-      setExternalId(data.externalId);
-      setAddStep(2);
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to generate External ID',
-        variant: 'destructive'
-      });
-    }
-  });
-
-  const addAccountMutation = useMutation({
-    mutationFn: async (payload: typeof formData & { externalId: string }) => {
-      return await awsAccountsService.createAccount(payload);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });
-      toast({
-        title: 'Success',
-        description: 'AWS account connected successfully'
-      });
-      handleCloseDialog();
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Connection Failed',
-        description: error.response?.data?.message || 'Failed to connect AWS account',
-        variant: 'destructive'
-      });
-    }
-  });
-
   const testConnectionMutation = useMutation({
     mutationFn: async (accountId: string) => {
       return await awsAccountsService.testConnection(accountId);
@@ -202,310 +105,99 @@ export const AwsAccounts = () => {
   });
 
   // Handlers
-  const handleStartAddAccount = () => {
-    setIsAddDialogOpen(true);
-    setAddStep(1);
-    generateExternalIdMutation.mutate();
-  };
-
-  const handleCloseDialog = () => {
-    setIsAddDialogOpen(false);
-    setAddStep(1);
-    setExternalId('');
-    setFormData({ accountId: '', accountAlias: '', roleArn: '' });
-    setCopiedExternalId(false);
-  };
-
-  const handleCopyExternalId = async () => {
-    await navigator.clipboard.writeText(externalId);
-    setCopiedExternalId(true);
-    setTimeout(() => setCopiedExternalId(false), 2000);
-  };
-
-  const handleDownloadTemplate = () => {
-    if (!formData.accountId.trim()) {
-      toast({
-        title: 'Enter Account ID First',
-        description: 'Please enter your AWS Account ID in Step 3 before downloading the template',
-        variant: 'destructive'
-      });
-      return;
-    }
-    
-    // For Phase 1: Use the same account ID (user assumes role in their own account)
-    const customizedTemplate = CLOUDFORMATION_TEMPLATE.replace(
-      'YOUR_RESONANT_ACCOUNT',
-      formData.accountId
-    );
-    
-    const blob = new Blob([customizedTemplate], { type: 'text/yaml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'resonant-role.yaml';
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: 'Template Downloaded',
-      description: 'CloudFormation template configured for your account'
-    });
-  };
-
-  const handleSubmitAccount = () => {
-    if (!formData.accountId || !formData.accountAlias || !formData.roleArn) {
-      toast({
-        title: 'Validation Error',
-        description: 'All fields are required',
-        variant: 'destructive'
-      });
-      return;
-    }
-    addAccountMutation.mutate({ ...formData, externalId });
-  };
-
   const handleUpdateAlias = (accountId: string) => {
-    if (!newAlias.trim()) return;
-    updateAliasMutation.mutate({ id: accountId, alias: newAlias });
+    if (!newAlias.trim()) {
+      return;
+    }
+    updateAliasMutation.mutate({ id: accountId, alias: newAlias.trim() });
   };
 
-  const getStatusBadge = (status: AwsAccount['status']) => {
-    const variants = {
-      ACTIVE: { 
-        icon: CheckCircle2, 
-        text: 'Active', 
-        className: 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400' 
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      ACTIVE: {
+        variant: 'default' as const,
+        className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+        icon: CheckCircle2
       },
-      TESTING: { 
-        icon: RefreshCw, 
-        text: 'Testing', 
-        className: 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400',
-        animate: true
+      INVALID: {
+        variant: 'destructive' as const,
+        className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+        icon: XCircle
       },
-      INVALID: { 
-        icon: XCircle, 
-        text: 'Invalid', 
-        className: 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400' 
+      EXPIRED: {
+        variant: 'secondary' as const,
+        className: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+        icon: AlertCircle
       },
-      EXPIRED: { 
-        icon: AlertCircle, 
-        text: 'Expired', 
-        className: 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400' 
+      TESTING: {
+        variant: 'outline' as const,
+        className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+        icon: RefreshCw
       }
     };
-    
-    // Default to INVALID if status is unexpected
-    const config = variants[status] || variants.INVALID;
+
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.TESTING;
     const Icon = config.icon;
-    
+
     return (
-      <Badge className={config.className}>
-        <Icon className={`w-3 h-3 mr-1 ${config.animate ? 'animate-spin' : ''}`} />
-        {config.text}
+      <Badge variant={config.variant} className={config.className}>
+        <Icon className="w-3 h-3 mr-1" />
+        {status}
       </Badge>
     );
   };
 
-  // Empty State
-  if (!isLoading && accounts.length === 0) {
+  if (isLoading) {
     return (
       <Layout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AWS Accounts</h1>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">
-                Connect and manage your AWS accounts for compliance monitoring
-              </p>
-            </div>
+          <div className="flex items-center justify-center h-64">
+            <RefreshCw className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
           </div>
-
-          <Card className="max-w-2xl mx-auto mt-12">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-4">
-                <Cloud className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <CardTitle>Connect Your First AWS Account</CardTitle>
-              <CardDescription>
-                Start monitoring your AWS resources for tag compliance by connecting an account
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg space-y-2">
-                <div className="flex items-start gap-2">
-                  <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-slate-900 dark:text-white">Secure IAM Role Integration</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Uses AWS IAM roles with read-only access</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-slate-900 dark:text-white">No Long-Term Credentials</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Temporary credentials via STS AssumeRole</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={handleStartAddAccount} className="w-full" size="lg">
-                <Plus className="w-4 h-4 mr-2" />
-                Connect AWS Account
-              </Button>
-            </CardFooter>
-          </Card>
         </div>
-
-        {/* Add Account Dialog */}
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Connect AWS Account</DialogTitle>
-              <DialogDescription>
-                Step {addStep} of 3: {addStep === 1 ? 'Generating credentials' : addStep === 2 ? 'Deploy IAM role' : 'Enter account details'}
-              </DialogDescription>
-            </DialogHeader>
-
-            {addStep === 1 && (
-              <div className="flex items-center justify-center py-8">
-                <RefreshCw className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
-              </div>
-            )}
-
-            {addStep === 2 && (
-              <div className="space-y-4">
-                <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                  <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <AlertDescription className="text-blue-900 dark:text-blue-100">
-                    Resonant uses IAM roles with read-only access to scan your resources. No destructive permissions are required.
-                  </AlertDescription>
-                </Alert>
-
-                <div className="space-y-3">
-                  <div>
-                    <Label>External ID (Required for CloudFormation)</Label>
-                    <div className="flex gap-2 mt-1">
-                      <Input value={externalId} readOnly className="font-mono" />
-                      <Button
-                        variant="outline"
-                        onClick={handleCopyExternalId}
-                        className="shrink-0"
-                      >
-                        {copiedExternalId ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg space-y-3">
-                    <h4 className="font-semibold text-slate-900 dark:text-white">Deployment Instructions</h4>
-                    <ol className="space-y-2 text-sm text-slate-600 dark:text-slate-400 list-decimal list-inside">
-                      <li>Copy the External ID above (you'll need it in step 4)</li>
-                      <li>Click "Next: Enter Details" below and enter your AWS Account ID</li>
-                      <li>Return to this step and download the CloudFormation template</li>
-                      <li>Open the AWS CloudFormation console in your account</li>
-                      <li>Create a new stack and upload the template</li>
-                      <li>Paste the External ID when prompted</li>
-                      <li>Complete the stack creation</li>
-                      <li>Copy the Role ARN from stack outputs</li>
-                    </ol>
-                  </div>
-
-                  <Button onClick={handleDownloadTemplate} variant="outline" className="w-full">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download CloudFormation Template
-                  </Button>
-                </div>
-
-                <DialogFooter>
-                  <Button variant="outline" onClick={handleCloseDialog}>
-                    Cancel
-                  </Button>
-                  <Button onClick={() => setAddStep(3)}>
-                    Next: Enter Details
-                  </Button>
-                </DialogFooter>
-              </div>
-            )}
-
-            {addStep === 3 && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="accountId">AWS Account ID *</Label>
-                  <Input
-                    id="accountId"
-                    placeholder="123456789012"
-                    value={formData.accountId}
-                    onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="accountAlias">Account Alias *</Label>
-                  <Input
-                    id="accountAlias"
-                    placeholder="Production AWS"
-                    value={formData.accountAlias}
-                    onChange={(e) => setFormData({ ...formData, accountAlias: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="roleArn">IAM Role ARN *</Label>
-                  <Input
-                    id="roleArn"
-                    placeholder="arn:aws:iam::123456789012:role/ResonantComplianceRole"
-                    value={formData.roleArn}
-                    onChange={(e) => setFormData({ ...formData, roleArn: e.target.value })}
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Find this in your CloudFormation stack outputs
-                  </p>
-                </div>
-
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setAddStep(2)}>
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleSubmitAccount}
-                    disabled={addAccountMutation.isPending}
-                  >
-                    {addAccountMutation.isPending && <RefreshCw className="w-4 h-4 mr-2 animate-spin" />}
-                    Connect Account
-                  </Button>
-                </DialogFooter>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
       </Layout>
     );
   }
 
-  // Main View (with accounts)
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AWS Accounts</h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-1">
-              {accounts.length} connected account{accounts.length !== 1 ? 's' : ''}
-            </p>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AWS Accounts</h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">
+                Manage your connected AWS accounts for compliance scanning
+              </p>
+            </div>
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Connect Account
+            </Button>
           </div>
-          <Button onClick={handleStartAddAccount}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Account
-          </Button>
-        </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Empty State */}
+        {accounts.length === 0 && (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Cloud className="w-12 h-12 text-slate-400 dark:text-slate-600 mb-4" />
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No AWS Accounts Connected</h3>
+              <p className="text-slate-600 dark:text-slate-400 text-center mb-4">
+                Connect your first AWS account to start scanning for tag compliance
+              </p>
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Connect Your First Account
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Account Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {accounts.map((account) => (
-            <Card 
+            <Card
               key={account.id}
               className="hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => navigate(`/aws-accounts/${account.id}`)}
@@ -599,129 +291,12 @@ export const AwsAccounts = () => {
           ))}
         </div>
 
-        {/* Add Account Dialog */}
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Connect AWS Account</DialogTitle>
-              <DialogDescription>
-                Step {addStep} of 3: {addStep === 1 ? 'Generating credentials' : addStep === 2 ? 'Deploy IAM role' : 'Enter account details'}
-              </DialogDescription>
-            </DialogHeader>
-
-            {addStep === 1 && (
-              <div className="flex items-center justify-center py-8">
-                <RefreshCw className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
-              </div>
-            )}
-
-            {addStep === 2 && (
-              <div className="space-y-4">
-                <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                  <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <AlertDescription className="text-blue-900 dark:text-blue-100">
-                    Resonant uses IAM roles with read-only access to scan your resources. No destructive permissions are required.
-                  </AlertDescription>
-                </Alert>
-
-                <div className="space-y-3">
-                  <div>
-                    <Label>External ID (Required for CloudFormation)</Label>
-                    <div className="flex gap-2 mt-1">
-                      <Input value={externalId} readOnly className="font-mono" />
-                      <Button
-                        variant="outline"
-                        onClick={handleCopyExternalId}
-                        className="shrink-0"
-                      >
-                        {copiedExternalId ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg space-y-3">
-                    <h4 className="font-semibold text-slate-900 dark:text-white">Deployment Instructions</h4>
-                    <ol className="space-y-2 text-sm text-slate-600 dark:text-slate-400 list-decimal list-inside">
-                      <li>Download the CloudFormation template below</li>
-                      <li>Open the AWS CloudFormation console in your account</li>
-                      <li>Create a new stack and upload the template</li>
-                      <li>Paste the External ID when prompted</li>
-                      <li>Complete the stack creation</li>
-                      <li>Copy the Role ARN from stack outputs</li>
-                    </ol>
-                  </div>
-
-                  <Button onClick={handleDownloadTemplate} variant="outline" className="w-full">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download CloudFormation Template
-                  </Button>
-                </div>
-
-                <DialogFooter>
-                  <Button variant="outline" onClick={handleCloseDialog}>
-                    Cancel
-                  </Button>
-                  <Button onClick={() => setAddStep(3)}>
-                    Next: Enter Details
-                  </Button>
-                </DialogFooter>
-              </div>
-            )}
-
-            {addStep === 3 && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="accountId">AWS Account ID *</Label>
-                  <Input
-                    id="accountId"
-                    placeholder="123456789012"
-                    value={formData.accountId}
-                    onChange={(e) => setFormData({ ...formData, accountId: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="accountAlias">Account Alias *</Label>
-                  <Input
-                    id="accountAlias"
-                    placeholder="Production AWS"
-                    value={formData.accountAlias}
-                    onChange={(e) => setFormData({ ...formData, accountAlias: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="roleArn">IAM Role ARN *</Label>
-                  <Input
-                    id="roleArn"
-                    placeholder="arn:aws:iam::123456789012:role/ResonantComplianceRole"
-                    value={formData.roleArn}
-                    onChange={(e) => setFormData({ ...formData, roleArn: e.target.value })}
-                    className="font-mono text-sm"
-                  />
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Find this in your CloudFormation stack outputs
-                  </p>
-                </div>
-
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setAddStep(2)}>
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleSubmitAccount}
-                    disabled={addAccountMutation.isPending}
-                  >
-                    {addAccountMutation.isPending && <RefreshCw className="w-4 h-4 mr-2 animate-spin" />}
-                    Connect Account
-                  </Button>
-                </DialogFooter>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        {/* Add Account Wizard */}
+        <AddAccountWizard
+          open={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+        />
+        </div>
       </div>
     </Layout>
   );
