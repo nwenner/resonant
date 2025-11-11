@@ -107,15 +107,15 @@ export const AccountCard = ({
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <Label className="text-xs text-slate-500 dark:text-slate-400">Role ARN</Label>
-          <p className="text-sm font-mono truncate text-slate-900 dark:text-white" title={account.roleArn}>
+          <Label className="text-xs text-muted-foreground">Role ARN</Label>
+          <p className="text-sm font-mono truncate text-foreground" title={account.roleArn}>
             {account.roleArn}
           </p>
         </div>
         {account.lastSyncedAt && (
           <div>
-            <Label className="text-xs text-slate-500 dark:text-slate-400">Last Synced</Label>
-            <p className="text-sm text-slate-900 dark:text-white">
+            <Label className="text-xs text-muted-foreground">Last Synced</Label>
+            <p className="text-sm text-foreground">
               {new Date(account.lastSyncedAt).toLocaleString()}
             </p>
           </div>
@@ -137,7 +137,7 @@ export const AccountCard = ({
           size="sm"
           onClick={handleDelete}
           disabled={isDeletingAccount}
-          className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+          className="text-destructive hover:bg-destructive/10"
         >
           <Trash2 className="w-3 h-3" />
         </Button>

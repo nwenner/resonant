@@ -29,6 +29,16 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    /* Status colors */
+    --status-success: 142 71% 45%;
+    --status-success-foreground: 142 76% 36%;
+    --status-error: 0 84% 60%;
+    --status-error-foreground: 0 72% 51%;
+    --status-warning: 38 92% 50%;
+    --status-warning-foreground: 25 95% 53%;
+    --status-info: 217 91% 60%;
+    --status-info-foreground: 221 83% 53%;
   }
 
   .dark {
@@ -56,6 +66,16 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Status colors for dark mode */
+    --status-success: 142 71% 45%;
+    --status-success-foreground: 142 70% 65%;
+    --status-error: 0 84% 60%;
+    --status-error-foreground: 0 93% 73%;
+    --status-warning: 38 92% 50%;
+    --status-warning-foreground: 48 96% 70%;
+    --status-info: 217 91% 60%;
+    --status-info-foreground: 213 94% 73%;
   }
 }
 
