@@ -7,26 +7,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/useToast';
 import { AddAccountWizard } from '@/components/aws-accounts/AddAccountWizard';
-import {
-  Plus,
-  RefreshCw,
-  Trash2,
-  Edit2,
-  Check,
-  Cloud,
-  CheckCircle2,
-  XCircle,
-  AlertCircle
+import { StatusBadge } from '@/components/resonant-ui/StatusBadge';
+import { 
+  Plus, 
+  RefreshCw, 
+  Trash2, 
+  Edit2, 
+  Check, 
+  Cloud
 } from 'lucide-react';
 
 export const AwsAccounts = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
+  
   // State
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
@@ -111,41 +108,6 @@ export const AwsAccounts = () => {
     updateAliasMutation.mutate({ id: accountId, alias: newAlias.trim() });
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      ACTIVE: {
-        variant: 'default' as const,
-        className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-        icon: CheckCircle2
-      },
-      INVALID: {
-        variant: 'destructive' as const,
-        className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-        icon: XCircle
-      },
-      EXPIRED: {
-        variant: 'secondary' as const,
-        className: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-        icon: AlertCircle
-      },
-      TESTING: {
-        variant: 'outline' as const,
-        className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-        icon: RefreshCw
-      }
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.TESTING;
-    const Icon = config.icon;
-
-    return (
-      <Badge variant={config.variant} className={config.className}>
-        <Icon className="w-3 h-3 mr-1" />
-        {status}
-      </Badge>
-    );
-  };
-
   if (isLoading) {
     return (
       <Layout>
@@ -196,7 +158,7 @@ export const AwsAccounts = () => {
         {/* Account Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {accounts.map((account) => (
-            <Card
+            <Card 
               key={account.id}
               className="hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => navigate(`/aws-accounts/${account.id}`)}
@@ -238,7 +200,7 @@ export const AwsAccounts = () => {
                     )}
                     <CardDescription className="font-mono text-xs">{account.accountId}</CardDescription>
                   </div>
-                  {getStatusBadge(account.status)}
+                  <StatusBadge status={account.status} />
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -291,7 +253,7 @@ export const AwsAccounts = () => {
         </div>
 
         {/* Add Account Wizard */}
-        <AddAccountWizard
+        <AddAccountWizard 
           open={isAddDialogOpen}
           onOpenChange={setIsAddDialogOpen}
         />
