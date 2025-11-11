@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { awsAccountsService, AwsAccount } from '@/services/awsAccountsService';
+import { useAccountOperations } from '@/hooks/useAccountOperations';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/hooks/useToast';
 import { AddAccountWizard } from '@/components/aws-accounts/AddAccountWizard';
 import { AccountCard } from '@/components/aws-accounts/AccountCard';
 import {
@@ -15,79 +15,15 @@ import {
 } from 'lucide-react';
 
 export const AwsAccounts = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { testConnection, updateAlias, deleteAccount } = useAccountOperations();
 
-  // State
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  // Queries
   const { data: accounts = [], isLoading } = useQuery<AwsAccount[]>({
     queryKey: ['aws-accounts'],
     queryFn: async () => {
       return await awsAccountsService.listAccounts();
-    }
-  });
-
-  // Mutations
-  const testConnectionMutation = useMutation({
-    mutationFn: async (accountId: string) => {
-      return await awsAccountsService.testConnection(accountId);
-    },
-    onSuccess: (data) => {
-      toast({
-        title: 'Connection Test Successful',
-        description: `Connected to account ${data.accountId} with access to ${data.availableRegionCount} regions`
-      });
-      queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Connection Test Failed',
-        description: error.response?.data?.message || 'Unable to connect to AWS account',
-        variant: 'destructive'
-      });
-    }
-  });
-
-  const updateAliasMutation = useMutation({
-    mutationFn: async ({ id, alias }: { id: string; alias: string }) => {
-      return await awsAccountsService.updateAlias(id, { accountAlias: alias });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });
-      toast({
-        title: 'Success',
-        description: 'Account alias updated'
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to update alias',
-        variant: 'destructive'
-      });
-    }
-  });
-
-  const deleteAccountMutation = useMutation({
-    mutationFn: async (accountId: string) => {
-      await awsAccountsService.deleteAccount(accountId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });
-      toast({
-        title: 'Success',
-        description: 'AWS account disconnected'
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete account',
-        variant: 'destructive'
-      });
     }
   });
 
@@ -144,13 +80,13 @@ export const AwsAccounts = () => {
             <AccountCard
               key={account.id}
               account={account}
-              isTestingConnection={testConnectionMutation.isPending}
-              isDeletingAccount={deleteAccountMutation.isPending}
-              isUpdatingAlias={updateAliasMutation.isPending}
+              isTestingConnection={testConnection.isPending}
+              isDeletingAccount={deleteAccount.isPending}
+              isUpdatingAlias={updateAlias.isPending}
               onCardClick={(accountId) => navigate(`/aws-accounts/${accountId}`)}
-              onTestConnection={(accountId) => testConnectionMutation.mutate(accountId)}
-              onDeleteAccount={(accountId) => deleteAccountMutation.mutate(accountId)}
-              onUpdateAlias={(accountId, newAlias) => updateAliasMutation.mutate({ id: accountId, alias: newAlias })}
+              onTestConnection={(accountId) => testConnection.mutate(accountId)}
+              onDeleteAccount={(accountId) => deleteAccount.mutate(accountId)}
+              onUpdateAlias={(accountId, newAlias) => updateAlias.mutate({ id: accountId, alias: newAlias })}
             />
           ))}
         </div>
