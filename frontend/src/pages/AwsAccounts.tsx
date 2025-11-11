@@ -4,18 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { awsAccountsService, AwsAccount } from '@/services/awsAccountsService';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/useToast';
 import { AddAccountWizard } from '@/components/aws-accounts/AddAccountWizard';
-import { StatusBadge } from '@/components/resonant-ui/StatusBadge';
-import { 
-  Plus, 
-  RefreshCw, 
-  Trash2, 
-  Edit2, 
-  Check, 
+import { AccountCard } from '@/components/aws-accounts/AccountCard';
+import {
+  Plus,
+  RefreshCw,
   Cloud
 } from 'lucide-react';
 
@@ -23,11 +18,9 @@ export const AwsAccounts = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  
+
   // State
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
-  const [newAlias, setNewAlias] = useState('');
 
   // Queries
   const { data: accounts = [], isLoading } = useQuery<AwsAccount[]>({
@@ -68,8 +61,6 @@ export const AwsAccounts = () => {
         title: 'Success',
         description: 'Account alias updated'
       });
-      setEditingAccountId(null);
-      setNewAlias('');
     },
     onError: () => {
       toast({
@@ -99,14 +90,6 @@ export const AwsAccounts = () => {
       });
     }
   });
-
-  // Handlers
-  const handleUpdateAlias = (accountId: string) => {
-    if (!newAlias.trim()) {
-      return;
-    }
-    updateAliasMutation.mutate({ id: accountId, alias: newAlias.trim() });
-  };
 
   if (isLoading) {
     return (
@@ -158,97 +141,17 @@ export const AwsAccounts = () => {
         {/* Account Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {accounts.map((account) => (
-            <Card 
+            <AccountCard
               key={account.id}
-              className="hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => navigate(`/aws-accounts/${account.id}`)}
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    {editingAccountId === account.id ? (
-                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                        <Input
-                          value={newAlias || ''}
-                          onChange={(e) => setNewAlias(e.target.value)}
-                          className="h-8"
-                          placeholder="Account alias"
-                        />
-                        <Button
-                          size="sm"
-                          onClick={() => handleUpdateAlias(account.id)}
-                          disabled={updateAliasMutation.isPending}
-                        >
-                          <Check className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-lg">{account.accountAlias}</CardTitle>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingAccountId(account.id);
-                            setNewAlias(account.accountAlias || '');
-                          }}
-                        >
-                          <Edit2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    )}
-                    <CardDescription className="font-mono text-xs">{account.accountId}</CardDescription>
-                  </div>
-                  <StatusBadge status={account.status} />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <Label className="text-xs text-slate-500 dark:text-slate-400">Role ARN</Label>
-                  <p className="text-sm font-mono truncate text-slate-900 dark:text-white" title={account.roleArn}>
-                    {account.roleArn}
-                  </p>
-                </div>
-                {account.lastSyncedAt && (
-                  <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400">Last Synced</Label>
-                    <p className="text-sm text-slate-900 dark:text-white">
-                      {new Date(account.lastSyncedAt).toLocaleString()}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    testConnectionMutation.mutate(account.id);
-                  }}
-                  disabled={testConnectionMutation.isPending}
-                  className="flex-1"
-                >
-                  <RefreshCw className={`w-3 h-3 mr-1 ${testConnectionMutation.isPending ? 'animate-spin' : ''}`} />
-                  Test
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (confirm('Are you sure you want to disconnect this account?')) {
-                      deleteAccountMutation.mutate(account.id);
-                    }
-                  }}
-                  disabled={deleteAccountMutation.isPending}
-                  className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </CardFooter>
-            </Card>
+              account={account}
+              isTestingConnection={testConnectionMutation.isPending}
+              isDeletingAccount={deleteAccountMutation.isPending}
+              isUpdatingAlias={updateAliasMutation.isPending}
+              onCardClick={(accountId) => navigate(`/aws-accounts/${accountId}`)}
+              onTestConnection={(accountId) => testConnectionMutation.mutate(accountId)}
+              onDeleteAccount={(accountId) => deleteAccountMutation.mutate(accountId)}
+              onUpdateAlias={(accountId, newAlias) => updateAliasMutation.mutate({ id: accountId, alias: newAlias })}
+            />
           ))}
         </div>
 
