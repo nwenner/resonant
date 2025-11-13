@@ -26,6 +26,8 @@ export const QUERY_KEYS = {
     detail: (id: string) => [...QUERY_KEYS.scans.details(), id] as const,
     byAccount: (accountId: string) =>
       [...QUERY_KEYS.scans.all, 'account', accountId] as const,
+    latest: (accountId: string) =>
+      [...QUERY_KEYS.scans.all, 'account', accountId, 'latest'] as const,
   },
 
   violations: {
@@ -35,6 +37,13 @@ export const QUERY_KEYS = {
       [...QUERY_KEYS.violations.lists(), filters] as const,
     details: () => [...QUERY_KEYS.violations.all, 'detail'] as const,
     detail: (id: string) => [...QUERY_KEYS.violations.details(), id] as const,
+    byAccount: (accountId: string) =>
+      [...QUERY_KEYS.violations.all, 'account', accountId] as const,
+    byResource: (resourceId: string) =>
+      [...QUERY_KEYS.violations.all, 'resource', resourceId] as const,
+    byPolicy: (policyId: string) =>
+      [...QUERY_KEYS.violations.all, 'policy', policyId] as const,
+    stats: ['violations', 'stats'] as const,
   },
 
   resources: {
@@ -44,5 +53,8 @@ export const QUERY_KEYS = {
       [...QUERY_KEYS.resources.lists(), filters] as const,
     details: () => [...QUERY_KEYS.resources.all, 'detail'] as const,
     detail: (id: string) => [...QUERY_KEYS.resources.details(), id] as const,
+    byAccount: (accountId: string) =>
+      [...QUERY_KEYS.resources.all, 'account', accountId] as const,
+    stats: ['resources', 'stats'] as const,
   },
 } as const;
