@@ -1,10 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/useToast';
-import { scanService } from '@/services/scanService';
-import { QUERY_KEYS } from '@/constants/queryKeys';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {useToast} from '@/hooks/useToast';
+import {scanService} from '@/services/scanService';
+import {QUERY_KEYS} from '@/constants/queryKeys';
 
 export const useScanOperations = () => {
-  const { toast } = useToast();
+  const {toast} = useToast();
   const queryClient = useQueryClient();
 
   const triggerScan = useMutation({
@@ -35,5 +35,5 @@ export const useScanOperations = () => {
     },
   });
 
-  return { triggerScan };
+  return {triggerScan};
 };

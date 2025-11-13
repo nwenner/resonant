@@ -1,12 +1,12 @@
 import api from '@/lib/api';
-import { ComplianceViolation, ViolationStats } from '@/types/scan';
+import {ComplianceViolation, ViolationStats} from '@/types/scan';
 
 export const violationService = {
   /**
    * List violations with optional status filter
    */
   listViolations: async (params?: { status?: string }): Promise<ComplianceViolation[]> => {
-    const response = await api.get<ComplianceViolation[]>('/violations', { params });
+    const response = await api.get<ComplianceViolation[]>('/violations', {params});
     return response.data;
   },
 

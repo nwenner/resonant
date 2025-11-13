@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { User } from '@/services/authService';
+import {create} from 'zustand';
+import {persist} from 'zustand/middleware';
+import {User} from '@/services/authService';
 
 interface AuthState {
   user: User | null;
@@ -13,38 +13,38 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      token: null,
-      isAuthenticated: false,
+    persist(
+        (set, get) => ({
+          user: null,
+          token: null,
+          isAuthenticated: false,
 
-      setAuth: (user: User, token: string) => {
-        set({ user, token, isAuthenticated: true });
-      },
+          setAuth: (user: User, token: string) => {
+            set({user, token, isAuthenticated: true});
+          },
 
-      clearAuth: () => {
-        set({ user: null, token: null, isAuthenticated: false });
-      },
+          clearAuth: () => {
+            set({user: null, token: null, isAuthenticated: false});
+          },
 
-      updateUser: (user: User) => {
-        set({ user });
-      },
+          updateUser: (user: User) => {
+            set({user});
+          },
 
-      validateAuth: () => {
-        const { token, isAuthenticated } = get();
-        // If marked as authenticated but no token, clear auth
-        if (isAuthenticated && !token) {
-          set({ user: null, token: null, isAuthenticated: false });
+          validateAuth: () => {
+            const {token, isAuthenticated} = get();
+            // If marked as authenticated but no token, clear auth
+            if (isAuthenticated && !token) {
+              set({user: null, token: null, isAuthenticated: false});
+            }
+          },
+        }),
+        {
+          name: 'auth-storage',
+          // Validate state after hydration from localStorage
+          onRehydrateStorage: () => (state) => {
+            state?.validateAuth();
+          },
         }
-      },
-    }),
-    {
-      name: 'auth-storage',
-      // Validate state after hydration from localStorage
-      onRehydrateStorage: () => (state) => {
-        state?.validateAuth();
-      },
-    }
-  )
+    )
 );

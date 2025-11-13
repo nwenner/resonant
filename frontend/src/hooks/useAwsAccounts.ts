@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { awsAccountsService, AwsAccount } from '@/services/awsAccountsService';
-import { QUERY_KEYS } from '@/constants/queryKeys';
+import {useQuery} from '@tanstack/react-query';
+import {AwsAccount, awsAccountsService} from '@/services/awsAccountsService';
+import {QUERY_KEYS} from '@/constants/queryKeys';
 
 /**
  * Query hook to fetch all AWS accounts

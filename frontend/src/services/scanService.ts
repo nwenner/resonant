@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import { ScanJob } from '@/types/scan';
+import {ScanJob} from '@/types/scan';
 
 export const scanService = {
   /**

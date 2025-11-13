@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { violationService } from '@/services/violationService';
-import { QUERY_KEYS } from '@/constants/queryKeys';
+import {useQuery} from '@tanstack/react-query';
+import {violationService} from '@/services/violationService';
+import {QUERY_KEYS} from '@/constants/queryKeys';
 
 /**
  * Query hook to fetch all violations with optional status filter

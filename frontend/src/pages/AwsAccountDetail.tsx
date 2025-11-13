@@ -104,13 +104,13 @@ export const AwsAccountDetail = () => {
             <TabsContent value="overview" className="space-y-6">
               {latestScan && <LatestScanSummary scan={latestScan}/>}
 
-            {!hasScanned && !isScanning && (
-              <ScanEmptyState
-                accountId={account.id}
-                accountAlias={account.accountAlias}
-                onScanStarted={handleScanStarted}
-              />
-            )}
+              {!hasScanned && !isScanning && (
+                  <ScanEmptyState
+                      accountId={account.id}
+                      accountAlias={account.accountAlias}
+                      onScanStarted={handleScanStarted}
+                  />
+              )}
               {!hasScanned && !isScanning && (
                   <ScanEmptyState
                       accountId={account.id}

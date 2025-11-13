@@ -1,8 +1,8 @@
-import { useMutation } from '@tanstack/react-query';
-import { scanService } from '@/services/scanService';
-import { Button } from '@/components/ui/button';
-import { PlayCircle, Loader2 } from 'lucide-react';
-import { useToast } from "@/hooks/useToast"
+import {useMutation} from '@tanstack/react-query';
+import {scanService} from '@/services/scanService';
+import {Button} from '@/components/ui/button';
+import {Loader2, PlayCircle} from 'lucide-react';
+import {useToast} from "@/hooks/useToast"
 
 interface ScanButtonProps {
   accountId: string;
@@ -11,8 +11,8 @@ interface ScanButtonProps {
   onScanStarted?: (scanJobId: string) => void;
 }
 
-export const ScanButton = ({ accountId, accountAlias, disabled, onScanStarted }: ScanButtonProps) => {
-  const { toast } = useToast();
+export const ScanButton = ({accountId, accountAlias, disabled, onScanStarted}: ScanButtonProps) => {
+  const {toast} = useToast();
 
   const scanMutation = useMutation({
     mutationFn: () => scanService.triggerScan(accountId),
@@ -33,22 +33,22 @@ export const ScanButton = ({ accountId, accountAlias, disabled, onScanStarted }:
   });
 
   return (
-    <Button
-      onClick={() => scanMutation.mutate()}
-      disabled={disabled || scanMutation.isPending}
-      size="sm"
-    >
-      {scanMutation.isPending ? (
-        <>
-          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Scanning...
-        </>
-      ) : (
-        <>
-          <PlayCircle className="h-4 w-4 mr-2" />
-          Scan Account
-        </>
-      )}
-    </Button>
+      <Button
+          onClick={() => scanMutation.mutate()}
+          disabled={disabled || scanMutation.isPending}
+          size="sm"
+      >
+        {scanMutation.isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin"/>
+              Scanning...
+            </>
+        ) : (
+            <>
+              <PlayCircle className="h-4 w-4 mr-2"/>
+              Scan Account
+            </>
+        )}
+      </Button>
   );
 };

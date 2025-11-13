@@ -1,5 +1,5 @@
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import {Badge} from '@/components/ui/badge';
+import {AlertCircle, CheckCircle2, RefreshCw, XCircle} from 'lucide-react';
 import './StatusBadge.css';
 
 type AccountStatus = 'ACTIVE' | 'INVALID' | 'EXPIRED' | 'TESTING';
@@ -8,7 +8,7 @@ interface StatusBadgeProps {
   status: AccountStatus | string; // Allow string for flexibility, but prefer typed values
 }
 
-export const StatusBadge = ({ status }: StatusBadgeProps) => {
+export const StatusBadge = ({status}: StatusBadgeProps) => {
   const statusConfig = {
     ACTIVE: {
       variant: 'default' as const,
@@ -28,7 +28,7 @@ export const StatusBadge = ({ status }: StatusBadgeProps) => {
     TESTING: {
       variant: 'outline' as const,
       className: 'status-info',
-      icon: RefreshCw 
+      icon: RefreshCw
     }
   };
 
@@ -36,9 +36,9 @@ export const StatusBadge = ({ status }: StatusBadgeProps) => {
   const Icon = config.icon;
 
   return (
-    <Badge variant={config.variant} className={config.className}>
-      <Icon className="w-3 h-3 mr-1" />
-      {status}
-    </Badge>
+      <Badge variant={config.variant} className={config.className}>
+        <Icon className="w-3 h-3 mr-1"/>
+        {status}
+      </Badge>
   );
 };

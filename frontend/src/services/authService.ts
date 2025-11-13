@@ -53,12 +53,12 @@ export const authService = {
     const response = await api.post<BackendAuthResponse>('/auth/login', data);
     return transformAuthResponse(response.data);
   },
-  
+
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
     const response = await api.post<BackendAuthResponse>('/auth/register', data);
     return transformAuthResponse(response.data);
   },
-  
+
   getCurrentUser: async (): Promise<User> => {
     const response = await api.get<User>('/auth/me');
     return response.data;

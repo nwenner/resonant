@@ -1,10 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/useToast';
-import { awsAccountsService } from '@/services/awsAccountsService';
-import { QUERY_KEYS } from '@/constants/queryKeys';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {useToast} from '@/hooks/useToast';
+import {awsAccountsService} from '@/services/awsAccountsService';
+import {QUERY_KEYS} from '@/constants/queryKeys';
 
 export const useAccountOperations = () => {
-  const { toast } = useToast();
+  const {toast} = useToast();
   const queryClient = useQueryClient();
 
   const testConnection = useMutation({
@@ -16,7 +16,7 @@ export const useAccountOperations = () => {
         title: 'Connection Test Successful',
         description: `Connected to account ${data.accountId} with access to ${data.availableRegionCount} regions`
       });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.awsAccounts.all });
+      queryClient.invalidateQueries({queryKey: QUERY_KEYS.awsAccounts.all});
     },
     onError: (error: any) => {
       toast({
@@ -28,11 +28,11 @@ export const useAccountOperations = () => {
   });
 
   const updateAlias = useMutation({
-    mutationFn: async ({ id, alias }: { id: string; alias: string }) => {
-      return await awsAccountsService.updateAlias(id, { accountAlias: alias });
+    mutationFn: async ({id, alias}: { id: string; alias: string }) => {
+      return await awsAccountsService.updateAlias(id, {accountAlias: alias});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.awsAccounts.all });
+      queryClient.invalidateQueries({queryKey: QUERY_KEYS.awsAccounts.all});
       toast({
         title: 'Success',
         description: 'Account alias updated'
@@ -52,7 +52,7 @@ export const useAccountOperations = () => {
       await awsAccountsService.deleteAccount(accountId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.awsAccounts.all });
+      queryClient.invalidateQueries({queryKey: QUERY_KEYS.awsAccounts.all});
       toast({
         title: 'Success',
         description: 'AWS account disconnected'

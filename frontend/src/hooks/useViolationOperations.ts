@@ -1,17 +1,17 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/useToast';
-import { violationService } from '@/services/violationService';
-import { QUERY_KEYS } from '@/constants/queryKeys';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {useToast} from '@/hooks/useToast';
+import {violationService} from '@/services/violationService';
+import {QUERY_KEYS} from '@/constants/queryKeys';
 
 export const useViolationOperations = () => {
-  const { toast } = useToast();
+  const {toast} = useToast();
   const queryClient = useQueryClient();
 
   const ignoreViolation = useMutation({
     mutationFn: violationService.ignoreViolation,
     onSuccess: (data) => {
       // Invalidate all violation queries
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.violations.all });
+      queryClient.invalidateQueries({queryKey: QUERY_KEYS.violations.all});
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.violations.byAccount(data.resourceId)
       });
@@ -37,7 +37,7 @@ export const useViolationOperations = () => {
     mutationFn: violationService.reopenViolation,
     onSuccess: (data) => {
       // Invalidate all violation queries
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.violations.all });
+      queryClient.invalidateQueries({queryKey: QUERY_KEYS.violations.all});
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.violations.byAccount(data.resourceId)
       });
@@ -59,5 +59,5 @@ export const useViolationOperations = () => {
     },
   });
 
-  return { ignoreViolation, reopenViolation };
+  return {ignoreViolation, reopenViolation};
 };

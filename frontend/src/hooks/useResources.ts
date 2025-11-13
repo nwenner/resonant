@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { resourceService } from '@/services/resourceService';
-import { QUERY_KEYS } from '@/constants/queryKeys';
+import {useQuery} from '@tanstack/react-query';
+import {resourceService} from '@/services/resourceService';
+import {QUERY_KEYS} from '@/constants/queryKeys';
 
 /**
  * Query hook to fetch all resources with optional type filter

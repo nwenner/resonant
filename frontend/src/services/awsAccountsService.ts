@@ -75,7 +75,7 @@ export const awsAccountsService = {
    */
   testConnection: async (accountId: string): Promise<TestConnectionResponse> => {
     const response = await api.post<TestConnectionResponse>(
-      `/aws-accounts/${accountId}/test`
+        `/aws-accounts/${accountId}/test`
     );
     return response.data;
   },
@@ -85,8 +85,8 @@ export const awsAccountsService = {
    */
   updateAlias: async (accountId: string, request: UpdateAliasRequest): Promise<AwsAccount> => {
     const response = await api.patch<AwsAccount>(
-      `/aws-accounts/${accountId}/alias`,
-      request
+        `/aws-accounts/${accountId}/alias`,
+        request
     );
     return response.data;
   },

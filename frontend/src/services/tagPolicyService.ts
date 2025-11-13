@@ -43,8 +43,8 @@ export const tagPolicyService = {
    * Get all tag policies with optional filtering
    */
   getAll: async (enabled?: boolean): Promise<TagPolicy[]> => {
-    const params = enabled !== undefined ? { enabled } : {};
-    const response = await api.get<TagPolicy[]>('/tag-policies', { params });
+    const params = enabled !== undefined ? {enabled} : {};
+    const response = await api.get<TagPolicy[]>('/tag-policies', {params});
     return response.data;
   },
 

@@ -1,12 +1,12 @@
 import api from '@/lib/api';
-import { AwsResource, ResourceStats } from '@/types/scan';
+import {AwsResource, ResourceStats} from '@/types/scan';
 
 export const resourceService = {
   /**
    * List resources with optional type filter
    */
   listResources: async (params?: { type?: string }): Promise<AwsResource[]> => {
-    const response = await api.get<AwsResource[]>('/resources', { params });
+    const response = await api.get<AwsResource[]>('/resources', {params});
     return response.data;
   },
 

@@ -1,21 +1,27 @@
-import { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/useToast';
-import { awsAccountsService } from '@/services/awsAccountsService';
-import { CLOUDFORMATION_TEMPLATE } from '@/constants/cloudformation';
-import { QUERY_KEYS } from '@/constants/queryKeys';
-import { WizardStep1 } from './WizardStep1';
-import { WizardStep2, AccountFormData } from './WizardStep2';
-import { RefreshCw } from 'lucide-react';
+import {useEffect, useState} from 'react';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import {useToast} from '@/hooks/useToast';
+import {awsAccountsService} from '@/services/awsAccountsService';
+import {CLOUDFORMATION_TEMPLATE} from '@/constants/cloudformation';
+import {QUERY_KEYS} from '@/constants/queryKeys';
+import {WizardStep1} from './WizardStep1';
+import {AccountFormData, WizardStep2} from './WizardStep2';
+import {RefreshCw} from 'lucide-react';
 
 interface AddAccountWizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const AddAccountWizard = ({ open, onOpenChange }: AddAccountWizardProps) => {
-  const { toast } = useToast();
+export const AddAccountWizard = ({open, onOpenChange}: AddAccountWizardProps) => {
+  const {toast} = useToast();
   const queryClient = useQueryClient();
 
   const [step, setStep] = useState(0); // 0 = loading, 1 = instructions, 2 = form
@@ -39,7 +45,7 @@ export const AddAccountWizard = ({ open, onOpenChange }: AddAccountWizardProps) 
     if (!open) {
       setStep(0);
       setExternalId('');
-      setFormData({ accountId: '', accountAlias: '', roleArn: '' });
+      setFormData({accountId: '', accountAlias: '', roleArn: ''});
       setCopiedExternalId(false);
     }
   }, [open]);
@@ -67,7 +73,7 @@ export const AddAccountWizard = ({ open, onOpenChange }: AddAccountWizardProps) 
       return await awsAccountsService.createAccount(payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.awsAccounts.all });
+      queryClient.invalidateQueries({queryKey: QUERY_KEYS.awsAccounts.all});
       toast({
         title: 'Success',
         description: 'AWS account connected successfully'
@@ -90,7 +96,7 @@ export const AddAccountWizard = ({ open, onOpenChange }: AddAccountWizardProps) 
   };
 
   const handleDownloadTemplate = () => {
-    const blob = new Blob([CLOUDFORMATION_TEMPLATE], { type: 'text/yaml' });
+    const blob = new Blob([CLOUDFORMATION_TEMPLATE], {type: 'text/yaml'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -109,46 +115,46 @@ export const AddAccountWizard = ({ open, onOpenChange }: AddAccountWizardProps) 
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Connect AWS Account</DialogTitle>
-          <DialogDescription>
-            {step === 0 ? (
-              'Generating credentials...'
-            ) : (
-              `Step ${step} of 2: ${step === 1 ? 'Deploy IAM role' : 'Enter account details'}`
-            )}
-          </DialogDescription>
-        </DialogHeader>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Connect AWS Account</DialogTitle>
+            <DialogDescription>
+              {step === 0 ? (
+                  'Generating credentials...'
+              ) : (
+                  `Step ${step} of 2: ${step === 1 ? 'Deploy IAM role' : 'Enter account details'}`
+              )}
+            </DialogDescription>
+          </DialogHeader>
 
-        {step === 0 && (
-          <div className="flex items-center justify-center py-8">
-            <RefreshCw className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
-          </div>
-        )}
+          {step === 0 && (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400"/>
+              </div>
+          )}
 
-        {step === 1 && (
-          <WizardStep1
-            externalId={externalId}
-            copiedExternalId={copiedExternalId}
-            onCopyExternalId={handleCopyExternalId}
-            onDownloadTemplate={handleDownloadTemplate}
-            onCancel={() => onOpenChange(false)}
-            onNext={() => setStep(2)}
-          />
-        )}
+          {step === 1 && (
+              <WizardStep1
+                  externalId={externalId}
+                  copiedExternalId={copiedExternalId}
+                  onCopyExternalId={handleCopyExternalId}
+                  onDownloadTemplate={handleDownloadTemplate}
+                  onCancel={() => onOpenChange(false)}
+                  onNext={() => setStep(2)}
+              />
+          )}
 
-        {step === 2 && (
-          <WizardStep2
-            formData={formData}
-            isSubmitting={addAccountMutation.isPending}
-            onFormChange={setFormData}
-            onBack={() => setStep(1)}
-            onSubmit={handleSubmit}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
+          {step === 2 && (
+              <WizardStep2
+                  formData={formData}
+                  isSubmitting={addAccountMutation.isPending}
+                  onFormChange={setFormData}
+                  onBack={() => setStep(1)}
+                  onSubmit={handleSubmit}
+              />
+          )}
+        </DialogContent>
+      </Dialog>
   );
 };
