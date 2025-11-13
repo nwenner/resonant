@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { StatusBadge } from '@/components/resonant-ui/StatusBadge';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import { RefreshCw, Trash2, Edit2, Check } from 'lucide-react';
 
 export interface Account {
