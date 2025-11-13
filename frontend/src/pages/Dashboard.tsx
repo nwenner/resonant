@@ -27,16 +27,14 @@ export const Dashboard = () => {
           ? `${accounts.length} AWS account${accounts.length !== 1 ? 's' : ''} connected`
           : 'No AWS accounts connected',
       icon: Cloud,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      variant: 'info' as const
     },
     {
       title: 'Compliance Rate',
       value: '0%',
       description: 'Awaiting first scan',
       icon: Shield,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50 dark:bg-green-900/20',
+      variant: 'success' as const
     },
     {
       title: 'Active Policies',
@@ -45,16 +43,14 @@ export const Dashboard = () => {
           ? `${enabledPolicies} of ${policyStats?.total ?? 0} enabled`
           : 'No policies configured',
       icon: Activity,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+      variant: 'info' as const
     },
     {
       title: 'Non-Compliant',
       value: '0',
       description: 'No violations detected',
       icon: AlertTriangle,
-      color: 'text-amber-600',
-      bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+      variant: 'warning' as const
     },
   ];
 
