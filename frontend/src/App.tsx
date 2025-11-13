@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Login } from '@/pages/Login';
@@ -8,6 +9,7 @@ import { AwsAccountDetail } from '@/pages/AwsAccountDetail';
 import { TagPolicies } from '@/pages/TagPolicies';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Toaster } from '@/components/ui/toaster';
+import { useAuthStore } from '@/store/authStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,6 +21,13 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const validateAuth = useAuthStore((state) => state.validateAuth);
+
+  // Validate auth state on app mount
+  useEffect(() => {
+    validateAuth();
+  }, [validateAuth]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>

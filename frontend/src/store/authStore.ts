@@ -9,11 +9,12 @@ interface AuthState {
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
   updateUser: (user: User) => void;
+  validateAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
@@ -29,9 +30,21 @@ export const useAuthStore = create<AuthState>()(
       updateUser: (user: User) => {
         set({ user });
       },
+
+      validateAuth: () => {
+        const { token, isAuthenticated } = get();
+        // If marked as authenticated but no token, clear auth
+        if (isAuthenticated && !token) {
+          set({ user: null, token: null, isAuthenticated: false });
+        }
+      },
     }),
     {
       name: 'auth-storage',
+      // Validate state after hydration from localStorage
+      onRehydrateStorage: () => (state) => {
+        state?.validateAuth();
+      },
     }
   )
 );
