@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { scanService } from '@/services/scanService';
-import { QUERY_KEYS } from '@/constants/queryKeys';
+import {useQuery} from '@tanstack/react-query';
+import {scanService} from '@/services/scanService';
+import {QUERY_KEYS} from '@/constants/queryKeys';
 
 /**
  * Query hook to fetch all scans
@@ -38,9 +38,14 @@ export const useAccountScans = (accountId: string, enabled = true) => {
  * Query hook to fetch the latest scan for an account
  */
 export const useLatestScan = (accountId: string, enabled = true) => {
-  return useQuery({
+  const query = useQuery({
     queryKey: QUERY_KEYS.scans.latest(accountId),
     queryFn: () => scanService.getLatestScan(accountId),
     enabled: enabled && !!accountId,
   });
+
+  return {
+    ...query,
+    data: query.data ?? null,
+  };
 };
