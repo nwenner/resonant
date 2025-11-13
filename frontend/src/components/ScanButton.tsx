@@ -18,8 +18,8 @@ export const ScanButton = ({ accountId, accountAlias, disabled, onScanStarted }:
     mutationFn: () => scanService.triggerScan(accountId),
     onSuccess: (data) => {
       toast({
-        title: 'Scan Started',
-        description: `Scanning ${accountAlias} for compliance violations`,
+        title: 'Scan Complete!',
+        description: `Scanned ${accountAlias} for compliance violations`,
       });
       onScanStarted?.(data.id);
     },
@@ -41,7 +41,7 @@ export const ScanButton = ({ accountId, accountAlias, disabled, onScanStarted }:
       {scanMutation.isPending ? (
         <>
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Starting...
+          Scanning...
         </>
       ) : (
         <>
