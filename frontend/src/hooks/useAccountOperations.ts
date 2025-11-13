@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/useToast';
 import { awsAccountsService } from '@/services/awsAccountsService';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export const useAccountOperations = () => {
   const { toast } = useToast();
@@ -15,7 +16,7 @@ export const useAccountOperations = () => {
         title: 'Connection Test Successful',
         description: `Connected to account ${data.accountId} with access to ${data.availableRegionCount} regions`
       });
-      queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.awsAccounts.all });
     },
     onError: (error: any) => {
       toast({
@@ -31,7 +32,7 @@ export const useAccountOperations = () => {
       return await awsAccountsService.updateAlias(id, { accountAlias: alias });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.awsAccounts.all });
       toast({
         title: 'Success',
         description: 'Account alias updated'
@@ -51,7 +52,7 @@ export const useAccountOperations = () => {
       await awsAccountsService.deleteAccount(accountId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.awsAccounts.all });
       toast({
         title: 'Success',
         description: 'AWS account disconnected'

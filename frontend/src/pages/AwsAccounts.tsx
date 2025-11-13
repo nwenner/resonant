@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { awsAccountsService, AwsAccount } from '@/services/awsAccountsService';
+import { useAwsAccounts } from '@/hooks/useAwsAccounts';
 import { useAccountOperations } from '@/hooks/useAccountOperations';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -16,16 +15,10 @@ import {
 
 export const AwsAccounts = () => {
   const navigate = useNavigate();
+  const { data: accounts = [], isLoading } = useAwsAccounts();
   const { testConnection, updateAlias, deleteAccount } = useAccountOperations();
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-
-  const { data: accounts = [], isLoading } = useQuery<AwsAccount[]>({
-    queryKey: ['aws-accounts'],
-    queryFn: async () => {
-      return await awsAccountsService.listAccounts();
-    }
-  });
 
   if (isLoading) {
     return (

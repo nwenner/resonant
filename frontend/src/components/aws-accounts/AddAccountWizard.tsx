@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useToast } from '@/hooks/useToast';
 import { awsAccountsService } from '@/services/awsAccountsService';
 import { CLOUDFORMATION_TEMPLATE } from '@/constants/cloudformation';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 import { WizardStep1 } from './WizardStep1';
 import { WizardStep2, AccountFormData } from './WizardStep2';
 import { RefreshCw } from 'lucide-react';
@@ -66,7 +67,7 @@ export const AddAccountWizard = ({ open, onOpenChange }: AddAccountWizardProps) 
       return await awsAccountsService.createAccount(payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['aws-accounts'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.awsAccounts.all });
       toast({
         title: 'Success',
         description: 'AWS account connected successfully'
