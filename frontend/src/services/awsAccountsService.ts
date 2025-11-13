@@ -1,23 +1,12 @@
 import api from '@/lib/api';
+import {AwsAccount} from "@/types/awsAccount";
 
-// Types
-export interface AwsAccount {
-  id: string;
-  accountId: string;
-  accountAlias: string;
-  roleArn: string;
-  credentialType: string;
-  status: 'ACTIVE' | 'INVALID' | 'EXPIRED' | 'TESTING';
-  lastSyncedAt: string | null;
-  createdAt: string;
-}
-
-export interface ExternalIdResponse {
+interface ExternalIdResponse {
   externalId: string;
   instructions: string;
 }
 
-export interface TestConnectionResponse {
+interface TestConnectionResponse {
   success: boolean;
   message: string;
   accountId: string;
@@ -25,14 +14,14 @@ export interface TestConnectionResponse {
   availableRegionCount: number;
 }
 
-export interface CreateAccountRequest {
+interface CreateAccountRequest {
   accountId: string;
   accountAlias: string;
   roleArn: string;
   externalId: string;
 }
 
-export interface UpdateAliasRequest {
+interface UpdateAliasRequest {
   accountAlias: string;
 }
 

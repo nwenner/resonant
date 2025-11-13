@@ -12,18 +12,10 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {StatusBadge} from '@/components/shared/StatusBadge';
 import {Check, Edit2, RefreshCw, Trash2} from 'lucide-react';
-
-export interface Account {
-  id: string;
-  accountId: string;
-  accountAlias: string;
-  status: string;
-  roleArn: string;
-  lastSyncedAt: string | null;
-}
+import {AwsAccount} from "@/types/awsAccount";
 
 interface AccountCardProps {
-  account: Account;
+  account: AwsAccount;
   isTestingConnection?: boolean;
   isDeletingAccount?: boolean;
   isUpdatingAlias?: boolean;

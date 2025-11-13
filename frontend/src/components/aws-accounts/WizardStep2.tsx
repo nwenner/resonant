@@ -4,7 +4,7 @@ import {Label} from '@/components/ui/label';
 import {DialogFooter} from '@/components/ui/dialog';
 import {RefreshCw} from 'lucide-react';
 
-export interface AccountFormData {
+interface AccountFormData {
   accountId: string;
   accountAlias: string;
   roleArn: string;

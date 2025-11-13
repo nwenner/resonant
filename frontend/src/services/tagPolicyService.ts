@@ -1,20 +1,8 @@
 import api from '@/lib/api';
+import {Severity} from "@/types/severity";
+import {TagPolicy, TagPolicyStats} from "@/types/tagPolicy";
 
-export type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-
-export interface TagPolicy {
-  id: string;
-  name: string;
-  description: string;
-  requiredTags: Record<string, string[] | null>;
-  resourceTypes: string[];
-  severity: Severity;
-  enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateTagPolicyRequest {
+interface CreateTagPolicyRequest {
   name: string;
   description: string;
   requiredTags: Record<string, string[] | null>;
@@ -23,19 +11,13 @@ export interface CreateTagPolicyRequest {
   enabled: boolean;
 }
 
-export interface UpdateTagPolicyRequest {
+interface UpdateTagPolicyRequest {
   name?: string;
   description?: string;
   requiredTags?: Record<string, string[] | null>;
   resourceTypes?: string[];
   severity?: Severity;
   enabled?: boolean;
-}
-
-export interface TagPolicyStats {
-  total: number;
-  enabled: number;
-  disabled: number;
 }
 
 export const tagPolicyService = {
