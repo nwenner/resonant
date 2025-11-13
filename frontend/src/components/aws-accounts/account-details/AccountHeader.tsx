@@ -3,7 +3,7 @@ import {Button} from '@/components/ui/button';
 import {Badge} from '@/components/ui/badge';
 import {ScanButton} from '@/components/ScanButton';
 import {ArrowLeft, Cloud} from 'lucide-react';
-import {AwsAccount} from '@/services/awsAccountsService';
+import {AwsAccount} from "@/types/awsAccount.ts";
 
 interface AccountHeaderProps {
   account: AwsAccount;
