@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
+import {AxiosError} from 'axios';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {violationService} from '@/services/violationService';
-import {ComplianceViolation} from '@/types/scan';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
@@ -23,11 +23,13 @@ import {
 import {AlertCircle, ChevronDown, ChevronUp, EyeOff, RefreshCw} from 'lucide-react';
 import {formatDistanceToNow} from 'date-fns';
 import {useToast} from "@/hooks/useToast"
+import {ComplianceViolation} from "@/types/complianceViolation";
 
 interface ViolationsTableProps {
   accountId?: string;
 }
 
+// TODO - Fix the dark class references and follow the new pattern for theming.
 const getSeverityConfig = (severity: ComplianceViolation['severity']) => {
   switch (severity) {
     case 'CRITICAL':
@@ -81,7 +83,7 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
       });
       setSelectedViolation(null);
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to ignore violation',
@@ -100,7 +102,7 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
       });
       setSelectedViolation(null);
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to reopen violation',
@@ -231,7 +233,7 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
                                               Missing Tags:
                                             </h4>
                                             <div className="flex flex-wrap gap-2">
-                                              {violation.violationDetails.missingTags.map((tag) => (
+                                              {violation.violationDetails.missingTags.map((tag: string) => (
                                                   <Badge key={tag} variant="outline">
                                                     {tag}
                                                   </Badge>
@@ -245,21 +247,27 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
                                               Invalid Tags:
                                             </h4>
                                             <div className="space-y-2">
-                                              {Object.entries(violation.violationDetails.invalidTags).map(([key, value]) => (
-                                                  <div key={key} className="text-sm">
-                                                    <span className="font-medium">{key}:</span>
-                                                    <span
-                                                        className="text-red-600 dark:text-red-400 ml-2">
-                                          {value.current}
-                                        </span>
-                                                    <span
-                                                        className="text-slate-500 dark:text-slate-400 mx-2">→</span>
-                                                    <span
-                                                        className="text-green-600 dark:text-green-400">
-                                          Allowed: {value.allowed.join(', ')}
-                                        </span>
-                                                  </div>
-                                              ))}
+                                              {Object.entries(violation.violationDetails.invalidTags).map(([key, value]) => {
+                                                const tagValue = value as {
+                                                  current: string;
+                                                  allowed: string[]
+                                                };
+                                                return (
+                                                    <div key={key} className="text-sm">
+                                                      <span className="font-medium">{key}:</span>
+                                                      <span
+                                                          className="text-red-600 dark:text-red-400 ml-2">
+                                                        {tagValue.current}
+                                                      </span>
+                                                      <span
+                                                          className="text-slate-500 dark:text-slate-400 mx-2">→</span>
+                                                      <span
+                                                          className="text-green-600 dark:text-green-400">
+                                                        Allowed: {tagValue.allowed.join(', ')}
+                                                      </span>
+                                                    </div>
+                                                );
+                                              })}
                                             </div>
                                           </div>
                                       )}

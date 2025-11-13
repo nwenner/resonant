@@ -2,12 +2,7 @@ import {useEffect} from 'react';
 import {useFieldArray, useForm} from 'react-hook-form';
 import {useMutation} from '@tanstack/react-query';
 import {Plus, X} from 'lucide-react';
-import {
-  type CreateTagPolicyRequest,
-  type Severity,
-  type TagPolicy,
-  tagPolicyService,
-} from '@/services/tagPolicyService';
+import {type CreateTagPolicyRequest, tagPolicyService,} from '@/services/tagPolicyService';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +19,8 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from '..
 import {Switch} from '../ui/switch';
 import {useToast} from '@/hooks/useToast';
 import {Badge} from '../ui/badge';
+import {TagPolicy} from "@/types/tagPolicy";
+import {Severity} from "@/types/severity";
 
 interface PolicyFormDialogProps {
   open: boolean;

@@ -1,4 +1,5 @@
 import {useEffect, useState} from 'react';
+import {AxiosError} from 'axios';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {
   Dialog,
@@ -12,8 +13,9 @@ import {awsAccountsService} from '@/services/awsAccountsService';
 import {CLOUDFORMATION_TEMPLATE} from '@/constants/cloudformation';
 import {QUERY_KEYS} from '@/constants/queryKeys';
 import {WizardStep1} from './WizardStep1';
-import {AccountFormData, WizardStep2} from './WizardStep2';
+import {WizardStep2} from './WizardStep2';
 import {RefreshCw} from 'lucide-react';
+import {AccountFormData} from "@/types/awsAccount";
 
 interface AddAccountWizardProps {
   open: boolean;
@@ -38,6 +40,7 @@ export const AddAccountWizard = ({open, onOpenChange}: AddAccountWizardProps) =>
     if (open && step === 0) {
       generateExternalIdMutation.mutate();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // Reset wizard state when dialog closes
@@ -80,7 +83,7 @@ export const AddAccountWizard = ({open, onOpenChange}: AddAccountWizardProps) =>
       });
       onOpenChange(false); // Close dialog - cleanup will happen in useEffect
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Connection Failed',
         description: error.response?.data?.message || 'Failed to connect AWS account',

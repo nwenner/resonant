@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {resourceService} from '@/services/resourceService';
-import {AwsResource} from '@/types/scan';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
@@ -21,6 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import {ChevronDown, ChevronUp, Package} from 'lucide-react';
 import {formatDistanceToNow} from 'date-fns';
+import {AwsResource} from "@/types/awsResource";
 
 interface ResourcesTableProps {
   accountId?: string;
@@ -171,12 +171,12 @@ export const ResourcesTable = ({accountId}: ResourcesTableProps) => {
                                                       key={key}
                                                       className="text-sm p-2 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                                                   >
-                                        <span
-                                            className="font-medium text-slate-900 dark:text-white">
-                                          {key}:
-                                        </span>{' '}
                                                     <span
-                                                        className="text-slate-600 dark:text-slate-400">{value}</span>
+                                                        className="font-medium text-slate-900 dark:text-white">
+                                                      {key}:
+                                                    </span>{' '}
+                                                    <span
+                                                        className="text-slate-600 dark:text-slate-400">{String(value)}</span>
                                                   </div>
                                               ))}
                                             </div>

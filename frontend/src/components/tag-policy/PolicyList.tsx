@@ -4,7 +4,8 @@ import {Button} from '../ui/button';
 import {Skeleton} from '../ui/skeleton';
 import {Switch} from '../ui/switch';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '../ui/table';
-import type {Severity, TagPolicy} from '@/services/tagPolicyService';
+import {TagPolicy} from "@/types/tagPolicy.ts";
+import {Severity} from "@/types/severity.ts";
 
 interface PolicyListProps {
   policies: TagPolicy[];
@@ -14,6 +15,7 @@ interface PolicyListProps {
   onToggleEnabled: (policy: TagPolicy) => void;
 }
 
+// TODO - dark classes, need to fix this properly
 const severityColors: Record<Severity, string> = {
   LOW: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
   MEDIUM: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',

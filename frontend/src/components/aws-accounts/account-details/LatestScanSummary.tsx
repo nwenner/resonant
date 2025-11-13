@@ -1,6 +1,6 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {formatDistanceToNow} from 'date-fns';
-import {ScanJob} from '@/types/scan';
+import {ScanJob} from '@/types/scanJob.ts';
 
 interface LatestScanSummaryProps {
   scan: ScanJob;

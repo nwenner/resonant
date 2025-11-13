@@ -1,7 +1,7 @@
 import {FileCheck, Shield, ShieldOff} from 'lucide-react';
 import {Card, CardContent, CardHeader, CardTitle} from '../ui/card';
 import {Skeleton} from '../ui/skeleton';
-import type {TagPolicyStats} from '@/services/tagPolicyService';
+import {TagPolicyStats} from "@/types/tagPolicy.ts";
 
 interface PolicyStatsProps {
   stats?: TagPolicyStats;

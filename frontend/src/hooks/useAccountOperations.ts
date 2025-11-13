@@ -1,5 +1,6 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useToast} from '@/hooks/useToast';
+import {AxiosError} from 'axios';
 import {awsAccountsService} from '@/services/awsAccountsService';
 import {QUERY_KEYS} from '@/constants/queryKeys';
 
@@ -18,7 +19,7 @@ export const useAccountOperations = () => {
       });
       queryClient.invalidateQueries({queryKey: QUERY_KEYS.awsAccounts.all});
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Connection Test Failed',
         description: error.response?.data?.message || 'Unable to connect to AWS account',

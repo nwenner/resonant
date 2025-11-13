@@ -2,6 +2,7 @@ import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useToast} from '@/hooks/useToast';
 import {violationService} from '@/services/violationService';
 import {QUERY_KEYS} from '@/constants/queryKeys';
+import {AxiosError} from "axios";
 
 export const useViolationOperations = () => {
   const {toast} = useToast();
@@ -24,7 +25,7 @@ export const useViolationOperations = () => {
         description: 'The violation has been marked as ignored',
       });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to ignore violation',
@@ -50,7 +51,7 @@ export const useViolationOperations = () => {
         description: 'The violation has been reopened',
       });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Error',
         description: error.response?.data?.message || 'Failed to reopen violation',

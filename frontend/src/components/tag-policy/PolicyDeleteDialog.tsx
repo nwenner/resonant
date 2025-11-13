@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog';
-import type {TagPolicy} from '@/services/tagPolicyService';
+import {TagPolicy} from "@/types/tagPolicy";
 
 interface DeletePolicyDialogProps {
   open: boolean;

@@ -2,7 +2,7 @@ import api from '@/lib/api';
 import {Severity} from "@/types/severity";
 import {TagPolicy, TagPolicyStats} from "@/types/tagPolicy";
 
-interface CreateTagPolicyRequest {
+export interface CreateTagPolicyRequest {
   name: string;
   description: string;
   requiredTags: Record<string, string[] | null>;

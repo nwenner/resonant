@@ -5,7 +5,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/compo
 import {Badge} from '@/components/ui/badge';
 import {Progress} from '@/components/ui/progress';
 import {AlertCircle, CheckCircle, Clock, Loader2, XCircle} from 'lucide-react';
-import {ScanJob} from '@/types/scan';
+import {ScanJob} from '@/types/scanJob';
 import {formatDistanceToNow} from 'date-fns';
 
 interface ScanStatusCardProps {
@@ -63,7 +63,7 @@ export const ScanStatusCard = ({scanJobId, onComplete}: ScanStatusCardProps) => 
     if (scanJob && (scanJob.status === 'SUCCESS' || scanJob.status === 'FAILED')) {
       onComplete?.();
     }
-  }, [scanJob?.status, onComplete]);
+  }, [scanJob, onComplete]);
 
   if (isLoading || !scanJob) {
     return (

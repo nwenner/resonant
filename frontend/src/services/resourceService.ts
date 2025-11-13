@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import {AwsResource, ResourceStats} from '@/types/scan';
+import {AwsResource, ResourceStats} from "@/types/awsResource.ts";
 
 export const resourceService = {
   /**

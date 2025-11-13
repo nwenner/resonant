@@ -3,12 +3,7 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {DialogFooter} from '@/components/ui/dialog';
 import {RefreshCw} from 'lucide-react';
-
-interface AccountFormData {
-  accountId: string;
-  accountAlias: string;
-  roleArn: string;
-}
+import {AccountFormData} from "@/types/awsAccount";
 
 interface WizardStep2Props {
   formData: AccountFormData;

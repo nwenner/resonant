@@ -1,7 +1,7 @@
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {AlertTriangle, CheckCircle, Clock, Package} from 'lucide-react';
 import {formatDistanceToNow} from 'date-fns';
-import {ScanJob} from '@/types/scan';
+import {ScanJob} from '@/types/scanJob.ts';
 
 interface StatsOverviewProps {
   resourceCount: number;

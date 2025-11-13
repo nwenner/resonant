@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import {User} from './authService';
+import {User} from "@/types/user";
 
 export const usersService = {
   getAll: async (): Promise<User[]> => {

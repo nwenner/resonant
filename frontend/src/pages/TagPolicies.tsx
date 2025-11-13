@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {Filter, Plus} from 'lucide-react';
-import {type TagPolicy, tagPolicyService} from '@/services/tagPolicyService';
+import {tagPolicyService} from '@/services/tagPolicyService';
 import {Button} from '../components/ui/button';
 import {Layout} from '@/components/Layout';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '../components/ui/card';
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
+import {TagPolicy} from "@/types/tagPolicy";
 
 type FilterType = 'all' | 'enabled' | 'disabled';
 

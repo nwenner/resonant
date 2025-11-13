@@ -1,5 +1,5 @@
 import api from '@/lib/api';
-import {ComplianceViolation, ViolationStats} from '@/types/scan';
+import {ComplianceViolation, ViolationStats} from "@/types/complianceViolation";
 
 export const violationService = {
   /**

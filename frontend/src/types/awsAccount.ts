@@ -9,4 +9,10 @@ export interface AwsAccount {
   createdAt: string;
 }
 
+export interface AccountFormData {
+  accountId: string;
+  accountAlias: string;
+  roleArn: string;
+}
+
 export type AccountInstrumentationStatus = 'ACTIVE' | 'INVALID' | 'EXPIRED' | 'TESTING';

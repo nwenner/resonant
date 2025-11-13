@@ -2,7 +2,8 @@ import {useMutation} from '@tanstack/react-query';
 import {scanService} from '@/services/scanService';
 import {Button} from '@/components/ui/button';
 import {Loader2, PlayCircle} from 'lucide-react';
-import {useToast} from "@/hooks/useToast"
+import {useToast} from "@/hooks/useToast";
+import {AxiosError} from 'axios';
 
 interface ScanButtonProps {
   accountId: string;
@@ -23,7 +24,7 @@ export const ScanButton = ({accountId, accountAlias, disabled, onScanStarted}: S
       });
       onScanStarted?.(data.id);
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Scan Failed',
         description: error.response?.data?.message || 'Failed to start scan',

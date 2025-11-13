@@ -1,5 +1,6 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useToast} from '@/hooks/useToast';
+import {AxiosError} from 'axios';
 import {scanService} from '@/services/scanService';
 import {QUERY_KEYS} from '@/constants/queryKeys';
 
@@ -26,7 +27,7 @@ export const useScanOperations = () => {
         description: 'AWS account scan has been initiated',
       });
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast({
         title: 'Scan Failed',
         description: error.response?.data?.message || 'Failed to start scan',

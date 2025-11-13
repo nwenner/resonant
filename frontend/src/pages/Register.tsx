@@ -7,6 +7,7 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Tag} from 'lucide-react';
+import {AxiosError} from "axios";
 
 export const Register = () => {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ export const Register = () => {
       setAuth(response.user, response.token);
       navigate('/dashboard');
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       setError(error.response?.data?.message || 'Registration failed. Please try again.');
     },
   });

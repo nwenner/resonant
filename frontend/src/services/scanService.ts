@@ -1,5 +1,6 @@
 import api from '@/lib/api';
-import {ScanJob} from '@/types/scan';
+import {AxiosError} from 'axios';
+import {ScanJob} from '@/types/scanJob.ts';
 
 export const scanService = {
   /**
@@ -41,8 +42,8 @@ export const scanService = {
     try {
       const response = await api.get<ScanJob>(`/scans/accounts/${accountId}/latest`);
       return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error: unknown) {
+      if (error instanceof AxiosError && error.response?.status === 404) {
         return null;
       }
       throw error;
