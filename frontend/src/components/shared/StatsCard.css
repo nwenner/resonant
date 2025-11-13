@@ -1,0 +1,36 @@
+.stats-card-icon {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.stats-card-icon-success {
+  background: hsl(var(--status-success) / 0.15);
+}
+
+.stats-card-icon-error {
+  background: hsl(var(--status-error) / 0.15);
+}
+
+.stats-card-icon-warning {
+  background: hsl(var(--status-warning) / 0.15);
+}
+
+.stats-card-icon-info {
+  background: hsl(var(--status-info) / 0.15);
+}
+
+.stats-card-icon-text-success {
+  color: hsl(var(--status-success-foreground));
+}
+
+.stats-card-icon-text-error {
+  color: hsl(var(--status-error-foreground));
+}
+
+.stats-card-icon-text-warning {
+  color: hsl(var(--status-warning-foreground));
+}
+
+.stats-card-icon-text-info {
+  color: hsl(var(--status-info-foreground));
+}
