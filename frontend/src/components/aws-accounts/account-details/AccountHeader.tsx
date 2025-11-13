@@ -1,0 +1,57 @@
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ScanButton } from '@/components/ScanButton';
+import { ArrowLeft, Cloud } from 'lucide-react';
+import { AwsAccount } from '@/services/awsAccountsService';
+
+interface AccountHeaderProps {
+  account: AwsAccount;
+  isScanning: boolean;
+  onScanStarted: (scanJobId: string) => void;
+}
+
+export const AccountHeader = ({ account, isScanning, onScanStarted }: AccountHeaderProps) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="mb-6">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate('/aws-accounts')}
+        className="mb-4"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Accounts
+      </Button>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="p-3 bg-primary/10 rounded-lg">
+            <Cloud className="h-8 w-8 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">
+              {account.accountAlias}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Account ID: {account.accountId}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Badge variant={account.status === 'ACTIVE' ? 'default' : 'destructive'}>
+            {account.status}
+          </Badge>
+          <ScanButton
+            accountId={account.id}
+            accountAlias={account.accountAlias}
+            disabled={isScanning}
+            onScanStarted={onScanStarted}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
