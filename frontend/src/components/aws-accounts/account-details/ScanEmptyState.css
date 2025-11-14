@@ -1,0 +1,21 @@
+.scan-empty-icon {
+  height: 4rem;
+  width: 4rem;
+  color: hsl(var(--muted-foreground) / 0.5);
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1rem;
+}
+
+.scan-empty-title {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-bottom: 0.5rem;
+}
+
+.scan-empty-description {
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 1rem;
+}

@@ -4,6 +4,7 @@ import {Badge} from '@/components/ui/badge';
 import {ScanButton} from '@/components/ScanButton';
 import {ArrowLeft, Cloud} from 'lucide-react';
 import {AwsAccount} from "@/types/awsAccount.ts";
+import './AccountHeader.css';
 
 interface AccountHeaderProps {
   account: AwsAccount;
@@ -28,8 +29,8 @@ export const AccountHeader = ({account, isScanning, onScanStarted}: AccountHeade
 
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Cloud className="h-8 w-8 text-primary"/>
+            <div className="account-header-icon">
+              <Cloud className="h-8 w-8 account-header-icon-text"/>
             </div>
             <div>
               <h1 className="text-3xl font-bold text-foreground">

@@ -1,0 +1,9 @@
+.account-header-icon {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: hsl(var(--primary) / 0.1);
+}
+
+.account-header-icon-text {
+  color: hsl(var(--primary));
+}

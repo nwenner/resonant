@@ -2,6 +2,7 @@ import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {AlertTriangle, CheckCircle, Clock, Package} from 'lucide-react';
 import {formatDistanceToNow} from 'date-fns';
 import {ScanJob} from '@/types/scanJob.ts';
+import './StatsOverview.css';
 
 interface StatsOverviewProps {
   resourceCount: number;
@@ -19,13 +20,13 @@ export const StatsOverview = ({resourceCount, openViolations, latestScan}: Stats
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Resources
             </CardTitle>
-            <Package className="h-4 w-4 text-primary"/>
+            <Package className="h-4 w-4 stats-overview-icon-resources"/>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="stats-overview-value">
               {resourceCount}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="stats-overview-description">
               Discovered resources
             </p>
           </CardContent>
@@ -36,13 +37,13 @@ export const StatsOverview = ({resourceCount, openViolations, latestScan}: Stats
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Open Violations
             </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-destructive"/>
+            <AlertTriangle className="h-4 w-4 stats-overview-icon-violations"/>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="stats-overview-value">
               {openViolations}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="stats-overview-description">
               Requires attention
             </p>
           </CardContent>
@@ -53,10 +54,10 @@ export const StatsOverview = ({resourceCount, openViolations, latestScan}: Stats
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Last Scan
             </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground"/>
+            <Clock className="h-4 w-4 stats-overview-icon-scan"/>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="stats-overview-value">
               {hasScanned && latestScan ? (
                   <span className="text-lg">
                 {formatDistanceToNow(new Date(latestScan.completedAt || latestScan.startedAt), {
@@ -67,11 +68,11 @@ export const StatsOverview = ({resourceCount, openViolations, latestScan}: Stats
                   'Never'
               )}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="stats-overview-description">
               {hasScanned && latestScan ? (
                   latestScan.status === 'SUCCESS' ? (
                       <span className="flex items-center">
-                  <CheckCircle className="h-3 w-3 mr-1 text-green-600"/>
+                  <CheckCircle className="stats-overview-success-icon"/>
                   Completed successfully
                 </span>
                   ) : latestScan.status === 'FAILED' ? (

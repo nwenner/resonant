@@ -1,0 +1,28 @@
+.scan-metric {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: hsl(var(--muted));
+}
+
+.scan-metric-value {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.scan-metric-value-violations {
+  color: hsl(var(--destructive));
+}
+
+.scan-metric-value-resolved {
+  color: hsl(var(--status-success-foreground));
+}
+
+.scan-metric-label {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.25rem;
+}

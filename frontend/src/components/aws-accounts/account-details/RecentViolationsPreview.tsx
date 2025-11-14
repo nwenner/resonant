@@ -2,6 +2,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/compo
 import {Button} from '@/components/ui/button';
 import {Badge} from '@/components/ui/badge';
 import {ComplianceViolation} from "@/types/complianceViolation";
+import './RecentViolationsPreview.css';
 
 interface RecentViolationsPreviewProps {
   violations: ComplianceViolation[];
@@ -36,15 +37,12 @@ export const RecentViolationsPreview = ({
         <CardContent>
           <div className="space-y-2">
             {violations.slice(0, 5).map((violation) => (
-                <div
-                    key={violation.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted"
-                >
+                <div key={violation.id} className="violation-item">
                   <div>
-                    <div className="font-medium text-sm text-foreground">
+                    <div className="violation-item-title">
                       {violation.resourceName || violation.resourceArn.split('/').pop()}
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="violation-item-subtitle">
                       {violation.policyName}
                     </div>
                   </div>

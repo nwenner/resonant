@@ -1,6 +1,7 @@
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {formatDistanceToNow} from 'date-fns';
 import {ScanJob} from '@/types/scanJob.ts';
+import './LatestScanSummary.css';
 
 interface LatestScanSummaryProps {
   scan: ScanJob;
@@ -21,27 +22,27 @@ export const LatestScanSummary = ({scan}: LatestScanSummaryProps) => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-4 rounded-lg bg-muted">
-              <div className="text-2xl font-bold text-foreground">
+            <div className="scan-metric">
+              <div className="scan-metric-value">
                 {scan.resourcesScanned}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">
+              <div className="scan-metric-label">
                 Resources Scanned
               </div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-muted">
-              <div className="text-2xl font-bold text-destructive">
+            <div className="scan-metric">
+              <div className="scan-metric-value scan-metric-value-violations">
                 {scan.violationsFound}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">
+              <div className="scan-metric-label">
                 Violations Found
               </div>
             </div>
-            <div className="text-center p-4 rounded-lg bg-muted">
-              <div className="text-2xl font-bold text-green-600">
+            <div className="scan-metric">
+              <div className="scan-metric-value scan-metric-value-resolved">
                 {scan.violationsResolved}
               </div>
-              <div className="text-sm text-muted-foreground mt-1">
+              <div className="scan-metric-label">
                 Violations Resolved
               </div>
             </div>

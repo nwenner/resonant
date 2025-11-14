@@ -1,0 +1,32 @@
+.stats-overview-icon-resources {
+  color: hsl(var(--primary));
+}
+
+.stats-overview-icon-violations {
+  color: hsl(var(--destructive));
+}
+
+.stats-overview-icon-scan {
+  color: hsl(var(--muted-foreground));
+}
+
+.stats-overview-value {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+.stats-overview-description {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.25rem;
+}
+
+.stats-overview-success-icon {
+  height: 0.75rem;
+  width: 0.75rem;
+  margin-right: 0.25rem;
+  color: hsl(var(--status-success-foreground));
+}
