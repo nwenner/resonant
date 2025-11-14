@@ -51,6 +51,16 @@
     /* Auth pages (Login/Registration) */
     --auth-background: 210 40% 98%; /* slate-50 */
     --auth-background-subtle: 210 40% 96.1%; /* slate-100 */
+
+    /* Toast */
+    --toast-background: 0 0% 100%; /* white */
+    --toast-foreground: 215 20.2% 17.1%; /* slate-900 */
+    --toast-destructive-background: 0 93% 97%; /* red-50 */
+    --toast-destructive-foreground: 0 74% 28%; /* red-900 */
+    --toast-destructive-border: 0 84% 60%; /* red-500 */
+    --toast-action-hover: 210 40% 96.1%; /* slate-100 */
+    --toast-close: 215 16.3% 46.9%; /* slate-500 */
+    --toast-close-hover: 215 20.2% 17.1%; /* slate-900 */
   }
 
   .dark {
@@ -100,6 +110,16 @@
     /* Auth pages (Login/Registration) */
     --auth-background: 222.2 84% 4.9%; /* slate-950 */
     --auth-background-subtle: 217.2 32.6% 17.5%; /* slate-800 */
+
+    /* Toast */
+    --toast-background: 215 27.9% 16.9%; /* slate-800 */
+    --toast-foreground: 0 0% 100%; /* white */
+    --toast-destructive-background: 0 62% 8%; /* red-900/20 equivalent */
+    --toast-destructive-foreground: 0 93% 82%; /* red-100 */
+    --toast-destructive-border: 0 84% 60%; /* red-500 */
+    --toast-action-hover: 215 27.9% 32%; /* slate-700 */
+    --toast-close: 215 20.2% 65.1%; /* slate-400 */
+    --toast-close-hover: 0 0% 100%; /* white */
   }
 }
 
