@@ -1,6 +1,5 @@
-import {LucideIcon} from 'lucide-react';
-import {Card, CardContent} from '@/components/ui/card';
-import {Badge} from '@/components/ui/badge';
+import {ArrowRight, LucideIcon} from 'lucide-react';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 
 type QuickActionVariant = 'primary' | 'secondary' | 'tertiary';
@@ -42,27 +41,34 @@ export const QuickActionCard = ({
   const styles = variantStyles[variant];
 
   return (
-      <Card className={enabled ? 'cursor-pointer hover:shadow-lg transition-shadow' : 'opacity-60'}>
-        <CardContent className="p-6" onClick={enabled ? action : undefined}>
-          <div className="flex items-start justify-between mb-4">
-            <div className={`p-3 rounded-lg ${styles.bg}`}>
-              <Icon className={`w-6 h-6 ${styles.icon}`}/>
+      <Card className={enabled ? 'hover:shadow-lg transition-shadow' : 'opacity-60'}>
+        <CardHeader>
+          <div className="flex items-start justify-between mb-3">
+            <div className={`w-10 h-10 rounded-lg ${styles.bg} flex items-center justify-center`}>
+              <Icon className={`h-5 w-5 ${styles.icon}`}/>
             </div>
             {badge && (
-                <Badge variant="secondary">{badge}</Badge>
+                <span
+                    className="px-2 py-1 text-xs font-semibold bg-blue-600 text-white rounded-full">
+                  {badge}
+                </span>
             )}
           </div>
-          <h3 className="text-lg font-semibold mb-2">{title}</h3>
-          <p className="text-muted-foreground text-sm mb-4">{description}</p>
-          {enabled ? (
-              <Button variant="outline" size="sm" className="w-full">
-                Open
-              </Button>
-          ) : (
-              <Button variant="outline" size="sm" className="w-full" disabled>
-                Coming Soon
-              </Button>
-          )}
+          <CardTitle className="text-lg">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+              variant="ghost"
+              className="w-full justify-between group"
+              disabled={!enabled}
+              onClick={enabled ? action : undefined}
+          >
+            {enabled ? (badge ? 'Manage' : 'Get Started') : 'Coming Soon'}
+            {enabled && (
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform"/>
+            )}
+          </Button>
         </CardContent>
       </Card>
   );

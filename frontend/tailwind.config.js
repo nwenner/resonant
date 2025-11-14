@@ -68,7 +68,9 @@ export default {
         'quick-action-tertiary': {
           DEFAULT: 'hsl(var(--quick-action-tertiary))',
           foreground: 'hsl(var(--quick-action-tertiary-foreground))',
-        }
+        },
+        'auth-background': 'hsl(var(--auth-background))',
+        'auth-background-subtle': 'hsl(var(--auth-background-subtle))'
       },
       borderRadius: {
         lg: 'var(--radius)',

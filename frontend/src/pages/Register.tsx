@@ -61,11 +61,11 @@ export const Register = () => {
 
   return (
       <div
-          className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4">
+          className="min-h-screen flex items-center justify-center bg-gradient-to-br from-auth-background to-auth-background-subtle px-4">
         <div className="w-full max-w-md">
           <div className="flex items-center justify-center mb-8">
-            <Tag className="h-10 w-10 text-blue-600 dark:text-blue-400 mr-3"/>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Resonant</h1>
+            <Tag className="h-10 w-10 text-quick-action-primary-foreground mr-3"/>
+            <h1 className="text-3xl font-bold text-foreground">Resonant</h1>
           </div>
 
           <Card>
@@ -83,8 +83,7 @@ export const Register = () => {
                 )}
 
                 <div className="space-y-2">
-                  <label htmlFor="name"
-                         className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label htmlFor="name" className="text-sm font-medium text-muted-foreground">
                     Full Name
                   </label>
                   <Input
@@ -100,7 +99,7 @@ export const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="email" className="text-sm font-medium text-muted-foreground">
                     Email
                   </label>
                   <Input
@@ -116,7 +115,7 @@ export const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="password" className="text-sm font-medium text-muted-foreground">
                     Password
                   </label>
                   <Input
@@ -132,7 +131,8 @@ export const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="confirmPassword"
+                         className="text-sm font-medium text-muted-foreground">
                     Confirm Password
                   </label>
                   <Input
@@ -155,9 +155,10 @@ export const Register = () => {
                   {registerMutation.isPending ? 'Creating account...' : 'Create account'}
                 </Button>
 
-                <p className="text-center text-sm text-slate-600">
+                <p className="text-center text-sm text-muted-foreground">
                   Already have an account?{' '}
-                  <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                  <Link to="/login"
+                        className="text-quick-action-primary-foreground hover:opacity-80 font-medium">
                     Sign in
                   </Link>
                 </p>
