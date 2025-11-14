@@ -61,8 +61,7 @@ export const Dashboard = () => {
           ? `Manage ${accounts.length} connected account${accounts.length !== 1 ? 's' : ''}`
           : 'Connect and manage your AWS accounts for compliance monitoring',
       icon: Cloud,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100 dark:bg-blue-900',
+      variant: 'primary' as const,
       action: () => navigate('/aws-accounts'),
       enabled: true,
       badge: hasAccounts ? accounts.length.toString() : undefined,
@@ -73,8 +72,7 @@ export const Dashboard = () => {
           ? `Manage ${policyStats?.total ?? 0} tag compliance ${(policyStats?.total ?? 0) === 1 ? 'policy' : 'policies'}`
           : 'Define required tags and validation rules for your resources',
       icon: Tag,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100 dark:bg-purple-900',
+      variant: 'secondary' as const,
       action: () => navigate('/tag-policies'),
       enabled: true,
       badge: hasPolicies ? (policyStats?.total ?? 0).toString() : undefined,
@@ -83,8 +81,7 @@ export const Dashboard = () => {
       title: 'Compliance Reports',
       description: 'View detailed reports and track compliance trends over time',
       icon: Shield,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100 dark:bg-green-900',
+      variant: 'tertiary' as const,
       action: () => {
       },
       enabled: false,

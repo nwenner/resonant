@@ -27,7 +27,6 @@ export const AwsAccountDetail = () => {
   const {data: violations = []} = useAccountViolations(accountId!);
   const {data: resources = []} = useAccountResources(accountId!);
 
-  // Set active scan ID if there's a running scan
   useEffect(() => {
     if (latestScan && (latestScan.status === 'PENDING' || latestScan.status === 'RUNNING')) {
       setActiveScanId(latestScan.id);
@@ -49,7 +48,8 @@ export const AwsAccountDetail = () => {
     return (
         <Layout>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center py-12">Loading account details...</div>
+            <div className="text-center py-12 text-muted-foreground">Loading account details...
+            </div>
           </div>
         </Layout>
     );
@@ -104,13 +104,6 @@ export const AwsAccountDetail = () => {
             <TabsContent value="overview" className="space-y-6">
               {latestScan && <LatestScanSummary scan={latestScan}/>}
 
-              {!hasScanned && !isScanning && (
-                  <ScanEmptyState
-                      accountId={account.id}
-                      accountAlias={account.accountAlias}
-                      onScanStarted={handleScanStarted}
-                  />
-              )}
               {!hasScanned && !isScanning && (
                   <ScanEmptyState
                       accountId={account.id}

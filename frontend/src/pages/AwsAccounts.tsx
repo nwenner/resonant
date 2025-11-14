@@ -21,7 +21,7 @@ export const AwsAccounts = () => {
         <Layout>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-center justify-center h-64">
-              <RefreshCw className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400"/>
+              <RefreshCw className="w-8 h-8 animate-spin text-blue-600"/>
             </div>
           </div>
         </Layout>
@@ -35,8 +35,8 @@ export const AwsAccounts = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AWS Accounts</h1>
-                <p className="text-slate-600 dark:text-slate-400 mt-1">
+                <h1 className="text-3xl font-bold text-foreground">AWS Accounts</h1>
+                <p className="text-muted-foreground mt-1">
                   Manage your connected AWS accounts for compliance scanning
                 </p>
               </div>
@@ -50,10 +50,10 @@ export const AwsAccounts = () => {
             {accounts.length === 0 && (
                 <Card className="border-dashed">
                   <CardContent className="flex flex-col items-center justify-center py-12">
-                    <Cloud className="w-12 h-12 text-slate-400 dark:text-slate-600 mb-4"/>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No AWS
-                      Accounts Connected</h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-center mb-4">
+                    <Cloud className="w-12 h-12 text-muted-foreground mb-4"/>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">No AWS Accounts
+                      Connected</h3>
+                    <p className="text-muted-foreground text-center mb-4">
                       Connect your first AWS account to start scanning for tag compliance
                     </p>
                     <Button onClick={() => setIsAddDialogOpen(true)}>

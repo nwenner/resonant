@@ -5,17 +5,17 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 215 20.2% 17.1%; /* slate-900 */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 215 20.2% 17.1%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 215 20.2% 17.1%;
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    --muted-foreground: 215 13.8% 52%; /* slate-600 */
     --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 9%;
     --destructive: 0 84.2% 60.2%;
@@ -39,21 +39,29 @@
     --status-warning-foreground: 25 95% 53%;
     --status-info: 217 91% 60%;
     --status-info-foreground: 221 83% 53%;
+
+    /* Quick Action Variants */
+    --quick-action-primary: 219 95% 90%; /* blue-100 */
+    --quick-action-primary-foreground: 221 83% 53%; /* blue-600 */
+    --quick-action-secondary: 270 95% 90%; /* purple-100 */
+    --quick-action-secondary-foreground: 271 81% 56%; /* purple-600 */
+    --quick-action-tertiary: 142 76% 90%; /* green-100 */
+    --quick-action-tertiary-foreground: 142 71% 45%; /* green-600 */
   }
 
   .dark {
     --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
+    --foreground: 210 20% 98%; /* slate-50 */
     --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card-foreground: 210 20% 98%;
     --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover-foreground: 210 20% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted-foreground: 215 20.2% 65.1%; /* slate-400 */
     --accent: 0 0% 14.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
@@ -76,6 +84,14 @@
     --status-warning-foreground: 48 96% 70%;
     --status-info: 217 91% 60%;
     --status-info-foreground: 213 94% 73%;
+
+    /* Quick Action Variants */
+    --quick-action-primary: 221 39% 11%; /* blue-900 */
+    --quick-action-primary-foreground: 221 83% 53%;
+    --quick-action-secondary: 271 91% 12%; /* purple-900 */
+    --quick-action-secondary-foreground: 271 81% 56%;
+    --quick-action-tertiary: 142 72% 12%; /* green-900 */
+    --quick-action-tertiary-foreground: 142 71% 45%;
   }
 }
 
