@@ -1,6 +1,7 @@
 import {ArrowRight, LucideIcon} from 'lucide-react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
+import './QuickActionCard.css';
 
 type QuickActionVariant = 'primary' | 'secondary' | 'tertiary';
 
@@ -14,21 +15,6 @@ interface QuickActionCardProps {
   badge?: string;
 }
 
-const variantStyles: Record<QuickActionVariant, { icon: string; bg: string }> = {
-  primary: {
-    icon: 'text-quick-action-primary-foreground',
-    bg: 'bg-quick-action-primary'
-  },
-  secondary: {
-    icon: 'text-quick-action-secondary-foreground',
-    bg: 'bg-quick-action-secondary'
-  },
-  tertiary: {
-    icon: 'text-quick-action-tertiary-foreground',
-    bg: 'bg-quick-action-tertiary'
-  }
-};
-
 export const QuickActionCard = ({
                                   title,
                                   description,
@@ -38,14 +24,13 @@ export const QuickActionCard = ({
                                   enabled,
                                   badge,
                                 }: QuickActionCardProps) => {
-  const styles = variantStyles[variant];
-
   return (
       <Card className={enabled ? 'hover:shadow-lg transition-shadow' : 'opacity-60'}>
         <CardHeader>
           <div className="flex items-start justify-between mb-3">
-            <div className={`w-10 h-10 rounded-lg ${styles.bg} flex items-center justify-center`}>
-              <Icon className={`h-5 w-5 ${styles.icon}`}/>
+            <div
+                className={`w-10 h-10 rounded-lg quick-action-icon-${variant} flex items-center justify-center`}>
+              <Icon className={`h-5 w-5 quick-action-icon-text-${variant}`}/>
             </div>
             {badge && (
                 <span

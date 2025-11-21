@@ -1,0 +1,143 @@
+/* Layout Container */
+.layout-container {
+  min-height: 100vh;
+  background: hsl(var(--app-background));
+}
+
+/* Navigation Bar */
+.nav-bar {
+  background: hsl(var(--nav-background));
+  border-bottom: 1px solid hsl(var(--nav-border));
+}
+
+.nav-content {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .nav-content {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nav-content {
+    padding: 0 2rem;
+  }
+}
+
+.nav-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 4rem;
+}
+
+/* Logo/Brand */
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.brand-button {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-left: -0.5rem;
+}
+
+.brand-button:focus {
+  outline: none;
+}
+
+.brand-icon {
+  height: 2rem;
+  width: 2rem;
+  color: hsl(221 83% 53%);
+  margin-right: 0.75rem;
+}
+
+.brand-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+}
+
+/* Navigation Links */
+.nav-links {
+  display: none;
+  gap: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .nav-links {
+    display: flex;
+  }
+}
+
+.nav-link-inactive {
+  color: hsl(var(--muted-foreground));
+}
+
+/* User Menu */
+.user-menu-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-menu-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-menu-name {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .user-menu-name {
+    display: inline;
+  }
+}
+
+.admin-badge {
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: hsl(219 95% 90%);
+  color: hsl(221 83% 53%);
+  border-radius: 0.25rem;
+}
+
+.dark .admin-badge {
+  background: hsl(221 39% 11%);
+  color: hsl(221 83% 53%);
+}
+
+/* User Dropdown Menu */
+.user-dropdown-header {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.user-dropdown-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.user-dropdown-email {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* Main Content */
+.layout-main {
+  /* Base styles for main content area */
+  /* Pages will handle their own padding/layout */
+}

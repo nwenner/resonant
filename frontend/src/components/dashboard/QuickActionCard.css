@@ -1,0 +1,28 @@
+/* Quick Action Card Icon Styles */
+
+/* Primary variant (blue) */
+.quick-action-icon-primary {
+  background: hsl(var(--icon-blue) / 0.15);
+}
+
+.quick-action-icon-text-primary {
+  color: hsl(var(--icon-blue));
+}
+
+/* Secondary variant (purple) */
+.quick-action-icon-secondary {
+  background: hsl(var(--icon-purple) / 0.15);
+}
+
+.quick-action-icon-text-secondary {
+  color: hsl(var(--icon-purple));
+}
+
+/* Tertiary variant (green) */
+.quick-action-icon-tertiary {
+  background: hsl(var(--icon-green) / 0.15);
+}
+
+.quick-action-icon-text-tertiary {
+  color: hsl(var(--icon-green));
+}

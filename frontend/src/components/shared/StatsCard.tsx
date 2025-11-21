@@ -7,7 +7,7 @@ interface StatsCardProps {
   value: string;
   description: string;
   icon: LucideIcon;
-  variant: 'success' | 'error' | 'warning' | 'info';
+  variant: 'success' | 'error' | 'warning' | 'info' | 'secondary';
 }
 
 export const StatsCard = ({

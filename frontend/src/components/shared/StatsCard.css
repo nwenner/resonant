@@ -34,3 +34,11 @@
 .stats-card-icon-text-info {
   color: hsl(var(--status-info-foreground));
 }
+
+.stats-card-icon-secondary {
+  background: hsl(var(--icon-purple) / 0.15);
+}
+
+.stats-card-icon-text-secondary {
+  color: hsl(var(--icon-purple));
+}

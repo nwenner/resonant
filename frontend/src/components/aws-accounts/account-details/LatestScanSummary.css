@@ -2,7 +2,7 @@
   text-align: center;
   padding: 1rem;
   border-radius: 0.5rem;
-  background: hsl(var(--muted));
+  background: hsl(var(--card-section));
 }
 
 .scan-metric-value {

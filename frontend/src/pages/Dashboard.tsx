@@ -43,7 +43,7 @@ export const Dashboard = () => {
           ? `${enabledPolicies} of ${policyStats?.total ?? 0} enabled`
           : 'No policies configured',
       icon: Activity,
-      variant: 'info' as const
+      variant: 'secondary' as const
     },
     {
       title: 'Non-Compliant',
