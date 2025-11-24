@@ -12,6 +12,14 @@
     --card-section: 210 40% 96.1%; /* slate-100 - card sections */
     --foreground: 215 20.2% 17.1%; /* slate-900 - primary text */
 
+    /* Auth page backgrounds */
+    --auth-background: 210 40% 98%; /* slate-50 - auth gradient start */
+    --auth-background-end: 0 0% 100%; /* white - auth gradient end */
+
+    /* Link colors */
+    --link: 217 91% 60%; /* blue-500 - links */
+    --link-hover: 217 91% 50%; /* blue-600 - link hover */
+
     /* Card styles */
     --card: 0 0% 100%; /* white */
     --card-foreground: 215 20.2% 17.1%; /* slate-900 */
@@ -19,6 +27,11 @@
     /* Popover/dropdown styles */
     --popover: 0 0% 100%; /* white */
     --popover-foreground: 215 20.2% 17.1%; /* slate-900 */
+
+    /* Common text colors */
+    --text-primary: 215 20.2% 17.1%; /* slate-900 - headings, important text */
+    --text-secondary: 215 16.3% 46.9%; /* slate-600 - body text, descriptions */
+    --text-tertiary: 215 16.3% 56%; /* slate-500 - subtle text */
 
     /* Interactive elements */
     --primary: 0 0% 9%; /* nearly black */
@@ -46,22 +59,46 @@
     /* Border radius */
     --radius: 0.5rem;
 
-    /* Status colors (for badges, stats cards) */
-    --status-success: 142 71% 45%; /* green-600 */
-    --status-success-foreground: 142 76% 36%; /* green-700 */
-    --status-error: 0 84% 60%; /* red-500 */
-    --status-error-foreground: 0 72% 51%; /* red-600 */
-    --status-warning: 38 92% 50%; /* orange-500 */
-    --status-warning-foreground: 25 95% 53%; /* orange-600 */
-    --status-info: 217 91% 60%; /* blue-500 */
-    --status-info-foreground: 221 83% 53%; /* blue-600 */
+    /* BASE SEMANTIC COLORS - Single source of truth */
+    --semantic-blue: 217 91% 60%; /* blue-500 */
+    --semantic-blue-fg: 221 83% 53%; /* blue-600 */
+    --semantic-purple: 271 81% 56%; /* purple-500 */
+    --semantic-purple-fg: 271 81% 56%; /* purple-600 */
+    --semantic-green: 142 71% 45%; /* green-500 */
+    --semantic-green-fg: 142 76% 36%; /* green-600 */
+    --semantic-yellow: 48 96% 53%; /* yellow-500 */
+    --semantic-yellow-fg: 45 93% 47%; /* yellow-600 */
+    --semantic-orange: 27 96% 61%; /* orange-500 */
+    --semantic-orange-fg: 25 95% 53%; /* orange-600 */
+    --semantic-red: 0 84% 60%; /* red-500 */
+    --semantic-red-fg: 0 72% 51%; /* red-600 */
 
-    /* Icon colors (vibrant for both modes) */
-    --icon-blue: 217 91% 60%; /* blue-500 */
-    --icon-purple: 271 81% 56%; /* purple-500 */
-    --icon-green: 142 71% 45%; /* green-500 */
-    --icon-yellow: 48 96% 53%; /* yellow-500 */
-    --icon-red: 0 84% 60%; /* red-500 */
+    /* STATUS COLORS - Reference base colors */
+    --status-success: var(--semantic-green);
+    --status-success-foreground: var(--semantic-green-fg);
+    --status-error: var(--semantic-red);
+    --status-error-foreground: var(--semantic-red-fg);
+    --status-warning: var(--semantic-orange);
+    --status-warning-foreground: var(--semantic-orange-fg);
+    --status-info: var(--semantic-blue);
+    --status-info-foreground: var(--semantic-blue-fg);
+
+    /* SEVERITY COLORS - Reference base colors */
+    --severity-low: var(--semantic-blue);
+    --severity-low-foreground: var(--semantic-blue-fg);
+    --severity-medium: var(--semantic-yellow);
+    --severity-medium-foreground: var(--semantic-yellow-fg);
+    --severity-high: var(--semantic-orange);
+    --severity-high-foreground: var(--semantic-orange-fg);
+    --severity-critical: var(--semantic-red);
+    --severity-critical-foreground: var(--semantic-red-fg);
+
+    /* ICON COLORS - Reference base colors */
+    --icon-blue: var(--semantic-blue);
+    --icon-purple: var(--semantic-purple);
+    --icon-green: var(--semantic-green);
+    --icon-yellow: var(--semantic-yellow);
+    --icon-red: var(--semantic-red);
 
     /* Toast (matches card styling) */
     --toast-background: 0 0% 100%; /* white */
@@ -77,6 +114,14 @@
     --card-section: 215 27.9% 16.9%; /* slate-800 - card sections (slate-blue) */
     --foreground: 210 20% 98%; /* slate-50 - primary text */
 
+    /* Auth page backgrounds */
+    --auth-background: 222.2 47.4% 11.2%; /* slate-900 - auth gradient start */
+    --auth-background-end: 215 27.9% 16.9%; /* slate-800 - auth gradient end */
+
+    /* Link colors */
+    --link: 213 94% 68%; /* blue-400 - brighter for dark */
+    --link-hover: 213 94% 78%; /* blue-300 - even brighter on hover */
+
     /* Card styles */
     --card: 0 0% 3.9%; /* nearly black */
     --card-foreground: 210 20% 98%; /* slate-50 */
@@ -84,6 +129,11 @@
     /* Popover/dropdown styles */
     --popover: 0 0% 3.9%; /* nearly black */
     --popover-foreground: 210 20% 98%; /* slate-50 */
+
+    /* Common text colors */
+    --text-primary: 210 20% 98%; /* slate-50 / white - headings, important text */
+    --text-secondary: 215 20.2% 65.1%; /* slate-400 - body text, descriptions */
+    --text-tertiary: 215 20.2% 65.1%; /* slate-400 - subtle text */
 
     /* Interactive elements */
     --primary: 0 0% 98%; /* nearly white */
@@ -108,22 +158,46 @@
     --input: 0 0% 14.9%; /* dark gray */
     --ring: 0 0% 83.1%; /* light gray - focus rings */
 
-    /* Status colors (for badges, stats cards - brighter in dark mode) */
-    --status-success: 142 71% 45%; /* green-600 */
-    --status-success-foreground: 142 70% 65%; /* green-400 */
-    --status-error: 0 84% 60%; /* red-500 */
-    --status-error-foreground: 0 93% 73%; /* red-400 */
-    --status-warning: 38 92% 50%; /* orange-500 */
-    --status-warning-foreground: 48 96% 70%; /* orange-400 */
-    --status-info: 217 91% 60%; /* blue-500 */
-    --status-info-foreground: 213 94% 73%; /* blue-400 */
+    /* BASE SEMANTIC COLORS - Brighter for dark mode */
+    --semantic-blue: 213 94% 68%; /* blue-400 */
+    --semantic-blue-fg: 213 94% 73%; /* blue-300 */
+    --semantic-purple: 271 91% 65%; /* purple-400 */
+    --semantic-purple-fg: 271 91% 70%; /* purple-300 */
+    --semantic-green: 142 69% 58%; /* green-400 */
+    --semantic-green-fg: 142 70% 65%; /* green-300 */
+    --semantic-yellow: 48 96% 53%; /* yellow-400 */
+    --semantic-yellow-fg: 48 96% 70%; /* yellow-300 */
+    --semantic-orange: 33 100% 65%; /* orange-400 */
+    --semantic-orange-fg: 33 100% 70%; /* orange-300 */
+    --semantic-red: 0 91% 71%; /* red-400 */
+    --semantic-red-fg: 0 93% 73%; /* red-300 */
 
-    /* Icon colors (brighter for dark mode - 400-series) */
-    --icon-blue: 213 94% 68%; /* blue-400 */
-    --icon-purple: 271 91% 65%; /* purple-400 */
-    --icon-green: 142 69% 58%; /* green-400 */
-    --icon-yellow: 48 96% 53%; /* yellow-400 */
-    --icon-red: 0 91% 71%; /* red-400 */
+    /* STATUS COLORS - Reference base colors */
+    --status-success: var(--semantic-green);
+    --status-success-foreground: var(--semantic-green-fg);
+    --status-error: var(--semantic-red);
+    --status-error-foreground: var(--semantic-red-fg);
+    --status-warning: var(--semantic-orange);
+    --status-warning-foreground: var(--semantic-orange-fg);
+    --status-info: var(--semantic-blue);
+    --status-info-foreground: var(--semantic-blue-fg);
+
+    /* SEVERITY COLORS - Reference base colors */
+    --severity-low: var(--semantic-blue);
+    --severity-low-foreground: var(--semantic-blue-fg);
+    --severity-medium: var(--semantic-yellow);
+    --severity-medium-foreground: var(--semantic-yellow-fg);
+    --severity-high: var(--semantic-orange);
+    --severity-high-foreground: var(--semantic-orange-fg);
+    --severity-critical: var(--semantic-red);
+    --severity-critical-foreground: var(--semantic-red-fg);
+
+    /* ICON COLORS - Reference base colors */
+    --icon-blue: var(--semantic-blue);
+    --icon-purple: var(--semantic-purple);
+    --icon-green: var(--semantic-green);
+    --icon-yellow: var(--semantic-yellow);
+    --icon-red: var(--semantic-red);
 
     /* Toast (matches card styling) */
     --toast-background: 0 0% 3.9%; /* black */
@@ -214,5 +288,29 @@
 
   .text-toast {
     color: hsl(var(--toast-foreground));
+  }
+
+  /* Auth pages */
+  .bg-auth-gradient {
+    background: linear-gradient(to bottom right, hsl(var(--auth-background)), hsl(var(--auth-background-end)));
+  }
+
+  /* Links */
+  .text-link {
+    color: hsl(var(--link));
+  }
+
+  .text-link:hover {
+    color: hsl(var(--link-hover));
+  }
+
+  /* Error states */
+  .error-box {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: hsl(var(--semantic-red-fg));
+    background: hsl(var(--semantic-red) / 0.15);
+    border: 1px solid hsl(var(--semantic-red) / 0.3);
+    border-radius: 0.375rem;
   }
 }

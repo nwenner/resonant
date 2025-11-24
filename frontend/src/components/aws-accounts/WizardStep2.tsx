@@ -4,6 +4,7 @@ import {Label} from '@/components/ui/label';
 import {DialogFooter} from '@/components/ui/dialog';
 import {RefreshCw} from 'lucide-react';
 import {AccountFormData} from "@/types/awsAccount";
+import './WizardStyles.css';
 
 interface WizardStep2Props {
   formData: AccountFormData;
@@ -57,7 +58,7 @@ export const WizardStep2 = ({
               onChange={(e) => onFormChange({...formData, roleArn: e.target.value})}
               className="font-mono text-sm"
           />
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="wizard-helper-text">
             Find this in your CloudFormation stack outputs
           </p>
         </div>

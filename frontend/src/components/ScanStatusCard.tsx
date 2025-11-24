@@ -7,6 +7,7 @@ import {Progress} from '@/components/ui/progress';
 import {AlertCircle, CheckCircle, Clock, Loader2, XCircle} from 'lucide-react';
 import {ScanJob} from '@/types/scanJob';
 import {formatDistanceToNow} from 'date-fns';
+import './ScanStatusCard.css';
 
 interface ScanStatusCardProps {
   scanJobId: string;
@@ -18,30 +19,30 @@ const getStatusConfig = (status: ScanJob['status']) => {
     case 'PENDING':
       return {
         icon: Clock,
-        color: 'text-yellow-600',
-        bgColor: 'bg-yellow-100 dark:bg-yellow-900/20',
+        iconColor: 'status-icon-pending',
+        bgColor: 'status-bg-pending',
         badgeVariant: 'secondary' as const,
       };
     case 'RUNNING':
       return {
         icon: Loader2,
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100 dark:bg-blue-900/20',
+        iconColor: 'status-icon-running',
+        bgColor: 'status-bg-running',
         badgeVariant: 'default' as const,
         animate: true,
       };
     case 'SUCCESS':
       return {
         icon: CheckCircle,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100 dark:bg-green-900/20',
+        iconColor: 'status-icon-success',
+        bgColor: 'status-bg-success',
         badgeVariant: 'default' as const,
       };
     case 'FAILED':
       return {
         icon: XCircle,
-        color: 'text-red-600',
-        bgColor: 'bg-red-100 dark:bg-red-900/20',
+        iconColor: 'status-icon-failed',
+        bgColor: 'status-bg-failed',
         badgeVariant: 'destructive' as const,
       };
   }
@@ -69,7 +70,7 @@ export const ScanStatusCard = ({scanJobId, onComplete}: ScanStatusCardProps) => 
     return (
         <Card>
           <CardContent className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-slate-400"/>
+            <Loader2 className="h-6 w-6 animate-spin text-tertiary"/>
           </CardContent>
         </Card>
     );
@@ -86,7 +87,7 @@ export const ScanStatusCard = ({scanJobId, onComplete}: ScanStatusCardProps) => 
             <div className="flex items-center space-x-3">
               <div className={`p-2 rounded-lg ${statusConfig.bgColor}`}>
                 <StatusIcon
-                    className={`h-5 w-5 ${statusConfig.color} ${statusConfig.animate ? 'animate-spin' : ''}`}
+                    className={`h-5 w-5 ${statusConfig.iconColor} ${statusConfig.animate ? 'animate-spin' : ''}`}
                 />
               </div>
               <div>
@@ -107,7 +108,7 @@ export const ScanStatusCard = ({scanJobId, onComplete}: ScanStatusCardProps) => 
           {isRunning && (
               <div className="space-y-2">
                 <Progress value={undefined} className="h-2"/>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="scan-progress-text">
                   Scanning resources and evaluating policies...
                 </p>
               </div>
@@ -115,32 +116,32 @@ export const ScanStatusCard = ({scanJobId, onComplete}: ScanStatusCardProps) => 
 
           {/* Stats Grid */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">
+            <div className="scan-stat-card">
+              <div className="scan-stat-value">
                 {scanJob.resourcesScanned}
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">Resources Scanned
+              <div className="scan-stat-label">Resources Scanned
               </div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+            <div className="scan-stat-card">
+              <div className="scan-stat-value scan-stat-value-error">
                 {scanJob.violationsFound}
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">Violations Found
+              <div className="scan-stat-label">Violations Found
               </div>
             </div>
-            <div className="text-center p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div className="scan-stat-card">
+              <div className="scan-stat-value scan-stat-value-success">
                 {scanJob.violationsResolved}
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">Resolved</div>
+              <div className="scan-stat-label">Resolved</div>
             </div>
           </div>
 
           {/* Duration */}
           {scanJob.durationSeconds !== null && (
               <div
-                  className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
+                  className="flex items-center justify-between text-sm text-secondary">
                 <span>Duration:</span>
                 <span className="font-medium">{scanJob.durationSeconds}s</span>
               </div>
@@ -148,20 +149,18 @@ export const ScanStatusCard = ({scanJobId, onComplete}: ScanStatusCardProps) => 
 
           {/* Error Message */}
           {scanJob.status === 'FAILED' && scanJob.errorMessage && (
-              <div
-                  className="flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5"/>
+              <div className="scan-error-box">
+                <AlertCircle className="h-5 w-5 scan-error-icon"/>
                 <div>
-                  <p className="text-sm font-medium text-red-900 dark:text-red-200">Error</p>
-                  <p className="text-sm text-red-700 dark:text-red-300 mt-1">{scanJob.errorMessage}</p>
+                  <p className="scan-error-title">Error</p>
+                  <p className="scan-error-message">{scanJob.errorMessage}</p>
                 </div>
               </div>
           )}
 
           {/* Completion Time */}
           {scanJob.completedAt && (
-              <div
-                  className="text-xs text-slate-500 dark:text-slate-400 text-center pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div className="scan-completion-time">
                 Completed {formatDistanceToNow(new Date(scanJob.completedAt), {addSuffix: true})}
               </div>
           )}

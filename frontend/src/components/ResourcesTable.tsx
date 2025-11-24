@@ -21,6 +21,7 @@ import {
 import {ChevronDown, ChevronUp, Package} from 'lucide-react';
 import {formatDistanceToNow} from 'date-fns';
 import {AwsResource} from "@/types/awsResource";
+import './ResourcesTable.css';
 
 interface ResourcesTableProps {
   accountId?: string;
@@ -90,12 +91,12 @@ export const ResourcesTable = ({accountId}: ResourcesTableProps) => {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-                <div className="text-center py-8 text-slate-500">Loading resources...</div>
+                <div className="text-center py-8 text-secondary">Loading resources...</div>
             ) : filteredResources.length === 0 ? (
                 <div className="text-center py-8">
-                  <Package className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3"/>
-                  <p className="text-slate-600 dark:text-slate-400">No resources found</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">
+                  <Package className="h-12 w-12 empty-state-icon mx-auto mb-3"/>
+                  <p className="text-secondary">No resources found</p>
+                  <p className="text-sm text-tertiary mt-1">
                     Run a scan to discover resources
                   </p>
                 </div>
@@ -118,23 +119,23 @@ export const ResourcesTable = ({accountId}: ResourcesTableProps) => {
                       return (
                           <React.Fragment key={resource.id}>
                             <TableRow
-                                className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
+                                className="cursor-pointer hover-row"
                                 onClick={() => toggleRowExpansion(resource.id)}
                             >
                               <TableCell>
                                 {isExpanded ? (
-                                    <ChevronUp className="h-4 w-4 text-slate-400"/>
+                                    <ChevronUp className="h-4 w-4 text-secondary"/>
                                 ) : (
-                                    <ChevronDown className="h-4 w-4 text-slate-400"/>
+                                    <ChevronDown className="h-4 w-4 text-secondary"/>
                                 )}
                               </TableCell>
                               <TableCell>
                                 <div>
-                                  <div className="font-medium text-slate-900 dark:text-white">
+                                  <div className="font-medium text-primary">
                                     {resource.name || resource.resourceArn.split('/').pop()}
                                   </div>
                                   <div
-                                      className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[300px]">
+                                      className="text-xs text-tertiary truncate max-w-[300px]">
                                     {resource.resourceId}
                                   </div>
                                 </div>
@@ -143,40 +144,39 @@ export const ResourcesTable = ({accountId}: ResourcesTableProps) => {
                                 <Badge variant="secondary">{resource.resourceType}</Badge>
                               </TableCell>
                               <TableCell>
-                          <span className="text-sm text-slate-600 dark:text-slate-400">
+                          <span className="text-sm text-secondary">
                             {resource.region}
                           </span>
                               </TableCell>
                               <TableCell>
                                 <Badge variant="outline">{resource.tagCount} tags</Badge>
                               </TableCell>
-                              <TableCell className="text-sm text-slate-600 dark:text-slate-400">
+                              <TableCell className="text-sm text-secondary">
                                 {formatDistanceToNow(new Date(resource.lastSeenAt), {addSuffix: true})}
                               </TableCell>
                             </TableRow>
                             {isExpanded && (
                                 <TableRow>
                                   <TableCell colSpan={6}
-                                             className="bg-slate-50 dark:bg-slate-800/50">
+                                             className="expanded-row-bg">
                                     <div className="py-4 space-y-4">
                                       {/* Tags */}
                                       {Object.keys(resource.tags).length > 0 && (
                                           <div>
-                                            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
+                                            <h4 className="text-sm font-medium text-primary mb-2">
                                               Tags:
                                             </h4>
                                             <div className="grid grid-cols-2 gap-2">
                                               {Object.entries(resource.tags).map(([key, value]) => (
                                                   <div
                                                       key={key}
-                                                      className="text-sm p-2 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                                                      className="tag-box"
                                                   >
-                                                    <span
-                                                        className="font-medium text-slate-900 dark:text-white">
+                                                    <span className="tag-key">
                                                       {key}:
                                                     </span>{' '}
                                                     <span
-                                                        className="text-slate-600 dark:text-slate-400">{String(value)}</span>
+                                                        className="tag-value">{String(value)}</span>
                                                   </div>
                                               ))}
                                             </div>
@@ -186,11 +186,10 @@ export const ResourcesTable = ({accountId}: ResourcesTableProps) => {
                                       {/* Metadata */}
                                       {Object.keys(resource.metadata).length > 0 && (
                                           <div>
-                                            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
+                                            <h4 className="text-sm font-medium text-primary mb-2">
                                               Metadata:
                                             </h4>
-                                            <div
-                                                className="text-xs font-mono bg-slate-900 dark:bg-slate-950 text-slate-100 p-3 rounded overflow-x-auto">
+                                            <div className="code-display">
                                               <pre>{JSON.stringify(resource.metadata, null, 2)}</pre>
                                             </div>
                                           </div>
@@ -198,11 +197,11 @@ export const ResourcesTable = ({accountId}: ResourcesTableProps) => {
 
                                       {/* ARN */}
                                       <div
-                                          className="text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-700">
+                                          className="text-xs text-tertiary pt-2 border-t border-border">
                                         <span
                                             className="font-medium">ARN:</span> {resource.resourceArn}
                                       </div>
-                                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                                      <div className="text-xs text-tertiary">
                                         <span className="font-medium">Discovered:</span>{' '}
                                         {formatDistanceToNow(new Date(resource.discoveredAt), {addSuffix: true})}
                                       </div>
@@ -230,33 +229,33 @@ export const ResourcesTable = ({accountId}: ResourcesTableProps) => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Type</div>
+                      <div className="text-sm text-secondary">Type</div>
                       <Badge variant="secondary">{selectedResource.resourceType}</Badge>
                     </div>
                     <div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Region</div>
+                      <div className="text-sm text-secondary">Region</div>
                       <div className="font-medium">{selectedResource.region}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Resource ID</div>
+                      <div className="text-sm text-secondary">Resource ID</div>
                       <div className="text-sm font-mono">{selectedResource.resourceId}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Tags</div>
+                      <div className="text-sm text-secondary">Tags</div>
                       <Badge variant="outline">{selectedResource.tagCount} tags</Badge>
                     </div>
                   </div>
 
                   {Object.keys(selectedResource.tags).length > 0 && (
-                      <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                      <div className="pt-4 border-t border-border">
                         <h4 className="text-sm font-medium mb-2">Tags:</h4>
                         <div className="grid grid-cols-2 gap-2">
                           {Object.entries(selectedResource.tags).map(([key, value]) => (
                               <div
                                   key={key}
-                                  className="text-sm p-2 rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                                  className="tag-box"
                               >
-                                <span className="font-medium">{key}:</span> {value}
+                                <span className="tag-key">{key}:</span> {value}
                               </div>
                           ))}
                         </div>
@@ -264,7 +263,7 @@ export const ResourcesTable = ({accountId}: ResourcesTableProps) => {
                   )}
 
                   <div
-                      className="text-xs text-slate-500 dark:text-slate-400 pt-4 border-t border-slate-200 dark:border-slate-700">
+                      className="text-xs text-tertiary pt-4 border-t border-border">
                     <div className="mb-2">
                       <span className="font-medium">ARN:</span> {selectedResource.resourceArn}
                     </div>

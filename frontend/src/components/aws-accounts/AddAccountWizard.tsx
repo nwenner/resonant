@@ -16,6 +16,7 @@ import {WizardStep1} from './WizardStep1';
 import {WizardStep2} from './WizardStep2';
 import {RefreshCw} from 'lucide-react';
 import {AccountFormData} from "@/types/awsAccount";
+import './WizardStyles.css';
 
 interface AddAccountWizardProps {
   open: boolean;
@@ -133,7 +134,7 @@ export const AddAccountWizard = ({open, onOpenChange}: AddAccountWizardProps) =>
 
           {step === 0 && (
               <div className="flex items-center justify-center py-8">
-                <RefreshCw className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400"/>
+                <RefreshCw className="w-8 h-8 animate-spin wizard-loading-spinner"/>
               </div>
           )}
 

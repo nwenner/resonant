@@ -5,6 +5,7 @@ import {Alert, AlertDescription} from '@/components/ui/alert';
 import {Separator} from '@/components/ui/separator';
 import {DialogFooter} from '@/components/ui/dialog';
 import {Check, Copy, Download, Shield} from 'lucide-react';
+import './WizardStyles.css';
 
 interface WizardStep1Props {
   externalId: string;
@@ -25,9 +26,9 @@ export const WizardStep1 = ({
                             }: WizardStep1Props) => {
   return (
       <div className="space-y-4">
-        <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-          <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400"/>
-          <AlertDescription className="text-blue-900 dark:text-blue-100">
+        <Alert className="wizard-alert-box">
+          <Shield className="w-4 h-4 wizard-alert-icon"/>
+          <AlertDescription className="wizard-alert-text">
             Resonant uses IAM roles with read-only access to scan your resources. No destructive
             permissions are required.
           </AlertDescription>
@@ -50,10 +51,10 @@ export const WizardStep1 = ({
 
           <Separator/>
 
-          <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg space-y-3">
-            <h4 className="font-semibold text-slate-900 dark:text-white">Deployment
+          <div className="wizard-instructions-box space-y-3">
+            <h4 className="wizard-instructions-title">Deployment
               Instructions</h4>
-            <ol className="space-y-2 text-sm text-slate-600 dark:text-slate-400 list-decimal list-inside">
+            <ol className="wizard-instructions-list space-y-2 list-decimal list-inside">
               <li>Download the CloudFormation template below</li>
               <li>Open the AWS CloudFormation console in your account</li>
               <li>Create a new stack and upload the template</li>

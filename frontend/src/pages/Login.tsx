@@ -34,12 +34,11 @@ export const Login = () => {
   };
 
   return (
-      <div
-          className="min-h-screen flex items-center justify-center bg-gradient-to-br from-auth-background to-auth-background-subtle px-4">
+      <div className="min-h-screen flex items-center justify-center bg-auth-gradient px-4">
 
         <div className="w-full max-w-md">
           <div className="flex items-center justify-center mb-8">
-            <Tag className="h-10 w-10 text-quick-action-primary-foreground mr-3"/>
+            <Tag className="h-10 w-10 text-icon-blue mr-3"/>
             <h1 className="text-3xl font-bold text-foreground">Resonant</h1>
           </div>
 
@@ -51,14 +50,13 @@ export const Login = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
-                    <div
-                        className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                    <div className="error-box">
                       {error}
                     </div>
                 )}
 
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="email" className="text-sm font-medium text-secondary">
                     Email
                   </label>
                   <Input
@@ -73,7 +71,7 @@ export const Login = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="password" className="text-sm font-medium text-slate-700">
+                  <label htmlFor="password" className="text-sm font-medium text-secondary">
                     Password
                   </label>
                   <Input
@@ -95,9 +93,9 @@ export const Login = () => {
                   {loginMutation.isPending ? 'Signing in...' : 'Sign in'}
                 </Button>
 
-                <p className="text-center text-sm text-slate-600">
+                <p className="text-center text-sm text-secondary">
                   Don't have an account?{' '}
-                  <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+                  <Link to="/register" className="text-link font-medium">
                     Sign up
                   </Link>
                 </p>

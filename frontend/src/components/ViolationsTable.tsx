@@ -24,22 +24,22 @@ import {AlertCircle, ChevronDown, ChevronUp, EyeOff, RefreshCw} from 'lucide-rea
 import {formatDistanceToNow} from 'date-fns';
 import {useToast} from "@/hooks/useToast"
 import {ComplianceViolation} from "@/types/complianceViolation";
+import './ViolationsTable.css';
 
 interface ViolationsTableProps {
   accountId?: string;
 }
 
-// TODO - Fix the dark class references and follow the new pattern for theming.
 const getSeverityConfig = (severity: ComplianceViolation['severity']) => {
   switch (severity) {
     case 'CRITICAL':
-      return {variant: 'destructive' as const, color: 'text-red-600 dark:text-red-400'};
+      return {variant: 'destructive' as const, textClass: 'severity-text-critical'};
     case 'HIGH':
-      return {variant: 'destructive' as const, color: 'text-orange-600 dark:text-orange-400'};
+      return {variant: 'destructive' as const, textClass: 'severity-text-high'};
     case 'MEDIUM':
-      return {variant: 'secondary' as const, color: 'text-yellow-600 dark:text-yellow-400'};
+      return {variant: 'secondary' as const, textClass: 'severity-text-medium'};
     case 'LOW':
-      return {variant: 'secondary' as const, color: 'text-blue-600 dark:text-blue-400'};
+      return {variant: 'secondary' as const, textClass: 'severity-text-low'};
   }
 };
 
@@ -153,12 +153,12 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-                <div className="text-center py-8 text-slate-500">Loading violations...</div>
+                <div className="text-center py-8 text-secondary">Loading violations...</div>
             ) : filteredViolations.length === 0 ? (
                 <div className="text-center py-8">
                   <AlertCircle
-                      className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3"/>
-                  <p className="text-slate-600 dark:text-slate-400">No violations found</p>
+                      className="h-12 w-12 empty-state-icon mx-auto mb-3"/>
+                  <p className="text-secondary">No violations found</p>
                 </div>
             ) : (
                 <Table>
@@ -182,20 +182,20 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
                       return (
                           <React.Fragment key={violation.id}>
                             <TableRow
-                                className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800">
+                                className="cursor-pointer hover-row">
                               <TableCell onClick={() => toggleRowExpansion(violation.id)}>
                                 {isExpanded ? (
-                                    <ChevronUp className="h-4 w-4 text-slate-400"/>
+                                    <ChevronUp className="h-4 w-4 text-secondary"/>
                                 ) : (
-                                    <ChevronDown className="h-4 w-4 text-slate-400"/>
+                                    <ChevronDown className="h-4 w-4 text-secondary"/>
                                 )}
                               </TableCell>
                               <TableCell>
                                 <div>
-                                  <div className="font-medium text-slate-900 dark:text-white">
+                                  <div className="font-medium text-primary">
                                     {violation.resourceName || violation.resourceArn.split('/').pop()}
                                   </div>
-                                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                                  <div className="text-xs text-tertiary">
                                     {violation.resourceType}
                                   </div>
                                 </div>
@@ -209,7 +209,7 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
                               <TableCell>
                                 <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
                               </TableCell>
-                              <TableCell className="text-sm text-slate-600 dark:text-slate-400">
+                              <TableCell className="text-sm text-secondary">
                                 {formatDistanceToNow(new Date(violation.detectedAt), {addSuffix: true})}
                               </TableCell>
                               <TableCell className="text-right">
@@ -225,11 +225,11 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
                             {isExpanded && (
                                 <TableRow>
                                   <TableCell colSpan={7}
-                                             className="bg-slate-50 dark:bg-slate-800/50">
+                                             className="expanded-row-bg">
                                     <div className="py-4 space-y-3">
                                       {violation.violationDetails.missingTags && violation.violationDetails.missingTags.length > 0 && (
                                           <div>
-                                            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
+                                            <h4 className="text-sm font-medium text-primary mb-2">
                                               Missing Tags:
                                             </h4>
                                             <div className="flex flex-wrap gap-2">
@@ -243,7 +243,7 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
                                       )}
                                       {violation.violationDetails.invalidTags && Object.keys(violation.violationDetails.invalidTags).length > 0 && (
                                           <div>
-                                            <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
+                                            <h4 className="text-sm font-medium text-primary mb-2">
                                               Invalid Tags:
                                             </h4>
                                             <div className="space-y-2">
@@ -256,13 +256,13 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
                                                     <div key={key} className="text-sm">
                                                       <span className="font-medium">{key}:</span>
                                                       <span
-                                                          className="text-red-600 dark:text-red-400 ml-2">
+                                                          className="text-error ml-2">
                                                         {tagValue.current}
                                                       </span>
                                                       <span
-                                                          className="text-slate-500 dark:text-slate-400 mx-2">→</span>
+                                                          className="text-secondary mx-2">→</span>
                                                       <span
-                                                          className="text-green-600 dark:text-green-400">
+                                                          className="text-success">
                                                         Allowed: {tagValue.allowed.join(', ')}
                                                       </span>
                                                     </div>
@@ -272,7 +272,7 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
                                           </div>
                                       )}
                                       <div
-                                          className="text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-700">
+                                          className="text-xs text-tertiary pt-2 border-t border-border">
                                         ARN: {violation.resourceArn}
                                       </div>
                                     </div>
@@ -301,30 +301,30 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Policy</div>
+                      <div className="text-sm text-secondary">Policy</div>
                       <div className="font-medium">{selectedViolation.policyName}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Severity</div>
+                      <div className="text-sm text-secondary">Severity</div>
                       <Badge variant={getSeverityConfig(selectedViolation.severity).variant}>
                         {selectedViolation.severity}
                       </Badge>
                     </div>
                     <div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Status</div>
+                      <div className="text-sm text-secondary">Status</div>
                       <Badge variant={getStatusConfig(selectedViolation.status).variant}>
                         {getStatusConfig(selectedViolation.status).label}
                       </Badge>
                     </div>
                     <div>
-                      <div className="text-sm text-slate-600 dark:text-slate-400">Detected</div>
+                      <div className="text-sm text-secondary">Detected</div>
                       <div className="text-sm">
                         {formatDistanceToNow(new Date(selectedViolation.detectedAt), {addSuffix: true})}
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                  <div className="pt-4 border-t border-border space-y-4">
                     {selectedViolation.violationDetails.missingTags && selectedViolation.violationDetails.missingTags.length > 0 && (
                         <div>
                           <h4 className="text-sm font-medium mb-2">Missing Tags:</h4>
@@ -345,8 +345,8 @@ export const ViolationsTable = ({accountId}: ViolationsTableProps) => {
                                 <div key={key} className="text-sm">
                                   <div className="font-medium">{key}</div>
                                   <div
-                                      className="text-red-600 dark:text-red-400">Current: {value.current}</div>
-                                  <div className="text-green-600 dark:text-green-400">
+                                      className="text-error">Current: {value.current}</div>
+                                  <div className="text-success">
                                     Allowed: {value.allowed.join(', ')}
                                   </div>
                                 </div>

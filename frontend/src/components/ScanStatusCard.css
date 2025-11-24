@@ -1,0 +1,109 @@
+/* Scan Status Card Styles */
+
+/* Status Backgrounds */
+.status-bg-pending {
+  background: hsl(var(--semantic-yellow) / 0.15);
+}
+
+.status-bg-running {
+  background: hsl(var(--semantic-blue) / 0.15);
+}
+
+.status-bg-success {
+  background: hsl(var(--semantic-green) / 0.15);
+}
+
+.status-bg-failed {
+  background: hsl(var(--semantic-red) / 0.15);
+}
+
+/* Status Icon Colors */
+.status-icon-pending {
+  color: hsl(var(--semantic-yellow-fg));
+}
+
+.status-icon-running {
+  color: hsl(var(--semantic-blue-fg));
+}
+
+.status-icon-success {
+  color: hsl(var(--semantic-green-fg));
+}
+
+.status-icon-failed {
+  color: hsl(var(--semantic-red-fg));
+}
+
+/* Stat Card */
+.scan-stat-card {
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: hsl(var(--card-section));
+}
+
+.scan-stat-value {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: hsl(var(--text-primary));
+}
+
+.scan-stat-value-error {
+  color: hsl(var(--semantic-red-fg));
+}
+
+.scan-stat-value-success {
+  color: hsl(var(--semantic-green-fg));
+}
+
+.scan-stat-label {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: hsl(var(--text-secondary));
+  margin-top: 0.25rem;
+}
+
+/* Progress description */
+.scan-progress-text {
+  font-size: 0.875rem;
+  color: hsl(var(--text-secondary));
+}
+
+/* Error Alert Box */
+.scan-error-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: hsl(var(--semantic-red) / 0.15);
+  border: 1px solid hsl(var(--semantic-red) / 0.3);
+}
+
+.scan-error-icon {
+  color: hsl(var(--semantic-red-fg));
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.scan-error-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--semantic-red-fg));
+}
+
+.scan-error-message {
+  font-size: 0.875rem;
+  color: hsl(var(--semantic-red-fg));
+  margin-top: 0.25rem;
+}
+
+/* Completion Time */
+.scan-completion-time {
+  font-size: 0.75rem;
+  color: hsl(var(--text-tertiary));
+  text-align: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid hsl(var(--border));
+}

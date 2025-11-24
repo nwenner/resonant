@@ -6,6 +6,7 @@ import {Switch} from '../ui/switch';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '../ui/table';
 import {TagPolicy} from "@/types/tagPolicy.ts";
 import {Severity} from "@/types/severity.ts";
+import './PolicyList.css';
 
 interface PolicyListProps {
   policies: TagPolicy[];
@@ -15,12 +16,11 @@ interface PolicyListProps {
   onToggleEnabled: (policy: TagPolicy) => void;
 }
 
-// TODO - dark classes, need to fix this properly
-const severityColors: Record<Severity, string> = {
-  LOW: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-  MEDIUM: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-  HIGH: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-  CRITICAL: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+const severityClasses: Record<Severity, string> = {
+  LOW: 'severity-badge-low',
+  MEDIUM: 'severity-badge-medium',
+  HIGH: 'severity-badge-high',
+  CRITICAL: 'severity-badge-critical',
 };
 
 export function PolicyList({
@@ -80,7 +80,7 @@ export function PolicyList({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={severityColors[policy.severity]} variant="secondary">
+                    <Badge className={severityClasses[policy.severity]} variant="secondary">
                       {policy.severity}
                     </Badge>
                   </TableCell>

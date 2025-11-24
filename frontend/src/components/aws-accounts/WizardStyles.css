@@ -1,0 +1,43 @@
+/* Wizard Component Shared Styles */
+
+/* Alert Box */
+.wizard-alert-box {
+  background: hsl(var(--semantic-blue) / 0.15);
+  border-color: hsl(var(--semantic-blue) / 0.3);
+}
+
+.wizard-alert-icon {
+  color: hsl(var(--semantic-blue-fg));
+}
+
+.wizard-alert-text {
+  color: hsl(var(--text-primary));
+}
+
+/* Instructions Box */
+.wizard-instructions-box {
+  background: hsl(var(--card-section));
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.wizard-instructions-title {
+  font-weight: 600;
+  color: hsl(var(--text-primary));
+}
+
+.wizard-instructions-list {
+  font-size: 0.875rem;
+  color: hsl(var(--text-secondary));
+}
+
+/* Helper Text */
+.wizard-helper-text {
+  font-size: 0.75rem;
+  color: hsl(var(--text-tertiary));
+}
+
+/* Loading Spinner */
+.wizard-loading-spinner {
+  color: hsl(var(--semantic-blue-fg));
+}

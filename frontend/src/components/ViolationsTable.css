@@ -1,0 +1,11 @@
+@import './SharedTableStyles.css';
+
+/* Expanded row uses the shared .expanded-row-bg class */
+
+/* Empty state uses shared .empty-state-icon and .text-secondary */
+
+/* Severity text colors use shared .severity-text-* classes */
+
+/* Success/error text use shared .text-success and .text-error */
+
+/* Hover row uses shared .hover-row class */

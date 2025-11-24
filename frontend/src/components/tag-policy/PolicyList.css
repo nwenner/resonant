@@ -1,0 +1,23 @@
+.severity-badge-low {
+  background: hsl(var(--severity-low) / 0.15);
+  color: hsl(var(--severity-low-foreground));
+  border-color: hsl(var(--severity-low) / 0.3);
+}
+
+.severity-badge-medium {
+  background: hsl(var(--severity-medium) / 0.15);
+  color: hsl(var(--severity-medium-foreground));
+  border-color: hsl(var(--severity-medium) / 0.3);
+}
+
+.severity-badge-high {
+  background: hsl(var(--severity-high) / 0.15);
+  color: hsl(var(--severity-high-foreground));
+  border-color: hsl(var(--severity-high) / 0.3);
+}
+
+.severity-badge-critical {
+  background: hsl(var(--severity-critical) / 0.15);
+  color: hsl(var(--severity-critical-foreground));
+  border-color: hsl(var(--severity-critical) / 0.3);
+}

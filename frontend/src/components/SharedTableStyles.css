@@ -1,0 +1,66 @@
+/* Shared Table & Card Styles - Common Patterns Across Components */
+
+/* Text Colors */
+.text-primary {
+  color: hsl(var(--text-primary));
+}
+
+.text-secondary {
+  color: hsl(var(--text-secondary));
+}
+
+.text-tertiary {
+  color: hsl(var(--text-tertiary));
+}
+
+/* Expanded Row Background */
+.expanded-row-bg {
+  background: hsl(var(--card-section));
+}
+
+/* Empty State Icon */
+.empty-state-icon {
+  color: hsl(var(--text-tertiary) / 0.5);
+}
+
+/* Severity Text Colors */
+.severity-text-critical {
+  color: hsl(var(--severity-critical-foreground));
+}
+
+.severity-text-high {
+  color: hsl(var(--severity-high-foreground));
+}
+
+.severity-text-medium {
+  color: hsl(var(--severity-medium-foreground));
+}
+
+.severity-text-low {
+  color: hsl(var(--severity-low-foreground));
+}
+
+/* Success/Error Text (using semantic colors) */
+.text-success {
+  color: hsl(var(--semantic-green-fg));
+}
+
+.text-error {
+  color: hsl(var(--semantic-red-fg));
+}
+
+/* Hover Row Background */
+.hover-row:hover {
+  background: hsl(var(--muted) / 0.5);
+}
+
+/* Inline Code/ARN Display */
+.code-display {
+  background: hsl(var(--muted));
+  color: hsl(var(--text-primary));
+  font-family: monospace;
+  font-size: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+}

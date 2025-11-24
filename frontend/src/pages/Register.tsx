@@ -60,11 +60,10 @@ export const Register = () => {
   };
 
   return (
-      <div
-          className="min-h-screen flex items-center justify-center bg-gradient-to-br from-auth-background to-auth-background-subtle px-4">
+      <div className="min-h-screen flex items-center justify-center bg-auth-gradient px-4">
         <div className="w-full max-w-md">
           <div className="flex items-center justify-center mb-8">
-            <Tag className="h-10 w-10 text-quick-action-primary-foreground mr-3"/>
+            <Tag className="h-10 w-10 text-icon-blue mr-3"/>
             <h1 className="text-3xl font-bold text-foreground">Resonant</h1>
           </div>
 
@@ -76,8 +75,7 @@ export const Register = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
-                    <div
-                        className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                    <div className="error-box">
                       {error}
                     </div>
                 )}
@@ -157,8 +155,7 @@ export const Register = () => {
 
                 <p className="text-center text-sm text-muted-foreground">
                   Already have an account?{' '}
-                  <Link to="/login"
-                        className="text-quick-action-primary-foreground hover:opacity-80 font-medium">
+                  <Link to="/login" className="text-link font-medium">
                     Sign in
                   </Link>
                 </p>
