@@ -34,19 +34,19 @@ export function PolicyStats({stats, isLoading}: PolicyStatsProps) {
       title: 'Total Policies',
       value: stats.total,
       icon: FileCheck,
-      iconColor: 'text-blue-500',
+      iconColor: 'text-icon-blue',
     },
     {
       title: 'Enabled',
       value: stats.enabled,
       icon: Shield,
-      iconColor: 'text-green-500',
+      iconColor: 'text-icon-green',
     },
     {
       title: 'Disabled',
       value: stats.disabled,
       icon: ShieldOff,
-      iconColor: 'text-gray-500',
+      iconColor: 'text-tertiary',
     },
   ];
 

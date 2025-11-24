@@ -31,7 +31,7 @@ export const GettingStartedStep = ({
                 isComplete
                     ? 'bg-[hsl(var(--status-success))]'
                     : isEnabled
-                        ? 'bg-blue-600'
+                        ? 'bg-[hsl(var(--semantic-blue))]'
                         : 'bg-muted'
             }`}
         >
