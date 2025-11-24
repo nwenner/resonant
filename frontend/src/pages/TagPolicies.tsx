@@ -1,11 +1,10 @@
 import {useState} from 'react';
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {Filter, Plus} from 'lucide-react';
 import {tagPolicyService} from '@/services/tagPolicyService';
 import {Button} from '../components/ui/button';
 import {Layout} from '@/components/Layout';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '../components/ui/card';
-import {useToast} from '@/hooks/useToast';
 import {PolicyList} from '../components/tag-policy/PolicyList';
 import {PolicyFormDialog} from '../components/tag-policy/PolicyFormDialog';
 import {PolicyDeleteDialog} from '../components/tag-policy/PolicyDeleteDialog';
@@ -18,6 +17,8 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import {TagPolicy} from "@/types/tagPolicy";
+import {QUERY_KEYS} from '@/constants/queryKeys';
+import {useMutationWithToast} from '@/hooks/useMutationWithToast';
 
 type FilterType = 'all' | 'enabled' | 'disabled';
 
@@ -27,12 +28,11 @@ export function TagPolicies() {
   const [editingPolicy, setEditingPolicy] = useState<TagPolicy | null>(null);
   const [deletingPolicy, setDeletingPolicy] = useState<TagPolicy | null>(null);
 
-  const {toast} = useToast();
   const queryClient = useQueryClient();
 
   // Fetch policies based on filter
   const {data: policies = [], isLoading} = useQuery({
-    queryKey: ['tag-policies', filter],
+    queryKey: QUERY_KEYS.tagPolicies.list(filter !== 'all' ? {enabled: filter === 'enabled'} : undefined),
     queryFn: () => {
       if (filter === 'all') return tagPolicyService.getAll();
       return tagPolicyService.getAll(filter === 'enabled');
@@ -41,68 +41,31 @@ export function TagPolicies() {
 
   // Fetch stats
   const {data: stats} = useQuery({
-    queryKey: ['tag-policies-stats'],
+    queryKey: QUERY_KEYS.tagPolicies.stats,
     queryFn: () => tagPolicyService.getStats(),
   });
 
   // Enable policy mutation
-  const enableMutation = useMutation({
+  const enableMutation = useMutationWithToast({
     mutationFn: (id: string) => tagPolicyService.enable(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['tag-policies']});
-      queryClient.invalidateQueries({queryKey: ['tag-policies-stats']});
-      toast({
-        title: 'Policy enabled',
-        description: 'The policy has been enabled successfully.',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to enable the policy. Please try again.',
-        variant: 'destructive',
-      });
-    },
+    invalidateKeys: [QUERY_KEYS.tagPolicies.all, QUERY_KEYS.tagPolicies.stats],
+    successMessage: 'Policy enabled successfully',
   });
 
   // Disable policy mutation
-  const disableMutation = useMutation({
+  const disableMutation = useMutationWithToast({
     mutationFn: (id: string) => tagPolicyService.disable(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['tag-policies']});
-      queryClient.invalidateQueries({queryKey: ['tag-policies-stats']});
-      toast({
-        title: 'Policy disabled',
-        description: 'The policy has been disabled successfully.',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to disable the policy. Please try again.',
-        variant: 'destructive',
-      });
-    },
+    invalidateKeys: [QUERY_KEYS.tagPolicies.all, QUERY_KEYS.tagPolicies.stats],
+    successMessage: 'Policy disabled successfully',
   });
 
   // Delete policy mutation
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutationWithToast({
     mutationFn: (id: string) => tagPolicyService.delete(id),
+    invalidateKeys: [QUERY_KEYS.tagPolicies.all, QUERY_KEYS.tagPolicies.stats],
+    successMessage: 'Policy deleted successfully',
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['tag-policies']});
-      queryClient.invalidateQueries({queryKey: ['tag-policies-stats']});
       setDeletingPolicy(null);
-      toast({
-        title: 'Policy deleted',
-        description: 'The policy has been deleted successfully.',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete the policy. Please try again.',
-        variant: 'destructive',
-      });
     },
   });
 
@@ -131,8 +94,8 @@ export function TagPolicies() {
   const handleFormSuccess = () => {
     setIsFormOpen(false);
     setEditingPolicy(null);
-    queryClient.invalidateQueries({queryKey: ['tag-policies']});
-    queryClient.invalidateQueries({queryKey: ['tag-policies-stats']});
+    queryClient.invalidateQueries({queryKey: QUERY_KEYS.tagPolicies.all});
+    queryClient.invalidateQueries({queryKey: QUERY_KEYS.tagPolicies.stats});
   };
 
   return (
