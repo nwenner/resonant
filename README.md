@@ -12,9 +12,11 @@
 
 ## Overview
 
-Resonant helps organizations maintain AWS tagging compliance at scale. Define policies, connect AWS accounts, scan resources, and track violations—all from a centralized dashboard.
+Resonant helps organizations maintain AWS tagging compliance at scale. Define policies, connect AWS
+accounts, scan resources, and track violations—all from a centralized dashboard.
 
 **Key Features:**
+
 - Flexible tag policy engine with severity levels
 - Multi-account AWS scanning via IAM role assumption
 - Real-time compliance monitoring across S3, EC2, RDS, Lambda
@@ -27,14 +29,17 @@ Resonant helps organizations maintain AWS tagging compliance at scale. Define po
 ## Screenshots
 
 ### Dashboard
+
 ![Dashboard](/docs/screenshots/dashboard.png)
 *Overview of compliance metrics and recent scans*
 
 ### Tag Policies
+
 ![Tag Policies](/docs/screenshots/policies.png)
 *Define and manage tagging requirements*
 
 ### Violations
+
 ![Violations](/docs/screenshots/violations.png)
 *Track non-compliant resources with detailed remediation info*
 
@@ -43,6 +48,7 @@ Resonant helps organizations maintain AWS tagging compliance at scale. Define po
 ## Tech Stack
 
 ### Backend
+
 - **Framework:** Spring Boot 3.2 (Java 21)
 - **Database:** PostgreSQL with Flyway migrations
 - **Security:** Spring Security + JWT
@@ -50,6 +56,7 @@ Resonant helps organizations maintain AWS tagging compliance at scale. Define po
 - **API Docs:** OpenAPI/Swagger
 
 ### Frontend
+
 - **Framework:** React 18 + TypeScript
 - **Build:** Vite
 - **State:** Zustand + TanStack Query
@@ -87,6 +94,7 @@ docker-compose up -d
 ### 3. Configure Backend
 
 Create `backend/.env`:
+
 ```bash
 DATABASE_URL=jdbc:postgresql://localhost:5432/resonant
 DATABASE_USERNAME=resonant_user
@@ -107,6 +115,7 @@ Backend runs on `http://localhost:8080`
 ### 5. Configure Frontend
 
 Create `frontend/.env`:
+
 ```bash
 VITE_API_URL=http://localhost:8080
 ```
@@ -126,27 +135,32 @@ Frontend runs on `http://localhost:3000`
 ## Usage
 
 ### 1. Create Account
+
 Navigate to `http://localhost:3000/register` and create a user account.
 
 ### 2. Connect AWS Account
+
 - Go to **AWS Accounts** page
 - Provide AWS Account ID and IAM Role ARN
 - Use cross-account role assumption (recommended) or access keys
 - Test connection to verify
 
 ### 3. Define Tag Policies
+
 - Go to **Tag Policies** page
 - Create policies with required tags and allowed values
 - Set severity levels (LOW, MEDIUM, HIGH, CRITICAL)
 - Choose target resource types (s3:bucket, ec2:instance, etc.)
 
 ### 4. Scan Resources
+
 - Select an AWS account
 - Click **Scan Account**
 - Monitor real-time progress
 - View discovered resources and violations
 
 ### 5. Manage Violations
+
 - Review non-compliant resources
 - See missing/invalid tags
 - Ignore false positives
@@ -158,7 +172,8 @@ Navigate to `http://localhost:3000/register` and create a user account.
 
 ### Automated Setup (Recommended)
 
-Resonant includes a **CloudFormation wizard** that automatically creates the required IAM role with proper permissions and trust policy.
+Resonant includes a **CloudFormation wizard** that automatically creates the required IAM role with
+proper permissions and trust policy.
 
 1. Navigate to **AWS Accounts** → **Connect Account**
 2. Click **Launch CloudFormation Template**
@@ -166,6 +181,7 @@ Resonant includes a **CloudFormation wizard** that automatically creates the req
 4. Copy the Role ARN back to Resonant
 
 The CloudFormation template creates:
+
 - Cross-account IAM role with external ID
 - Read-only permissions for tagging APIs
 - Proper trust relationship
@@ -173,6 +189,7 @@ The CloudFormation template creates:
 ### Manual Setup
 
 If you prefer manual configuration, create an IAM role with this trust policy:
+
 ```json
 {
   "Version": "2012-10-17",
@@ -194,26 +211,10 @@ If you prefer manual configuration, create an IAM role with this trust policy:
 ```
 
 **Required Permissions:**
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:ListAllMyBuckets",
-        "s3:GetBucketTagging",
-        "s3:GetBucketLocation",
-        "ec2:DescribeInstances",
-        "ec2:DescribeTags",
-        "rds:DescribeDBInstances",
-        "rds:ListTagsForResource",
-        "lambda:ListFunctions",
-        "lambda:ListTags"
-      ],
-      "Resource": "*"
-    }
-  ]
+
+```skills
+// blah
+// blah
 }
 ```
 
@@ -293,20 +294,22 @@ resonant/
 ## Environment Variables
 
 ### Backend (.env)
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
-| `DATABASE_USERNAME` | Database user | Yes |
-| `DATABASE_PASSWORD` | Database password | Yes |
-| `JWT_SECRET` | Base64-encoded secret for JWT | Yes |
-| `RESONANT_ENCRYPTION_KEY` | Key for encrypting AWS credentials | No* |
+
+| Variable                  | Description                        | Required |
+|---------------------------|------------------------------------|----------|
+| `DATABASE_URL`            | PostgreSQL connection string       | Yes      |
+| `DATABASE_USERNAME`       | Database user                      | Yes      |
+| `DATABASE_PASSWORD`       | Database password                  | Yes      |
+| `JWT_SECRET`              | Base64-encoded secret for JWT      | Yes      |
+| `RESONANT_ENCRYPTION_KEY` | Key for encrypting AWS credentials | No*      |
 
 *Only required if using access keys instead of IAM roles
 
 ### Frontend (.env)
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `VITE_API_URL` | Backend API base URL | Yes |
+
+| Variable       | Description          | Required |
+|----------------|----------------------|----------|
+| `VITE_API_URL` | Backend API base URL | Yes      |
 
 ---
 
@@ -317,7 +320,7 @@ resonant/
 - [x] AWS account integration
 - [x] S3 resource scanning
 - [x] Compliance violation tracking
-- [ ] Dev Resource 
+- [ ] Dev Resource
 - [ ] EC2, RDS, Lambda scanners
 - [ ] EC2 instance scheduler - Automated start/stop based on cron schedules to reduce costs
 - [ ] Scheduled/background scans
@@ -331,7 +334,8 @@ resonant/
 
 ## Contributing
 
-This is a portfolio/commercial project. If you'd like to contribute or discuss licensing, please reach out.
+This is a portfolio/commercial project. If you'd like to contribute or discuss licensing, please
+reach out.
 
 ---
 
