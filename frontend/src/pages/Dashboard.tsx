@@ -6,7 +6,8 @@ import {Layout} from '@/components/Layout';
 import {StatsCard} from '@/components/shared/StatsCard';
 import {QuickActionCard} from '@/components/dashboard/QuickActionCard';
 import {GettingStartedGuide} from '@/components/dashboard/GettingStartedGuide';
-import {Activity, AlertTriangle, Cloud, Shield, Tag} from 'lucide-react';
+import {NonCompliantCard} from '@/components/NonCompliantCard';
+import {Activity, Cloud, Shield, Tag} from 'lucide-react';
 
 export const Dashboard = () => {
   const {user} = useAuthStore();
@@ -44,13 +45,6 @@ export const Dashboard = () => {
           : 'No policies configured',
       icon: Activity,
       variant: 'secondary' as const
-    },
-    {
-      title: 'Non-Compliant',
-      value: '0',
-      description: 'No violations detected',
-      icon: AlertTriangle,
-      variant: 'warning' as const
     },
   ];
 
@@ -106,6 +100,7 @@ export const Dashboard = () => {
             {stats.map((stat) => (
                 <StatsCard key={stat.title} {...stat} />
             ))}
+            <NonCompliantCard/>
           </div>
 
           {/* Quick Actions */}
