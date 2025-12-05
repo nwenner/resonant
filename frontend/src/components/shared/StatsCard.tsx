@@ -8,6 +8,8 @@ interface StatsCardProps {
   description: string;
   icon: LucideIcon;
   variant: 'success' | 'error' | 'warning' | 'info' | 'secondary';
+  onClick?: () => void;
+  className?: string;
 }
 
 export const StatsCard = ({
@@ -15,10 +17,12 @@ export const StatsCard = ({
                             value,
                             description,
                             icon: Icon,
-                            variant
+                            variant,
+                            onClick,
+                            className
                           }: StatsCardProps) => {
   return (
-      <Card>
+      <Card onClick={onClick} className={className}>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
             {title}

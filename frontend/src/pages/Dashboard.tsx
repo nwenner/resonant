@@ -28,7 +28,9 @@ export const Dashboard = () => {
           ? `${accounts.length} AWS account${accounts.length !== 1 ? 's' : ''} connected`
           : 'No AWS accounts connected',
       icon: Cloud,
-      variant: 'info' as const
+      variant: 'info' as const,
+      onClick: () => navigate('/aws-accounts'),
+      className: 'cursor-pointer hover:shadow-lg transition-shadow'
     },
     {
       title: 'Compliance Rate',
@@ -44,7 +46,9 @@ export const Dashboard = () => {
           ? `${enabledPolicies} of ${policyStats?.total ?? 0} enabled`
           : 'No policies configured',
       icon: Activity,
-      variant: 'secondary' as const
+      variant: 'secondary' as const,
+      onClick: () => navigate('/tag-policies'),
+      className: 'cursor-pointer hover:shadow-lg transition-shadow'
     },
   ];
 

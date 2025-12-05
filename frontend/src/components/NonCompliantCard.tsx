@@ -1,8 +1,9 @@
 import {useViolationStats} from '@/hooks/useViolationStats';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {AlertTriangle, Loader2} from 'lucide-react';
 import {useNavigate} from 'react-router-dom';
 import type {Severity} from '@/types/severity';
+import '@/components/shared/StatsCard.css';
 
 const severityColors: Record<Severity, string> = {
   CRITICAL: 'text-red-600 dark:text-red-400',
@@ -27,9 +28,12 @@ export function NonCompliantCard() {
   if (isLoading) {
     return (
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Non-Compliant Resources</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground"/>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Non-Compliant
+              Resources</CardTitle>
+            <div className="stats-card-icon stats-card-icon-warning">
+              <AlertTriangle className="h-4 w-4 stats-card-icon-text-warning"/>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center h-20">
@@ -43,9 +47,12 @@ export function NonCompliantCard() {
   if (error) {
     return (
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Non-Compliant Resources</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground"/>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Non-Compliant
+              Resources</CardTitle>
+            <div className="stats-card-icon stats-card-icon-warning">
+              <AlertTriangle className="h-4 w-4 stats-card-icon-text-warning"/>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-sm text-muted-foreground">Failed to load</div>
@@ -62,15 +69,18 @@ export function NonCompliantCard() {
           className="cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => navigate('/aws-accounts')}
       >
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Non-Compliant Resources</CardTitle>
-          <AlertTriangle className="h-4 w-4 text-muted-foreground"/>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Non-Compliant
+            Resources</CardTitle>
+          <div className="stats-card-icon stats-card-icon-warning">
+            <AlertTriangle className="h-4 w-4 stats-card-icon-text-warning"/>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalOpen}</div>
-          <CardDescription className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-1">
             Open violations
-          </CardDescription>
+          </p>
 
           {totalOpen > 0 && (
               <div className="mt-4 space-y-2">
