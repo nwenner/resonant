@@ -9,6 +9,7 @@ import {GettingStartedGuide} from '@/components/dashboard/GettingStartedGuide';
 import {NonCompliantCard} from '@/components/NonCompliantCard';
 import {Activity, Cloud, Shield, Tag} from 'lucide-react';
 import {useComplianceRate} from "@/hooks/useComplianceRate.ts";
+import {StatItem} from "@/types/statItem";
 
 export const Dashboard = () => {
   const {user} = useAuthStore();
@@ -37,7 +38,7 @@ export const Dashboard = () => {
     return 'error';
   };
 
-  const stats = [
+  const stats: StatItem[] = [
     {
       title: 'Connected Accounts',
       value: accounts.length.toString(),
@@ -45,7 +46,7 @@ export const Dashboard = () => {
           ? `${accounts.length} AWS account${accounts.length !== 1 ? 's' : ''} connected`
           : 'No AWS accounts connected',
       icon: Cloud,
-      variant: 'info' as const,
+      variant: 'info',
       onClick: () => navigate('/aws-accounts'),
       className: 'cursor-pointer hover:shadow-lg transition-shadow'
     },
@@ -63,7 +64,7 @@ export const Dashboard = () => {
           ? `${enabledPolicies} of ${policyStats?.total ?? 0} enabled`
           : 'No policies configured',
       icon: Activity,
-      variant: 'secondary' as const,
+      variant: 'secondary',
       onClick: () => navigate('/tag-policies'),
       className: 'cursor-pointer hover:shadow-lg transition-shadow'
     },
