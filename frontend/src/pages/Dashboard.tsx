@@ -8,6 +8,7 @@ import {QuickActionCard} from '@/components/dashboard/QuickActionCard';
 import {GettingStartedGuide} from '@/components/dashboard/GettingStartedGuide';
 import {NonCompliantCard} from '@/components/NonCompliantCard';
 import {Activity, Cloud, Shield, Tag} from 'lucide-react';
+import {useComplianceRate} from "@/hooks/useComplianceRate.ts";
 
 export const Dashboard = () => {
   const {user} = useAuthStore();
@@ -15,10 +16,26 @@ export const Dashboard = () => {
 
   const {data: accounts = []} = useAwsAccounts();
   const {data: policyStats} = useTagPolicyStats();
+  const {data: complianceRate, isLoading: isLoadingCompliance} = useComplianceRate();
 
   const hasAccounts = accounts.length > 0;
   const hasPolicies = (policyStats?.total ?? 0) > 0;
   const enabledPolicies = policyStats?.enabled ?? 0;
+
+  const complianceRateValue = complianceRate
+      ? `${complianceRate.complianceRate.toFixed(1)}%`
+      : '0%';
+
+  const complianceDescription = complianceRate
+      ? `${complianceRate.compliantResources} of ${complianceRate.totalResources} resources compliant`
+      : 'No resources scanned';
+
+  const getComplianceVariant = () => {
+    if (!complianceRate || complianceRate.totalResources === 0) return 'secondary';
+    if (complianceRate.complianceRate >= 90) return 'success';
+    if (complianceRate.complianceRate >= 70) return 'warning';
+    return 'error';
+  };
 
   const stats = [
     {
@@ -34,10 +51,10 @@ export const Dashboard = () => {
     },
     {
       title: 'Compliance Rate',
-      value: '0%',
-      description: 'Awaiting first scan',
+      value: isLoadingCompliance ? '...' : complianceRateValue,
+      description: isLoadingCompliance ? 'Loading...' : complianceDescription,
       icon: Shield,
-      variant: 'success' as const
+      variant: getComplianceVariant(),
     },
     {
       title: 'Active Policies',
