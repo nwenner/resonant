@@ -1,16 +1,6 @@
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {LucideIcon} from 'lucide-react';
 import './StatsCard.css';
-
-interface StatsCardProps {
-  title: string;
-  value: string;
-  description: string;
-  icon: LucideIcon;
-  variant: 'success' | 'error' | 'warning' | 'info' | 'secondary';
-  onClick?: () => void;
-  className?: string;
-}
+import {StatItem} from "@/types/statItem.ts";
 
 export const StatsCard = ({
                             title,
@@ -20,7 +10,7 @@ export const StatsCard = ({
                             variant,
                             onClick,
                             className
-                          }: StatsCardProps) => {
+                          }: StatItem) => {
   return (
       <Card onClick={onClick} className={className}>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
