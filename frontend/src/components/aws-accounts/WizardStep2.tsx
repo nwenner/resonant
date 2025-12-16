@@ -23,22 +23,11 @@ export const WizardStep2 = ({
                             }: WizardStep2Props) => {
   // Validate all required fields are filled
   const isFormValid =
-      formData.accountId.trim().length > 0 &&
       formData.accountAlias.trim().length > 0 &&
       formData.roleArn.trim().length > 0;
 
   return (
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="accountId">AWS Account ID *</Label>
-          <Input
-              id="accountId"
-              placeholder="123456789012"
-              value={formData.accountId}
-              onChange={(e) => onFormChange({...formData, accountId: e.target.value})}
-          />
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="accountAlias">Account Alias *</Label>
           <Input
@@ -47,13 +36,16 @@ export const WizardStep2 = ({
               value={formData.accountAlias}
               onChange={(e) => onFormChange({...formData, accountAlias: e.target.value})}
           />
+          <p className="wizard-helper-text">
+            A friendly name to identify this account
+          </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="roleArn">IAM Role ARN *</Label>
           <Input
               id="roleArn"
-              placeholder="arn:aws:iam::123456789012:role/ResonantComplianceRole"
+              placeholder="arn:aws:iam::123456789012:role/ResonantReadOnlyRole"
               value={formData.roleArn}
               onChange={(e) => onFormChange({...formData, roleArn: e.target.value})}
               className="font-mono text-sm"

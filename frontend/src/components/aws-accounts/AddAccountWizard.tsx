@@ -31,7 +31,6 @@ export const AddAccountWizard = ({open, onOpenChange}: AddAccountWizardProps) =>
   const [externalId, setExternalId] = useState('');
   const [copiedExternalId, setCopiedExternalId] = useState(false);
   const [formData, setFormData] = useState<AccountFormData>({
-    accountId: '',
     accountAlias: '',
     roleArn: ''
   });
@@ -49,7 +48,7 @@ export const AddAccountWizard = ({open, onOpenChange}: AddAccountWizardProps) =>
     if (!open) {
       setStep(0);
       setExternalId('');
-      setFormData({accountId: '', accountAlias: '', roleArn: ''});
+      setFormData({accountAlias: '', roleArn: ''});
       setCopiedExternalId(false);
     }
   }, [open]);

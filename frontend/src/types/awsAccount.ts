@@ -10,7 +10,6 @@ export interface AwsAccount {
 }
 
 export interface AccountFormData {
-  accountId: string;
   accountAlias: string;
   roleArn: string;
 }

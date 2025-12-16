@@ -15,7 +15,6 @@ interface TestConnectionResponse {
 }
 
 interface CreateAccountRequest {
-  accountId: string;
   accountAlias: string;
   roleArn: string;
   externalId: string;
