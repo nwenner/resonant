@@ -30,8 +30,8 @@ Parameters:
       - "false"
 
 Conditions:
-  EnableLambda: !Equals [!Ref IncludeLambda, "true"]
-  EnableECS: !Equals [!Ref IncludeECS, "true"]
+  EnableLambda: !Equals [ !Ref IncludeLambda, "true" ]
+  EnableECS: !Equals [ !Ref IncludeECS, "true" ]
 
 Resources:
   ReadOnlyPolicy:
@@ -197,8 +197,8 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              # Trust any principal in this account (your AWS CLI user, EC2 roles, etc.)
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+              # Trust the ResonantCloud.dev AWS Account for instrumentation purposes
+              AWS: "arn:aws:iam::908954908817:root"
             Action: sts:AssumeRole
             Condition:
               StringEquals:
@@ -219,6 +219,5 @@ Outputs:
   Instructions:
     Value: !Sub |
       1. Copy Role ARN: ${ResonantRole.Arn}
-      2. Ensure AWS CLI is configured: aws sts get-caller-identity
-      3. Spring Boot will use your AWS CLI credentials to assume this role
-      4. No need to set AWS_ACCESS_KEY_ID in .env - just use defaults!
+      2. Copy External ID from above
+      3. Enter both values in Resonant UI along with an account alias

@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class AwsAccountRoleRequest {
-    private String accountId;
-    private String accountAlias;
-    private String roleArn;
-    private String externalId;
+
+  private String accountAlias;
+  private String roleArn;
+  private String externalId;
 }
