@@ -36,7 +36,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ScanOrchestrationService Async Tests")
-class ScanOrchestrationServiceAsyncTest {
+class ScanOrchestrationServiceTest {
 
   @Mock
   private AwsAccountRepository awsAccountRepository;
