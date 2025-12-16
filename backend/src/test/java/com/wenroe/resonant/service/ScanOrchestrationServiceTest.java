@@ -1,331 +1,538 @@
 package com.wenroe.resonant.service;
 
-import com.wenroe.resonant.model.entity.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.wenroe.resonant.model.entity.AwsAccount;
+import com.wenroe.resonant.model.entity.AwsResource;
+import com.wenroe.resonant.model.entity.ComplianceViolation;
+import com.wenroe.resonant.model.entity.ScanJob;
+import com.wenroe.resonant.model.entity.TagPolicy;
+import com.wenroe.resonant.model.entity.User;
 import com.wenroe.resonant.model.enums.AwsAccountStatus;
 import com.wenroe.resonant.model.enums.ScanStatus;
-import com.wenroe.resonant.repository.*;
+import com.wenroe.resonant.repository.AwsAccountRepository;
+import com.wenroe.resonant.repository.AwsResourceRepository;
+import com.wenroe.resonant.repository.ScanJobRepository;
+import com.wenroe.resonant.repository.UserRepository;
 import com.wenroe.resonant.service.aws.scanners.S3ResourceScanner;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ScanOrchestrationService Tests")
 class ScanOrchestrationServiceTest {
 
-    @Mock
-    private AwsAccountRepository awsAccountRepository;
+  @Mock
+  private AwsAccountRepository awsAccountRepository;
 
-    @Mock
-    private AwsResourceRepository awsResourceRepository;
+  @Mock
+  private AwsResourceRepository awsResourceRepository;
 
-    @Mock
-    private ScanJobRepository scanJobRepository;
+  @Mock
+  private ScanJobRepository scanJobRepository;
 
-    @Mock
-    private TagPolicyService tagPolicyService;
+  @Mock
+  private TagPolicyService tagPolicyService;
 
-    @Mock
-    private S3ResourceScanner s3ResourceScanner;
+  @Mock
+  private S3ResourceScanner s3ResourceScanner;
 
-    @Mock
-    private ComplianceEvaluationService complianceEvaluationService;
+  @Mock
+  private ComplianceEvaluationService complianceEvaluationService;
 
-    @Mock
-    private UserRepository userRepository;
+  @Mock
+  private UserRepository userRepository;
 
-    @InjectMocks
-    private ScanOrchestrationService scanOrchestrationService;
+  @Mock
+  private AwsAccountRegionService regionService;
 
-    private User testUser;
-    private AwsAccount testAccount;
-    private UUID userId;
-    private UUID accountId;
+  @InjectMocks
+  private ScanOrchestrationService scanOrchestrationService;
 
-    @BeforeEach
-    void setUp() {
-        userId = UUID.randomUUID();
-        accountId = UUID.randomUUID();
+  private AwsAccount testAccount;
+  private User testUser;
+  private UUID accountId;
+  private UUID userId;
 
-        testUser = new User();
-        testUser.setId(userId);
-        testUser.setEmail("test@example.com");
+  @BeforeEach
+  void setUp() {
+    accountId = UUID.randomUUID();
+    userId = UUID.randomUUID();
 
-        testAccount = new AwsAccount();
-        testAccount.setId(accountId);
-        testAccount.setUser(testUser);
-        testAccount.setAccountId("123456789012");
-        testAccount.setStatus(AwsAccountStatus.ACTIVE);
-    }
+    testUser = new User();
+    testUser.setId(userId);
+    testUser.setEmail("test@example.com");
 
-    @Test
-    @DisplayName("Should initiate scan successfully")
-    void initiateScan_Success() {
-        // Given
-        when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
-        when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
-        when(scanJobRepository.findRunningScanForAccount(accountId)).thenReturn(Optional.empty());
-        when(scanJobRepository.save(any(ScanJob.class))).thenAnswer(invocation -> {
-            ScanJob job = invocation.getArgument(0);
-            job.setId(UUID.randomUUID());
-            return job;
-        });
-        when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(Collections.emptyList());
-        when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(Collections.emptyList());
+    testAccount = new AwsAccount();
+    testAccount.setId(accountId);
+    testAccount.setAccountId("123456789012");
+    testAccount.setUser(testUser);
+    testAccount.setStatus(AwsAccountStatus.ACTIVE);
+  }
 
-        // When
-        ScanJob result = scanOrchestrationService.initiateScan(accountId, userId);
+  @Test
+  @DisplayName("Should initiate scan successfully")
+  void shouldInitiateScanSuccessfully() {
+    // Given
+    ScanJob scanJob = new ScanJob();
+    scanJob.setId(UUID.randomUUID());
+    scanJob.setAwsAccount(testAccount);
+    scanJob.setUser(testUser);
+    scanJob.setStatus(ScanStatus.PENDING);
 
-        // Then
-        assertThat(result).isNotNull();
-        verify(scanJobRepository, atLeastOnce()).save(any(ScanJob.class));
-    }
+    when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
+    when(regionService.hasEnabledRegions(accountId)).thenReturn(true);
+    when(scanJobRepository.findRunningScanForAccount(accountId)).thenReturn(Optional.empty());
+    when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+    when(scanJobRepository.save(any(ScanJob.class))).thenReturn(scanJob);
 
-    @Test
-    @DisplayName("Should throw exception when account not found")
-    void initiateScan_AccountNotFound() {
-        // Given
-        when(awsAccountRepository.findById(accountId)).thenReturn(Optional.empty());
+    // Mock scanner and evaluation
+    when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(List.of());
+    when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(List.of());
 
-        // When & Then
-        assertThatThrownBy(() -> scanOrchestrationService.initiateScan(accountId, userId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("AWS account not found");
+    // When
+    ScanJob result = scanOrchestrationService.initiateScan(accountId, userId);
 
-        verify(scanJobRepository, never()).save(any());
-    }
+    // Then
+    assertThat(result).isNotNull();
+    verify(awsAccountRepository).findById(accountId);
+    verify(regionService).hasEnabledRegions(accountId);
+    verify(scanJobRepository).findRunningScanForAccount(accountId);
+    verify(userRepository).findById(userId);
+    verify(scanJobRepository, times(3)).save(any(ScanJob.class)); // Create, start, complete
+  }
 
-    @Test
-    @DisplayName("Should throw exception when not owner")
-    void initiateScan_NotOwner() {
-        // Given
-        UUID otherUserId = UUID.randomUUID();
-        when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
+  @Test
+  @DisplayName("Should throw exception when account not found")
+  void shouldThrowExceptionWhenAccountNotFound() {
+    // Given
+    when(awsAccountRepository.findById(accountId)).thenReturn(Optional.empty());
 
-        // When & Then
-        assertThatThrownBy(() -> scanOrchestrationService.initiateScan(accountId, otherUserId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Not authorized to scan this AWS account");
-    }
+    // When/Then
+    assertThatThrownBy(() -> scanOrchestrationService.initiateScan(accountId, userId))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("AWS account not found");
 
-    @Test
-    @DisplayName("Should throw exception when account not active")
-    void initiateScan_AccountNotActive() {
-        // Given
-        testAccount.setStatus(AwsAccountStatus.INVALID);
-        when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
+    verify(regionService, never()).hasEnabledRegions(any());
+  }
 
-        // When & Then
-        assertThatThrownBy(() -> scanOrchestrationService.initiateScan(accountId, userId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("AWS account is not active");
-    }
+  @Test
+  @DisplayName("Should throw exception when user not authorized")
+  void shouldThrowExceptionWhenUserNotAuthorized() {
+    // Given
+    UUID wrongUserId = UUID.randomUUID();
+    when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
 
-    @Test
-    @DisplayName("Should throw exception when scan already running")
-    void initiateScan_AlreadyRunning() {
-        // Given
-        ScanJob runningScan = new ScanJob();
-        runningScan.setStatus(ScanStatus.RUNNING);
+    // When/Then
+    assertThatThrownBy(() -> scanOrchestrationService.initiateScan(accountId, wrongUserId))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("Not authorized to scan this AWS account");
 
-        when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
-        when(scanJobRepository.findRunningScanForAccount(accountId))
-                .thenReturn(Optional.of(runningScan));
+    verify(regionService, never()).hasEnabledRegions(any());
+  }
 
-        // When & Then
-        assertThatThrownBy(() -> scanOrchestrationService.initiateScan(accountId, userId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("A scan is already running for this account");
-    }
+  @Test
+  @DisplayName("Should throw exception when account is not active")
+  void shouldThrowExceptionWhenAccountNotActive() {
+    // Given
+    testAccount.setStatus(AwsAccountStatus.INVALID);
+    when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
 
-    @Test
-    @DisplayName("Should execute scan and find resources")
-    void executeScan_Success() {
-        // Given
-        ScanJob scanJob = new ScanJob();
-        scanJob.setId(UUID.randomUUID());
-        scanJob.setAwsAccount(testAccount);
-        scanJob.setUser(testUser);
-        scanJob.setStatus(ScanStatus.PENDING);
+    // When/Then
+    assertThatThrownBy(() -> scanOrchestrationService.initiateScan(accountId, userId))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("AWS account is not active");
 
-        TagPolicy policy = new TagPolicy();
-        policy.setId(UUID.randomUUID());
-        policy.setResourceTypes(List.of("s3:bucket"));
+    verify(regionService, never()).hasEnabledRegions(any());
+  }
 
-        AwsResource resource = new AwsResource();
-        resource.setResourceArn("arn:aws:s3:::test-bucket");
-        resource.setResourceType("s3:bucket");
-        resource.setTags(new HashMap<>());
+  @Test
+  @DisplayName("Should throw exception when no regions enabled")
+  void shouldThrowExceptionWhenNoRegionsEnabled() {
+    // Given
+    when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
+    when(regionService.hasEnabledRegions(accountId)).thenReturn(false);
 
-        when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(List.of(policy));
-        when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(List.of(resource));
-        when(awsResourceRepository.findByResourceArn(anyString())).thenReturn(Optional.empty());
-        when(awsResourceRepository.save(any(AwsResource.class))).thenReturn(resource);
-        when(complianceEvaluationService.evaluateResource(any(), any()))
-                .thenReturn(Collections.emptyList());
-        when(scanJobRepository.save(any(ScanJob.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(awsAccountRepository.save(any(AwsAccount.class))).thenReturn(testAccount);
+    // When/Then
+    assertThatThrownBy(() -> scanOrchestrationService.initiateScan(accountId, userId))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("No regions enabled for scanning")
+        .hasMessageContaining("Please enable at least one region");
 
-        // When
-        scanOrchestrationService.executeScan(scanJob);
+    verify(scanJobRepository, never()).save(any(ScanJob.class));
+  }
 
-        // Then
-        verify(s3ResourceScanner).scanS3Buckets(testAccount);
-        verify(awsResourceRepository).save(resource);
-        verify(complianceEvaluationService).evaluateResource(resource, List.of(policy));
-        verify(scanJobRepository, atLeastOnce()).save(argThat(job ->
-                job.getStatus() == ScanStatus.SUCCESS
-        ));
-    }
+  @Test
+  @DisplayName("Should throw exception when scan already running")
+  void shouldThrowExceptionWhenScanAlreadyRunning() {
+    // Given
+    ScanJob existingScan = new ScanJob();
+    existingScan.setId(UUID.randomUUID());
+    existingScan.setStatus(ScanStatus.RUNNING);
 
-    @Test
-    @DisplayName("Should update existing resources during scan")
-    void executeScan_UpdateExistingResource() {
-        // Given
-        ScanJob scanJob = new ScanJob();
-        scanJob.setId(UUID.randomUUID());
-        scanJob.setAwsAccount(testAccount);
-        scanJob.setUser(testUser);
+    when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
+    when(regionService.hasEnabledRegions(accountId)).thenReturn(true);
+    when(scanJobRepository.findRunningScanForAccount(accountId))
+        .thenReturn(Optional.of(existingScan));
 
-        AwsResource existingResource = new AwsResource();
-        existingResource.setId(UUID.randomUUID());
-        existingResource.setResourceArn("arn:aws:s3:::test-bucket");
+    // When/Then
+    assertThatThrownBy(() -> scanOrchestrationService.initiateScan(accountId, userId))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("A scan is already running for this account");
 
-        AwsResource discoveredResource = new AwsResource();
-        discoveredResource.setResourceArn("arn:aws:s3:::test-bucket");
-        discoveredResource.setTags(Map.of("Environment", "prod"));
+    verify(userRepository, never()).findById(any());
+  }
 
-        when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(Collections.emptyList());
-        when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(List.of(discoveredResource));
-        when(awsResourceRepository.findByResourceArn("arn:aws:s3:::test-bucket"))
-                .thenReturn(Optional.of(existingResource));
-        when(awsResourceRepository.save(any(AwsResource.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(scanJobRepository.save(any(ScanJob.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(awsAccountRepository.save(any(AwsAccount.class))).thenReturn(testAccount);
+  @Test
+  @DisplayName("Should throw exception when user not found")
+  void shouldThrowExceptionWhenUserNotFound() {
+    // Given
+    when(awsAccountRepository.findById(accountId)).thenReturn(Optional.of(testAccount));
+    when(regionService.hasEnabledRegions(accountId)).thenReturn(true);
+    when(scanJobRepository.findRunningScanForAccount(accountId)).thenReturn(Optional.empty());
+    when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        // When
-        scanOrchestrationService.executeScan(scanJob);
+    // When/Then
+    assertThatThrownBy(() -> scanOrchestrationService.initiateScan(accountId, userId))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("User not found");
+  }
 
-        // Then
-        verify(awsResourceRepository).save(argThat(resource ->
-                resource.getTags() != null && resource.getTags().containsKey("Environment")
-        ));
-    }
+  @Test
+  @DisplayName("Should execute scan and discover resources")
+  void shouldExecuteScanAndDiscoverResources() {
+    // Given
+    ScanJob scanJob = createScanJob();
+    List<TagPolicy> policies = List.of(createTagPolicy());
+    List<AwsResource> discoveredResources = List.of(
+        createResource("bucket-1"),
+        createResource("bucket-2")
+    );
 
-    @Test
-    @DisplayName("Should handle scan failure")
-    void executeScan_Failure() {
-        // Given
-        ScanJob scanJob = new ScanJob();
-        scanJob.setId(UUID.randomUUID());
-        scanJob.setAwsAccount(testAccount);
-        scanJob.setUser(testUser);
+    when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(policies);
+    when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(discoveredResources);
+    when(awsResourceRepository.findByResourceArn(any())).thenReturn(Optional.empty());
+    when(awsResourceRepository.save(any(AwsResource.class)))
+        .thenAnswer(i -> i.getArgument(0));
+    when(complianceEvaluationService.evaluateResource(any(), anyList()))
+        .thenReturn(List.of());
+    when(awsAccountRepository.save(testAccount)).thenReturn(testAccount);
+    when(scanJobRepository.save(any(ScanJob.class))).thenAnswer(i -> i.getArgument(0));
 
-        when(tagPolicyService.getEnabledPoliciesByUserId(userId))
-                .thenThrow(new RuntimeException("AWS error"));
-        when(scanJobRepository.save(any(ScanJob.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+    // When
+    scanOrchestrationService.executeScan(scanJob);
 
-        // When & Then
-        assertThatThrownBy(() -> scanOrchestrationService.executeScan(scanJob))
-                .isInstanceOf(RuntimeException.class);
+    // Then
+    verify(s3ResourceScanner).scanS3Buckets(testAccount);
+    verify(awsResourceRepository, times(2)).save(any(AwsResource.class));
+    verify(complianceEvaluationService, times(2)).evaluateResource(any(), eq(policies));
+    verify(awsAccountRepository).save(testAccount);
 
-        verify(scanJobRepository, atLeastOnce()).save(argThat(job ->
-                job.getStatus() == ScanStatus.FAILED &&
-                        job.getErrorMessage() != null
-        ));
-    }
+    assertThat(scanJob.getStatus()).isEqualTo(ScanStatus.SUCCESS);
+    assertThat(scanJob.getResourcesScanned()).isEqualTo(2);
+  }
 
-    @Test
-    @DisplayName("Should get scan job by ID")
-    void getScanJob_Success() {
-        // Given
-        UUID scanJobId = UUID.randomUUID();
-        ScanJob scanJob = new ScanJob();
-        scanJob.setId(scanJobId);
+  @Test
+  @DisplayName("Should update existing resources during scan")
+  void shouldUpdateExistingResourcesDuringScan() {
+    // Given
+    ScanJob scanJob = createScanJob();
+    AwsResource existingResource = createResource("bucket-1");
+    existingResource.setId(UUID.randomUUID());
+    AwsResource discoveredResource = createResource("bucket-1");
+    Map<String, String> newTags = new HashMap<>();
+    newTags.put("Environment", "Production");
+    discoveredResource.setTags(newTags);
 
-        when(scanJobRepository.findById(scanJobId)).thenReturn(Optional.of(scanJob));
+    when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(List.of());
+    when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(List.of(discoveredResource));
+    when(awsResourceRepository.findByResourceArn(discoveredResource.getResourceArn()))
+        .thenReturn(Optional.of(existingResource));
+    when(awsResourceRepository.save(any(AwsResource.class)))
+        .thenAnswer(i -> i.getArgument(0));
+    when(complianceEvaluationService.evaluateResource(any(), anyList()))
+        .thenReturn(List.of());
+    when(awsAccountRepository.save(testAccount)).thenReturn(testAccount);
+    when(scanJobRepository.save(any(ScanJob.class))).thenAnswer(i -> i.getArgument(0));
 
-        // When
-        ScanJob result = scanOrchestrationService.getScanJob(scanJobId);
+    // When
+    scanOrchestrationService.executeScan(scanJob);
 
-        // Then
-        assertThat(result).isEqualTo(scanJob);
-    }
+    // Then
+    ArgumentCaptor<AwsResource> captor = ArgumentCaptor.forClass(AwsResource.class);
+    verify(awsResourceRepository).save(captor.capture());
 
-    @Test
-    @DisplayName("Should throw exception when scan job not found")
-    void getScanJob_NotFound() {
-        // Given
-        UUID scanJobId = UUID.randomUUID();
-        when(scanJobRepository.findById(scanJobId)).thenReturn(Optional.empty());
+    AwsResource saved = captor.getValue();
+    assertThat(saved.getId()).isEqualTo(existingResource.getId());
+    assertThat(saved.getTags()).isEqualTo(newTags);
+  }
 
-        // When & Then
-        assertThatThrownBy(() -> scanOrchestrationService.getScanJob(scanJobId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Scan job not found");
-    }
+  @Test
+  @DisplayName("Should track violations found during scan")
+  void shouldTrackViolationsFoundDuringScan() {
+    // Given
+    ScanJob scanJob = createScanJob();
+    List<AwsResource> resources = List.of(createResource("bucket-1"));
+    List<ComplianceViolation> violations = List.of(
+        createViolation(),
+        createViolation()
+    );
 
-    @Test
-    @DisplayName("Should get scan jobs by user ID")
-    void getScanJobsByUserId_Success() {
-        // Given
-        ScanJob job1 = new ScanJob();
-        ScanJob job2 = new ScanJob();
+    when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(List.of());
+    when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(resources);
+    when(awsResourceRepository.findByResourceArn(any())).thenReturn(Optional.empty());
+    when(awsResourceRepository.save(any(AwsResource.class)))
+        .thenAnswer(i -> i.getArgument(0));
+    when(complianceEvaluationService.evaluateResource(any(), anyList()))
+        .thenReturn(violations);
+    when(awsAccountRepository.save(testAccount)).thenReturn(testAccount);
+    when(scanJobRepository.save(any(ScanJob.class))).thenAnswer(i -> i.getArgument(0));
 
-        when(scanJobRepository.findByUserIdOrderByCreatedAtDesc(userId))
-                .thenReturn(List.of(job1, job2));
+    // When
+    scanOrchestrationService.executeScan(scanJob);
 
-        // When
-        List<ScanJob> result = scanOrchestrationService.getScanJobsByUserId(userId);
+    // Then
+    assertThat(scanJob.getViolationsFound()).isEqualTo(2);
+    assertThat(scanJob.getStatus()).isEqualTo(ScanStatus.SUCCESS);
+  }
 
-        // Then
-        assertThat(result).hasSize(2);
-    }
+  @Test
+  @DisplayName("Should update account last scan time")
+  void shouldUpdateAccountLastScanTime() {
+    // Given
+    ScanJob scanJob = createScanJob();
+    LocalDateTime beforeScan = LocalDateTime.now();
 
-    @Test
-    @DisplayName("Should get scan jobs by account ID")
-    void getScanJobsByAccountId_Success() {
-        // Given
-        ScanJob job = new ScanJob();
+    when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(List.of());
+    when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(List.of());
+    when(awsAccountRepository.save(testAccount)).thenReturn(testAccount);
+    when(scanJobRepository.save(any(ScanJob.class))).thenAnswer(i -> i.getArgument(0));
 
-        when(scanJobRepository.findByAwsAccountIdOrderByCreatedAtDesc(accountId))
-                .thenReturn(List.of(job));
+    // When
+    scanOrchestrationService.executeScan(scanJob);
 
-        // When
-        List<ScanJob> result = scanOrchestrationService.getScanJobsByAccountId(accountId);
+    // Then
+    ArgumentCaptor<AwsAccount> captor = ArgumentCaptor.forClass(AwsAccount.class);
+    verify(awsAccountRepository).save(captor.capture());
 
-        // Then
-        assertThat(result).hasSize(1);
-    }
+    AwsAccount saved = captor.getValue();
+    assertThat(saved.getLastScanAt()).isNotNull();
+    assertThat(saved.getLastScanAt()).isAfterOrEqualTo(beforeScan);
+  }
 
-    @Test
-    @DisplayName("Should get last scan for account")
-    void getLastScanForAccount_Success() {
-        // Given
-        ScanJob lastScan = new ScanJob();
+  @Test
+  @DisplayName("Should fail scan job on exception")
+  void shouldFailScanJobOnException() {
+    // Given
+    ScanJob scanJob = createScanJob();
 
-        when(scanJobRepository.findFirstByAwsAccountIdOrderByCreatedAtDesc(accountId))
-                .thenReturn(Optional.of(lastScan));
+    when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(List.of());
+    when(s3ResourceScanner.scanS3Buckets(testAccount))
+        .thenThrow(new RuntimeException("S3 scan failed"));
+    when(scanJobRepository.save(any(ScanJob.class))).thenAnswer(i -> i.getArgument(0));
 
-        // When
-        Optional<ScanJob> result = scanOrchestrationService.getLastScanForAccount(accountId);
+    // When/Then
+    assertThatThrownBy(() -> scanOrchestrationService.executeScan(scanJob))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("S3 scan failed");
 
-        // Then
-        assertThat(result).isPresent();
-        assertThat(result.get()).isEqualTo(lastScan);
-    }
+    assertThat(scanJob.getStatus()).isEqualTo(ScanStatus.FAILED);
+    assertThat(scanJob.getErrorMessage()).contains("S3 scan failed");
+  }
+
+  @Test
+  @DisplayName("Should link violations to scan job")
+  void shouldLinkViolationsToScanJob() {
+    // Given
+    ScanJob scanJob = createScanJob();
+    scanJob.setId(UUID.randomUUID());
+    List<AwsResource> resources = List.of(createResource("bucket-1"));
+    ComplianceViolation violation1 = createViolation();
+    ComplianceViolation violation2 = createViolation();
+    List<ComplianceViolation> violations = List.of(violation1, violation2);
+
+    when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(List.of());
+    when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(resources);
+    when(awsResourceRepository.findByResourceArn(any())).thenReturn(Optional.empty());
+    when(awsResourceRepository.save(any(AwsResource.class)))
+        .thenAnswer(i -> i.getArgument(0));
+    when(complianceEvaluationService.evaluateResource(any(), anyList()))
+        .thenReturn(violations);
+    when(awsAccountRepository.save(testAccount)).thenReturn(testAccount);
+    when(scanJobRepository.save(any(ScanJob.class))).thenAnswer(i -> i.getArgument(0));
+
+    // When
+    scanOrchestrationService.executeScan(scanJob);
+
+    // Then
+    assertThat(violation1.getScanJob()).isEqualTo(scanJob);
+    assertThat(violation2.getScanJob()).isEqualTo(scanJob);
+  }
+
+  @Test
+  @DisplayName("Should get scan job by id")
+  void shouldGetScanJobById() {
+    // Given
+    UUID scanJobId = UUID.randomUUID();
+    ScanJob scanJob = createScanJob();
+    scanJob.setId(scanJobId);
+
+    when(scanJobRepository.findById(scanJobId)).thenReturn(Optional.of(scanJob));
+
+    // When
+    ScanJob result = scanOrchestrationService.getScanJob(scanJobId);
+
+    // Then
+    assertThat(result).isEqualTo(scanJob);
+    verify(scanJobRepository).findById(scanJobId);
+  }
+
+  @Test
+  @DisplayName("Should throw exception when scan job not found")
+  void shouldThrowExceptionWhenScanJobNotFound() {
+    // Given
+    UUID scanJobId = UUID.randomUUID();
+    when(scanJobRepository.findById(scanJobId)).thenReturn(Optional.empty());
+
+    // When/Then
+    assertThatThrownBy(() -> scanOrchestrationService.getScanJob(scanJobId))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("Scan job not found");
+  }
+
+  @Test
+  @DisplayName("Should get scan jobs by user id")
+  void shouldGetScanJobsByUserId() {
+    // Given
+    List<ScanJob> scanJobs = List.of(createScanJob(), createScanJob());
+    when(scanJobRepository.findByUserIdOrderByCreatedAtDesc(userId)).thenReturn(scanJobs);
+
+    // When
+    List<ScanJob> result = scanOrchestrationService.getScanJobsByUserId(userId);
+
+    // Then
+    assertThat(result).hasSize(2);
+    verify(scanJobRepository).findByUserIdOrderByCreatedAtDesc(userId);
+  }
+
+  @Test
+  @DisplayName("Should get scan jobs by account id")
+  void shouldGetScanJobsByAccountId() {
+    // Given
+    List<ScanJob> scanJobs = List.of(createScanJob(), createScanJob());
+    when(scanJobRepository.findByAwsAccountIdOrderByCreatedAtDesc(accountId))
+        .thenReturn(scanJobs);
+
+    // When
+    List<ScanJob> result = scanOrchestrationService.getScanJobsByAccountId(accountId);
+
+    // Then
+    assertThat(result).hasSize(2);
+    verify(scanJobRepository).findByAwsAccountIdOrderByCreatedAtDesc(accountId);
+  }
+
+  @Test
+  @DisplayName("Should get last scan for account")
+  void shouldGetLastScanForAccount() {
+    // Given
+    ScanJob lastScan = createScanJob();
+    when(scanJobRepository.findFirstByAwsAccountIdOrderByCreatedAtDesc(accountId))
+        .thenReturn(Optional.of(lastScan));
+
+    // When
+    Optional<ScanJob> result = scanOrchestrationService.getLastScanForAccount(accountId);
+
+    // Then
+    assertThat(result).isPresent();
+    assertThat(result.get()).isEqualTo(lastScan);
+  }
+
+  @Test
+  @DisplayName("Should return empty when no scans for account")
+  void shouldReturnEmptyWhenNoScansForAccount() {
+    // Given
+    when(scanJobRepository.findFirstByAwsAccountIdOrderByCreatedAtDesc(accountId))
+        .thenReturn(Optional.empty());
+
+    // When
+    Optional<ScanJob> result = scanOrchestrationService.getLastScanForAccount(accountId);
+
+    // Then
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should warn when no policies enabled")
+  void shouldWarnWhenNoPoliciesEnabled() {
+    // Given
+    ScanJob scanJob = createScanJob();
+
+    when(tagPolicyService.getEnabledPoliciesByUserId(userId)).thenReturn(List.of());
+    when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(List.of());
+    when(awsAccountRepository.save(testAccount)).thenReturn(testAccount);
+    when(scanJobRepository.save(any(ScanJob.class))).thenAnswer(i -> i.getArgument(0));
+
+    // When
+    scanOrchestrationService.executeScan(scanJob);
+
+    // Then
+    assertThat(scanJob.getStatus()).isEqualTo(ScanStatus.SUCCESS);
+    // Should still complete successfully, just with 0 violations
+    assertThat(scanJob.getViolationsFound()).isEqualTo(0);
+  }
+
+  private ScanJob createScanJob() {
+    ScanJob scanJob = new ScanJob();
+    scanJob.setAwsAccount(testAccount);
+    scanJob.setUser(testUser);
+    scanJob.setStatus(ScanStatus.PENDING);
+    return scanJob;
+  }
+
+  private AwsResource createResource(String name) {
+    AwsResource resource = new AwsResource();
+    resource.setAwsAccount(testAccount);
+    resource.setResourceId(name);
+    resource.setResourceArn("arn:aws:s3:::" + name);
+    resource.setResourceType("s3:bucket");
+    resource.setRegion("us-east-1");
+    resource.setName(name);
+    resource.setTags(new HashMap<>());
+    resource.setMetadata(new HashMap<>());
+    return resource;
+  }
+
+  private TagPolicy createTagPolicy() {
+    TagPolicy policy = new TagPolicy();
+    policy.setId(UUID.randomUUID());
+    policy.setName("Test Policy");
+    policy.setEnabled(true);
+    return policy;
+  }
+
+  private ComplianceViolation createViolation() {
+    ComplianceViolation violation = new ComplianceViolation();
+    violation.setId(UUID.randomUUID());
+    return violation;
+  }
 }

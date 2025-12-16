@@ -28,6 +28,7 @@ public class AwsAccountService {
   private final UserRepository userRepository;
   private final CredentialEncryptionService encryptionService;
   private final AwsConnectionTester connectionTester;
+  private final AwsAccountRegionService regionService;
 
   /**
    * Extracts AWS account ID from IAM Role ARN. Format: arn:aws:iam::123456789012:role/RoleName
@@ -81,6 +82,18 @@ public class AwsAccountService {
     AwsAccount saved = awsAccountRepository.save(account);
     log.info("Created AWS account connection for user {} with account {}", userId, accountId);
 
+    // TODO - copy pasta, refactor this with below
+    // Discover and persist available regions
+    try {
+      regionService.discoverAndPersistRegions(saved.getId());
+      log.info("Successfully discovered regions for account {}", accountId);
+    } catch (Exception e) {
+      log.error(
+          "Failed to discover regions for account {}: {}. Account created but regions not configured.",
+          accountId, e.getMessage());
+      // Don't fail account creation if region discovery fails
+    }
+
     return saved;
   }
 
@@ -114,6 +127,18 @@ public class AwsAccountService {
     AwsAccount saved = awsAccountRepository.save(account);
     log.info("Created AWS account connection with access keys for user {} with account {}", userId,
         accountId);
+
+    // TODO - copy pasta, refactor this with above
+    // Discover and persist available regions
+    try {
+      regionService.discoverAndPersistRegions(saved.getId());
+      log.info("Successfully discovered regions for account {}", accountId);
+    } catch (Exception e) {
+      log.error(
+          "Failed to discover regions for account {}: {}. Account created but regions not configured.",
+          accountId, e.getMessage());
+      // Don't fail account creation if region discovery fails
+    }
 
     return saved;
   }

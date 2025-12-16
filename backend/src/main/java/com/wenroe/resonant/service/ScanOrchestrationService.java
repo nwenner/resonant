@@ -37,6 +37,7 @@ public class ScanOrchestrationService {
   private final S3ResourceScanner s3ResourceScanner;
   private final ComplianceEvaluationService complianceEvaluationService;
   private final UserRepository userRepository;
+  private final AwsAccountRegionService regionService;
 
   /**
    * Initiates a scan for an AWS account. Returns the created ScanJob.
@@ -55,6 +56,12 @@ public class ScanOrchestrationService {
     // Verify account is active
     if (!account.isActive()) {
       throw new RuntimeException("AWS account is not active. Status: " + account.getStatus());
+    }
+
+    // Verify at least one region is enabled
+    if (!regionService.hasEnabledRegions(accountId)) {
+      throw new RuntimeException(
+          "No regions enabled for scanning. Please enable at least one region.");
     }
 
     // Check if there's already a running scan for this account

@@ -2,11 +2,15 @@ package com.wenroe.resonant.controller;
 
 import com.wenroe.resonant.dto.aws.AwsAccountResponse;
 import com.wenroe.resonant.dto.aws.AwsAccountRoleRequest;
+import com.wenroe.resonant.dto.aws.AwsRegionResponse;
 import com.wenroe.resonant.dto.aws.ConnectionTestResponse;
 import com.wenroe.resonant.dto.aws.ExternalIdResponse;
 import com.wenroe.resonant.dto.aws.UpdateAliasRequest;
+import com.wenroe.resonant.dto.aws.UpdateRegionsRequest;
 import com.wenroe.resonant.model.entity.AwsAccount;
+import com.wenroe.resonant.model.entity.AwsAccountRegion;
 import com.wenroe.resonant.model.entity.User;
+import com.wenroe.resonant.service.AwsAccountRegionService;
 import com.wenroe.resonant.service.AwsAccountService;
 import com.wenroe.resonant.service.aws.AwsConnectionTester;
 import java.util.List;
@@ -33,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AwsAccountController {
 
   private final AwsAccountService awsAccountService;
+  private final AwsAccountRegionService regionService;
 
   @PostMapping("/external-id")
   public ResponseEntity<ExternalIdResponse> generateExternalId() {
@@ -121,5 +126,78 @@ public class AwsAccountController {
     awsAccountService.deleteAccount(id, user.getId());
 
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/{id}/regions")
+  public ResponseEntity<List<AwsRegionResponse>> getRegions(
+      @AuthenticationPrincipal User user,
+      @PathVariable UUID id) {
+
+    log.info("Fetching regions for AWS account: {} (user: {})", id, user.getId());
+
+    List<AwsAccountRegion> regions = regionService.getRegionsByAccountId(id);
+    List<AwsRegionResponse> response = regions.stream()
+        .map(AwsRegionResponse::fromEntity)
+        .collect(Collectors.toList());
+
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/{id}/regions/rediscover")
+  public ResponseEntity<List<AwsRegionResponse>> rediscoverRegions(
+      @AuthenticationPrincipal User user,
+      @PathVariable UUID id) {
+
+    log.info("Rediscovering regions for AWS account: {} (user: {})", id, user.getId());
+
+    List<AwsAccountRegion> newRegions = regionService.rediscoverRegions(id, user.getId());
+    List<AwsRegionResponse> response = newRegions.stream()
+        .map(AwsRegionResponse::fromEntity)
+        .collect(Collectors.toList());
+
+    return ResponseEntity.ok(response);
+  }
+
+  @PatchMapping("/{id}/regions")
+  public ResponseEntity<List<AwsRegionResponse>> updateRegions(
+      @AuthenticationPrincipal User user,
+      @PathVariable UUID id,
+      @RequestBody UpdateRegionsRequest request) {
+
+    log.info("Updating regions for AWS account: {} (user: {})", id, user.getId());
+
+    List<AwsAccountRegion> updated = regionService.updateRegions(id,
+        request.getEnabledRegionCodes(), user.getId());
+    List<AwsRegionResponse> response = updated.stream()
+        .map(AwsRegionResponse::fromEntity)
+        .collect(Collectors.toList());
+
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/{id}/regions/{regionCode}/enable")
+  public ResponseEntity<AwsRegionResponse> enableRegion(
+      @AuthenticationPrincipal User user,
+      @PathVariable UUID id,
+      @PathVariable String regionCode) {
+
+    log.info("Enabling region {} for AWS account: {} (user: {})", regionCode, id, user.getId());
+
+    AwsAccountRegion updated = regionService.enableRegion(id, regionCode, user.getId());
+
+    return ResponseEntity.ok(AwsRegionResponse.fromEntity(updated));
+  }
+
+  @PostMapping("/{id}/regions/{regionCode}/disable")
+  public ResponseEntity<AwsRegionResponse> disableRegion(
+      @AuthenticationPrincipal User user,
+      @PathVariable UUID id,
+      @PathVariable String regionCode) {
+
+    log.info("Disabling region {} for AWS account: {} (user: {})", regionCode, id, user.getId());
+
+    AwsAccountRegion updated = regionService.disableRegion(id, regionCode, user.getId());
+
+    return ResponseEntity.ok(AwsRegionResponse.fromEntity(updated));
   }
 }
