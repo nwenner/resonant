@@ -7,6 +7,7 @@ import {Register} from '@/pages/Register';
 import {Dashboard} from '@/pages/Dashboard';
 import {AwsAccounts} from '@/pages/AwsAccounts';
 import {AwsAccountDetail} from '@/pages/AwsAccountDetail';
+import {AwsAccountSettings} from '@/pages/AwsAccountSettings';
 import {TagPolicies} from '@/pages/TagPolicies';
 import {Toaster} from '@/components/ui/toaster';
 
@@ -52,6 +53,14 @@ function App() {
                     element={
                       <ErrorBoundary>
                         <AwsAccountDetail/>
+                      </ErrorBoundary>
+                    }
+                />
+                <Route
+                    path="/aws-accounts/:accountId/settings"
+                    element={
+                      <ErrorBoundary>
+                        <AwsAccountSettings/>
                       </ErrorBoundary>
                     }
                 />

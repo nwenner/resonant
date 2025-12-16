@@ -1,5 +1,6 @@
 import api from '@/lib/api';
 import {AwsAccount} from "@/types/awsAccount";
+import {AwsRegion} from "@/types/awsRegion";
 
 interface ExternalIdResponse {
   externalId: string;
@@ -22,6 +23,10 @@ interface CreateAccountRequest {
 
 interface UpdateAliasRequest {
   accountAlias: string;
+}
+
+interface UpdateRegionsRequest {
+  enabledRegionCodes: string[];
 }
 
 // AWS Accounts API Service
@@ -84,5 +89,54 @@ export const awsAccountsService = {
    */
   deleteAccount: async (accountId: string): Promise<void> => {
     await api.delete(`/aws-accounts/${accountId}`);
+  },
+
+  /**
+   * Get all regions for an AWS account
+   */
+  getRegions: async (accountId: string): Promise<AwsRegion[]> => {
+    const response = await api.get<AwsRegion[]>(`/aws-accounts/${accountId}/regions`);
+    return response.data;
+  },
+
+  /**
+   * Update enabled regions for an AWS account (bulk update)
+   */
+  updateRegions: async (accountId: string, request: UpdateRegionsRequest): Promise<AwsRegion[]> => {
+    const response = await api.patch<AwsRegion[]>(
+        `/aws-accounts/${accountId}/regions`,
+        request
+    );
+    return response.data;
+  },
+
+  /**
+   * Enable a specific region
+   */
+  enableRegion: async (accountId: string, regionCode: string): Promise<AwsRegion> => {
+    const response = await api.post<AwsRegion>(
+        `/aws-accounts/${accountId}/regions/${regionCode}/enable`
+    );
+    return response.data;
+  },
+
+  /**
+   * Disable a specific region
+   */
+  disableRegion: async (accountId: string, regionCode: string): Promise<AwsRegion> => {
+    const response = await api.post<AwsRegion>(
+        `/aws-accounts/${accountId}/regions/${regionCode}/disable`
+    );
+    return response.data;
+  },
+
+  /**
+   * Rediscover regions for an AWS account
+   */
+  rediscoverRegions: async (accountId: string): Promise<AwsRegion[]> => {
+    const response = await api.post<AwsRegion[]>(
+        `/aws-accounts/${accountId}/regions/rediscover`
+    );
+    return response.data;
   },
 };

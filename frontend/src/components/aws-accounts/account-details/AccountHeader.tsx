@@ -2,7 +2,7 @@ import {useNavigate} from 'react-router-dom';
 import {Button} from '@/components/ui/button';
 import {Badge} from '@/components/ui/badge';
 import {ScanButton} from '@/components/ScanButton';
-import {ArrowLeft, Cloud} from 'lucide-react';
+import {ArrowLeft, Cloud, Settings} from 'lucide-react';
 import {AwsAccount} from "@/types/awsAccount.ts";
 import './AccountHeader.css';
 
@@ -45,6 +45,13 @@ export const AccountHeader = ({account, isScanning, onScanStarted}: AccountHeade
             <Badge variant={account.status === 'ACTIVE' ? 'default' : 'destructive'}>
               {account.status}
             </Badge>
+            <Button
+                variant="outline"
+                onClick={() => navigate(`/aws-accounts/${account.id}/settings`)}
+            >
+              <Settings className="h-4 w-4 mr-2"/>
+              Settings
+            </Button>
             <ScanButton
                 accountId={account.id}
                 accountAlias={account.accountAlias}

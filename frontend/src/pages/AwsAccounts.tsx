@@ -9,6 +9,8 @@ import {AddAccountWizard} from '@/components/aws-accounts/AddAccountWizard';
 import {AccountCard} from '@/components/aws-accounts/AccountCard';
 import {Cloud, Plus, RefreshCw} from 'lucide-react';
 
+``
+
 export const AwsAccounts = () => {
   const navigate = useNavigate();
   const {data: accounts = [], isLoading} = useAwsAccounts();
