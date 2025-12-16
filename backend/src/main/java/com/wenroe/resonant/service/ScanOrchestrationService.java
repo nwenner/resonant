@@ -11,19 +11,26 @@ import com.wenroe.resonant.repository.AwsAccountRepository;
 import com.wenroe.resonant.repository.AwsResourceRepository;
 import com.wenroe.resonant.repository.ScanJobRepository;
 import com.wenroe.resonant.repository.UserRepository;
+import com.wenroe.resonant.service.aws.scanners.CloudFrontResourceScanner;
 import com.wenroe.resonant.service.aws.scanners.S3ResourceScanner;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service that orchestrates the entire scanning process for an AWS account. Coordinates resource
  * discovery, compliance evaluation, and violation tracking.
+ * <p>
+ * Scans execute asynchronously with parallel scanner execution for improved performance.
  */
 @Service
 @RequiredArgsConstructor
@@ -35,12 +42,14 @@ public class ScanOrchestrationService {
   private final ScanJobRepository scanJobRepository;
   private final TagPolicyService tagPolicyService;
   private final S3ResourceScanner s3ResourceScanner;
+  private final CloudFrontResourceScanner cloudFrontResourceScanner;
   private final ComplianceEvaluationService complianceEvaluationService;
   private final UserRepository userRepository;
   private final AwsAccountRegionService regionService;
 
   /**
-   * Initiates a scan for an AWS account. Returns the created ScanJob.
+   * Initiates a scan for an AWS account. Returns the created ScanJob immediately. The actual scan
+   * executes asynchronously in a background thread.
    */
   @Transactional
   public ScanJob initiateScan(UUID accountId, UUID userId) {
@@ -83,25 +92,38 @@ public class ScanOrchestrationService {
 
     log.info("Created scan job {} for account {}", savedJob.getId(), account.getAccountId());
 
-    // Execute scan asynchronously (in real impl, use @Async or job queue)
-    try {
-      executeScan(savedJob);
-    } catch (Exception e) {
-      log.error("Scan execution failed: {}", e.getMessage(), e);
-      savedJob.fail(e.getMessage());
-      scanJobRepository.save(savedJob);
-    }
+    // Execute scan asynchronously
+    executeScanAsync(savedJob.getId());
 
     return savedJob;
   }
 
   /**
-   * Executes the actual scanning process.
-   * TODO: Make this @Async for production use.
+   * Executes the actual scanning process asynchronously. Runs in a separate thread pool to avoid
+   * blocking the request thread.
    */
-  @Transactional
-  public void executeScan(ScanJob scanJob) {
-    log.info("Starting scan job {}", scanJob.getId());
+  @Async("scanExecutor")
+  public void executeScanAsync(UUID scanJobId) {
+    log.info("Starting async scan job {}", scanJobId);
+
+    try {
+      executeScan(scanJobId);
+    } catch (Exception e) {
+      log.error("Async scan execution failed for job {}: {}", scanJobId, e.getMessage(), e);
+      markScanAsFailed(scanJobId, e.getMessage());
+    }
+  }
+
+  /**
+   * Executes the scanning process. Runs scanners in parallel for improved performance. Uses a new
+   * transaction to ensure database operations complete even if called from async context.
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void executeScan(UUID scanJobId) {
+    ScanJob scanJob = scanJobRepository.findById(scanJobId)
+        .orElseThrow(() -> new RuntimeException("Scan job not found"));
+
+    log.info("Executing scan job {}", scanJob.getId());
 
     scanJob.start();
     scanJobRepository.save(scanJob);
@@ -120,12 +142,36 @@ public class ScanOrchestrationService {
             userId);
       }
 
-      // Step 2: Scan S3 buckets
-      log.info("Scanning S3 buckets for account {}", account.getAccountId());
-      List<AwsResource> discoveredResources = s3ResourceScanner.scanS3Buckets(account);
-      log.info("Discovered {} S3 buckets", discoveredResources.size());
+      // Step 2: Scan resources in parallel
+      log.info("Starting parallel resource scans for account {}", account.getAccountId());
 
-      // Step 3: Save or update resources
+      CompletableFuture<List<AwsResource>> s3Future = CompletableFuture.supplyAsync(
+          () -> {
+            log.info("Scanning S3 buckets for account {}", account.getAccountId());
+            return s3ResourceScanner.scanS3Buckets(account);
+          });
+
+      CompletableFuture<List<AwsResource>> cloudFrontFuture = CompletableFuture.supplyAsync(
+          () -> {
+            log.info("Scanning CloudFront distributions for account {}", account.getAccountId());
+            return cloudFrontResourceScanner.scanDistributions(account);
+          });
+
+      // Wait for all scanners to complete
+      CompletableFuture<Void> allScans = CompletableFuture.allOf(s3Future, cloudFrontFuture);
+      allScans.join();
+
+      // Collect all discovered resources
+      List<AwsResource> discoveredResources = new ArrayList<>();
+      discoveredResources.addAll(s3Future.join());
+      discoveredResources.addAll(cloudFrontFuture.join());
+
+      log.info("Discovered {} total resources (S3: {}, CloudFront: {})",
+          discoveredResources.size(),
+          s3Future.join().size(),
+          cloudFrontFuture.join().size());
+
+      // Step 3: Save or update resources and evaluate compliance
       int resourcesScanned = 0;
       int violationsFound = 0;
       int violationsResolved = 0;
@@ -164,9 +210,6 @@ public class ScanOrchestrationService {
         }
 
         violationsFound += violations.size();
-
-        // Count auto-resolved violations (would need to track previous state for accurate count)
-        // For now, this will be 0 in first scan, but the service handles auto-resolution
       }
 
       // Step 5: Update account last scan time
@@ -185,6 +228,26 @@ public class ScanOrchestrationService {
       scanJob.fail(e.getMessage());
       scanJobRepository.save(scanJob);
       throw e;
+    }
+  }
+
+  /**
+   * Marks a scan as failed. Uses new transaction to ensure update even if outer transaction rolls
+   * back.
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  protected void markScanAsFailed(UUID scanJobId, String errorMessage) {
+    try {
+      ScanJob scanJob = scanJobRepository.findById(scanJobId)
+          .orElse(null);
+
+      if (scanJob != null) {
+        scanJob.fail(errorMessage);
+        scanJobRepository.save(scanJob);
+        log.info("Marked scan job {} as FAILED", scanJobId);
+      }
+    } catch (Exception e) {
+      log.error("Failed to mark scan {} as failed: {}", scanJobId, e.getMessage());
     }
   }
 
