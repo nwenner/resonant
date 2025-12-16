@@ -43,6 +43,11 @@ accounts, scan resources, and track violations—all from a centralized dashboar
 ![Violations](/docs/screenshots/violations.png)
 *Track non-compliant resources with detailed remediation info*
 
+### Platform Architecture
+
+![PlatformArchitecture](/docs/screenshots/platformArchitecture.png)
+*Example of how a deployed architecture could be set up*
+
 ---
 
 ## Tech Stack
