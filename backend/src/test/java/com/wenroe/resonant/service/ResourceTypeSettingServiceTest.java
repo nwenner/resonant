@@ -32,9 +32,9 @@ class ResourceTypeSettingServiceTest {
   @DisplayName("Should get all resource type settings")
   void testGetAll() {
     // Given
-    ResourceTypeSetting setting1 = createSetting("s3:bucket", "S3 Buckets", true);
-    ResourceTypeSetting setting2 = createSetting("cloudfront:distribution", "CloudFront", false);
-    when(repository.findAll()).thenReturn(List.of(setting1, setting2));
+    ResourceTypeSetting setting1 = createSetting("cloudfront:distribution", "CloudFront", false);
+    ResourceTypeSetting setting2 = createSetting("s3:bucket", "S3 Buckets", true);
+    when(repository.findAllByOrderByDisplayNameAsc()).thenReturn(List.of(setting1, setting2));
 
     // When
     List<ResourceTypeSetting> result = service.getAll();
@@ -42,7 +42,7 @@ class ResourceTypeSettingServiceTest {
     // Then
     assertThat(result).hasSize(2);
     assertThat(result).contains(setting1, setting2);
-    verify(repository).findAll();
+    verify(repository).findAllByOrderByDisplayNameAsc();
   }
 
   @Test
@@ -50,7 +50,7 @@ class ResourceTypeSettingServiceTest {
   void testGetEnabledResourceTypes() {
     // Given
     ResourceTypeSetting enabled = createSetting("s3:bucket", "S3 Buckets", true);
-    when(repository.findAllByEnabledTrue()).thenReturn(List.of(enabled));
+    when(repository.findAllByEnabledTrueOrderByDisplayNameAsc()).thenReturn(List.of(enabled));
 
     // When
     List<ResourceTypeSetting> result = service.getEnabledResourceTypes();
@@ -59,7 +59,7 @@ class ResourceTypeSettingServiceTest {
     assertThat(result).hasSize(1);
     assertThat(result.getFirst().getResourceType()).isEqualTo("s3:bucket");
     assertThat(result.getFirst().getEnabled()).isTrue();
-    verify(repository).findAllByEnabledTrue();
+    verify(repository).findAllByEnabledTrueOrderByDisplayNameAsc();
   }
 
   @Test

@@ -19,14 +19,14 @@ public class ResourceTypeSettingService {
    * Get all resource type settings.
    */
   public List<ResourceTypeSetting> getAll() {
-    return repository.findAll();
+    return repository.findAllByOrderByDisplayNameAsc();
   }
 
   /**
    * Get all enabled resource types.
    */
   public List<ResourceTypeSetting> getEnabledResourceTypes() {
-    return repository.findAllByEnabledTrue();
+    return repository.findAllByEnabledTrueOrderByDisplayNameAsc();
   }
 
   /**

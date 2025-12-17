@@ -13,4 +13,8 @@ public interface ResourceTypeSettingRepository extends JpaRepository<ResourceTyp
   Optional<ResourceTypeSetting> findByResourceType(String resourceType);
 
   List<ResourceTypeSetting> findAllByEnabledTrue();
+
+  List<ResourceTypeSetting> findAllByOrderByDisplayNameAsc();
+
+  List<ResourceTypeSetting> findAllByEnabledTrueOrderByDisplayNameAsc();
 }
