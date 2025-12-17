@@ -18,8 +18,7 @@ import com.wenroe.resonant.repository.AwsAccountRepository;
 import com.wenroe.resonant.repository.AwsResourceRepository;
 import com.wenroe.resonant.repository.ScanJobRepository;
 import com.wenroe.resonant.repository.UserRepository;
-import com.wenroe.resonant.service.aws.scanners.CloudFrontResourceScanner;
-import com.wenroe.resonant.service.aws.scanners.S3ResourceScanner;
+import com.wenroe.resonant.service.aws.scanners.ResourceScanner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,9 +29,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ScanOrchestrationService Async Tests")
@@ -51,10 +50,13 @@ class ScanOrchestrationServiceTest {
   private TagPolicyService tagPolicyService;
 
   @Mock
-  private S3ResourceScanner s3ResourceScanner;
+  private ResourceScanner s3Scanner;
 
   @Mock
-  private CloudFrontResourceScanner cloudFrontResourceScanner;
+  private ResourceScanner cloudFrontScanner;
+
+  @Mock
+  private ResourceScanner vpcScanner;
 
   @Mock
   private ComplianceEvaluationService complianceEvaluationService;
@@ -65,7 +67,6 @@ class ScanOrchestrationServiceTest {
   @Mock
   private AwsAccountRegionService regionService;
 
-  @InjectMocks
   private ScanOrchestrationService orchestrationService;
 
   @Captor
@@ -95,6 +96,22 @@ class ScanOrchestrationServiceTest {
     testScanJob.setAwsAccount(testAccount);
     testScanJob.setUser(testUser);
     testScanJob.setStatus(ScanStatus.PENDING);
+
+    // Create service with list of scanners
+    List<ResourceScanner> scanners = List.of(s3Scanner, cloudFrontScanner, vpcScanner);
+    orchestrationService = new ScanOrchestrationService(
+        awsAccountRepository,
+        awsResourceRepository,
+        scanJobRepository,
+        tagPolicyService,
+        complianceEvaluationService,
+        userRepository,
+        regionService,
+        scanners
+    );
+
+    // Set self-reference for @Transactional methods (normally done by Spring)
+    ReflectionTestUtils.setField(orchestrationService, "self", orchestrationService);
   }
 
   @Test
@@ -196,6 +213,10 @@ class ScanOrchestrationServiceTest {
   @DisplayName("Should execute scan with parallel scanners")
   void shouldExecuteScanWithParallelScanners() {
     // Given
+    when(s3Scanner.getResourceType()).thenReturn("s3:bucket");
+    when(cloudFrontScanner.getResourceType()).thenReturn("cloudfront:distribution");
+    when(vpcScanner.getResourceType()).thenReturn("vpc:vpc");
+
     when(scanJobRepository.findById(testScanJob.getId())).thenReturn(Optional.of(testScanJob));
     when(tagPolicyService.getEnabledPoliciesByUserId(testUser.getId()))
         .thenReturn(List.of(new TagPolicy()));
@@ -208,9 +229,13 @@ class ScanOrchestrationServiceTest {
     cfResource.setResourceArn("arn:aws:cloudfront::123456789012:distribution/DIST123");
     cfResource.setResourceType("cloudfront:distribution");
 
-    when(s3ResourceScanner.scanS3Buckets(testAccount)).thenReturn(List.of(s3Resource));
-    when(cloudFrontResourceScanner.scanDistributions(testAccount))
-        .thenReturn(List.of(cfResource));
+    AwsResource vpcResource = new AwsResource();
+    vpcResource.setResourceArn("arn:aws:ec2:us-east-1:123456789012:vpc/vpc-123");
+    vpcResource.setResourceType("vpc:vpc");
+
+    when(s3Scanner.scan(testAccount)).thenReturn(List.of(s3Resource));
+    when(cloudFrontScanner.scan(testAccount)).thenReturn(List.of(cfResource));
+    when(vpcScanner.scan(testAccount)).thenReturn(List.of(vpcResource));
 
     when(awsResourceRepository.findByResourceArn(any())).thenReturn(Optional.empty());
     when(awsResourceRepository.save(any(AwsResource.class))).thenAnswer(i -> i.getArgument(0));
@@ -220,18 +245,55 @@ class ScanOrchestrationServiceTest {
     orchestrationService.executeScan(testScanJob.getId());
 
     // Then
-    verify(s3ResourceScanner).scanS3Buckets(testAccount);
-    verify(cloudFrontResourceScanner).scanDistributions(testAccount);
-    verify(awsResourceRepository, times(2)).save(any(AwsResource.class));
+    verify(s3Scanner).scan(testAccount);
+    verify(cloudFrontScanner).scan(testAccount);
+    verify(vpcScanner).scan(testAccount);
+    verify(awsResourceRepository, times(3)).save(any(AwsResource.class));
 
     // Verify scan completed successfully
-    // Note: ArgumentCaptor captures same object reference, so both captures will have final state
     verify(scanJobRepository, times(2)).save(scanJobCaptor.capture());
 
     // Check final state after both saves
     ScanJob finalState = scanJobCaptor.getValue();
     assertThat(finalState.getStatus()).isEqualTo(ScanStatus.SUCCESS);
-    assertThat(finalState.getResourcesScanned()).isEqualTo(2);
+    assertThat(finalState.getResourcesScanned()).isEqualTo(3);
+  }
+
+  @Test
+  @DisplayName("Should handle scanner failures gracefully")
+  void shouldHandleScannerFailuresGracefully() {
+    // Given
+    when(s3Scanner.getResourceType()).thenReturn("s3:bucket");
+    when(cloudFrontScanner.getResourceType()).thenReturn("cloudfront:distribution");
+    when(vpcScanner.getResourceType()).thenReturn("vpc:vpc");
+
+    when(scanJobRepository.findById(testScanJob.getId())).thenReturn(Optional.of(testScanJob));
+    when(tagPolicyService.getEnabledPoliciesByUserId(testUser.getId()))
+        .thenReturn(List.of(new TagPolicy()));
+
+    AwsResource cfResource = new AwsResource();
+    cfResource.setResourceArn("arn:aws:cloudfront::123456789012:distribution/DIST123");
+    cfResource.setResourceType("cloudfront:distribution");
+
+    // S3 scanner fails
+    when(s3Scanner.scan(testAccount)).thenThrow(new RuntimeException("S3 API error"));
+    // CloudFront succeeds
+    when(cloudFrontScanner.scan(testAccount)).thenReturn(List.of(cfResource));
+    // VPC scanner returns empty
+    when(vpcScanner.scan(testAccount)).thenReturn(List.of());
+
+    when(awsResourceRepository.findByResourceArn(any())).thenReturn(Optional.empty());
+    when(awsResourceRepository.save(any(AwsResource.class))).thenAnswer(i -> i.getArgument(0));
+    when(complianceEvaluationService.evaluateResource(any(), any())).thenReturn(new ArrayList<>());
+
+    // When
+    orchestrationService.executeScan(testScanJob.getId());
+
+    // Then - Should still complete successfully with CloudFront resource
+    verify(scanJobRepository, times(2)).save(scanJobCaptor.capture());
+    ScanJob finalState = scanJobCaptor.getValue();
+    assertThat(finalState.getStatus()).isEqualTo(ScanStatus.SUCCESS);
+    assertThat(finalState.getResourcesScanned()).isEqualTo(1); // Only CloudFront resource
   }
 
   @Test
@@ -252,5 +314,62 @@ class ScanOrchestrationServiceTest {
 
     assertThat(savedJobs.get(1).getStatus()).isEqualTo(ScanStatus.FAILED);
     assertThat(savedJobs.get(1).getErrorMessage()).contains("Database connection failed");
+  }
+
+  @Test
+  @DisplayName("Should get scan job by ID")
+  void shouldGetScanJobById() {
+    // Given
+    when(scanJobRepository.findById(testScanJob.getId())).thenReturn(Optional.of(testScanJob));
+
+    // When
+    ScanJob result = orchestrationService.getScanJob(testScanJob.getId());
+
+    // Then
+    assertThat(result).isEqualTo(testScanJob);
+  }
+
+  @Test
+  @DisplayName("Should get scan jobs by user ID")
+  void shouldGetScanJobsByUserId() {
+    // Given
+    List<ScanJob> jobs = List.of(testScanJob);
+    when(scanJobRepository.findByUserIdOrderByCreatedAtDesc(testUser.getId())).thenReturn(jobs);
+
+    // When
+    List<ScanJob> result = orchestrationService.getScanJobsByUserId(testUser.getId());
+
+    // Then
+    assertThat(result).isEqualTo(jobs);
+  }
+
+  @Test
+  @DisplayName("Should get scan jobs by account ID")
+  void shouldGetScanJobsByAccountId() {
+    // Given
+    List<ScanJob> jobs = List.of(testScanJob);
+    when(scanJobRepository.findByAwsAccountIdOrderByCreatedAtDesc(testAccount.getId()))
+        .thenReturn(jobs);
+
+    // When
+    List<ScanJob> result = orchestrationService.getScanJobsByAccountId(testAccount.getId());
+
+    // Then
+    assertThat(result).isEqualTo(jobs);
+  }
+
+  @Test
+  @DisplayName("Should get last scan for account")
+  void shouldGetLastScanForAccount() {
+    // Given
+    when(scanJobRepository.findFirstByAwsAccountIdOrderByCreatedAtDesc(testAccount.getId()))
+        .thenReturn(Optional.of(testScanJob));
+
+    // When
+    Optional<ScanJob> result = orchestrationService.getLastScanForAccount(testAccount.getId());
+
+    // Then
+    assertThat(result).isPresent();
+    assertThat(result.get()).isEqualTo(testScanJob);
   }
 }

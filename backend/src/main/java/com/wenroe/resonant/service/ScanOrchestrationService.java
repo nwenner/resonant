@@ -11,8 +11,7 @@ import com.wenroe.resonant.repository.AwsAccountRepository;
 import com.wenroe.resonant.repository.AwsResourceRepository;
 import com.wenroe.resonant.repository.ScanJobRepository;
 import com.wenroe.resonant.repository.UserRepository;
-import com.wenroe.resonant.service.aws.scanners.CloudFrontResourceScanner;
-import com.wenroe.resonant.service.aws.scanners.S3ResourceScanner;
+import com.wenroe.resonant.service.aws.scanners.ResourceScanner;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +20,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
  * discovery, compliance evaluation, and violation tracking.
  * <p>
  * Scans execute asynchronously with parallel scanner execution for improved performance.
+ * Automatically discovers and uses all ResourceScanner implementations.
  */
 @Service
 @RequiredArgsConstructor
@@ -41,18 +43,26 @@ public class ScanOrchestrationService {
   private final AwsResourceRepository awsResourceRepository;
   private final ScanJobRepository scanJobRepository;
   private final TagPolicyService tagPolicyService;
-  private final S3ResourceScanner s3ResourceScanner;
-  private final CloudFrontResourceScanner cloudFrontResourceScanner;
   private final ComplianceEvaluationService complianceEvaluationService;
   private final UserRepository userRepository;
   private final AwsAccountRegionService regionService;
+
+  // Spring auto-injects all ResourceScanner implementations
+  private final List<ResourceScanner> resourceScanners;
+
+  // Self-reference for @Transactional method calls to work through Spring proxy
+  // Field injection required here to avoid circular dependency during construction
+  @Autowired
+  @Lazy
+  private ScanOrchestrationService self;
 
   /**
    * Initiates a scan for an AWS account. Returns the created ScanJob immediately. The actual scan
    * executes asynchronously in a background thread.
    */
-  @Transactional
   public ScanJob initiateScan(UUID accountId, UUID userId) {
+    log.info("=== INITIATE SCAN: accountId={}, userId={}", accountId, userId);
+
     // Get account
     AwsAccount account = awsAccountRepository.findById(accountId)
         .orElseThrow(() -> new RuntimeException("AWS account not found"));
@@ -90,10 +100,12 @@ public class ScanOrchestrationService {
     scanJob.setStatus(ScanStatus.PENDING);
     ScanJob savedJob = scanJobRepository.save(scanJob);
 
-    log.info("Created scan job {} for account {}", savedJob.getId(), account.getAccountId());
+    log.info("=== SCAN JOB SAVED: id={}, status={}", savedJob.getId(), savedJob.getStatus());
 
     // Execute scan asynchronously
-    executeScanAsync(savedJob.getId());
+    log.info("=== CALLING executeScanAsync (should return immediately)");
+    self.executeScanAsync(savedJob.getId());
+    log.info("=== RETURNED FROM executeScanAsync");
 
     return savedJob;
   }
@@ -104,29 +116,44 @@ public class ScanOrchestrationService {
    */
   @Async("scanExecutor")
   public void executeScanAsync(UUID scanJobId) {
-    log.info("Starting async scan job {}", scanJobId);
+    String threadName = Thread.currentThread().getName();
+    log.info("=== ASYNC STARTED: scanJobId={}, thread={}", scanJobId, threadName);
+
+    if (!threadName.startsWith("scan-")) {
+      log.error("=== ASYNC NOT WORKING! Thread name should start with 'scan-' but got: {}",
+          threadName);
+    }
 
     try {
-      executeScan(scanJobId);
+      log.info("=== CALLING self.executeScan");
+      self.executeScan(scanJobId);
+      log.info("=== COMPLETED self.executeScan");
     } catch (Exception e) {
-      log.error("Async scan execution failed for job {}: {}", scanJobId, e.getMessage(), e);
-      markScanAsFailed(scanJobId, e.getMessage());
+      log.error("=== ASYNC EXECUTION FAILED: scanJobId={}, error={}",
+          scanJobId, e.getMessage(), e);
+      self.markScanAsFailed(scanJobId, e.getMessage());
     }
   }
 
   /**
-   * Executes the scanning process. Runs scanners in parallel for improved performance. Uses a new
-   * transaction to ensure database operations complete even if called from async context.
+   * Executes the scanning process. Runs all scanners in parallel for improved performance. Uses a
+   * new transaction to ensure database operations complete even if called from async context.
    */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void executeScan(UUID scanJobId) {
+    log.info("=== EXECUTE SCAN: scanJobId={}, thread={}",
+        scanJobId, Thread.currentThread().getName());
+
     ScanJob scanJob = scanJobRepository.findById(scanJobId)
         .orElseThrow(() -> new RuntimeException("Scan job not found"));
 
-    log.info("Executing scan job {}", scanJob.getId());
+    log.info("=== SCAN JOB FOUND: id={}, current status={}", scanJob.getId(), scanJob.getStatus());
 
     scanJob.start();
+    log.info("=== SCAN JOB STATUS CHANGED TO: {}", scanJob.getStatus());
+
     scanJobRepository.save(scanJob);
+    log.info("=== SCAN JOB SAVED WITH STATUS: {}", scanJob.getStatus());
 
     try {
       AwsAccount account = scanJob.getAwsAccount();
@@ -142,34 +169,44 @@ public class ScanOrchestrationService {
             userId);
       }
 
-      // Step 2: Scan resources in parallel
-      log.info("Starting parallel resource scans for account {}", account.getAccountId());
+      // Step 2: Run all scanners in parallel
+      log.info("Starting parallel resource scans with {} scanners for account {}",
+          resourceScanners.size(), account.getAccountId());
 
-      CompletableFuture<List<AwsResource>> s3Future = CompletableFuture.supplyAsync(
-          () -> {
-            log.info("Scanning S3 buckets for account {}", account.getAccountId());
-            return s3ResourceScanner.scanS3Buckets(account);
-          });
+      List<CompletableFuture<List<AwsResource>>> scanFutures = new ArrayList<>();
 
-      CompletableFuture<List<AwsResource>> cloudFrontFuture = CompletableFuture.supplyAsync(
-          () -> {
-            log.info("Scanning CloudFront distributions for account {}", account.getAccountId());
-            return cloudFrontResourceScanner.scanDistributions(account);
-          });
+      for (ResourceScanner scanner : resourceScanners) {
+        CompletableFuture<List<AwsResource>> future = CompletableFuture.supplyAsync(
+            () -> {
+              log.info("Running {} scanner for account {}",
+                  scanner.getResourceType(), account.getAccountId());
+              try {
+                List<AwsResource> resources = scanner.scan(account);
+                log.info("{} scanner found {} resources",
+                    scanner.getResourceType(), resources.size());
+                return resources;
+              } catch (Exception e) {
+                log.error("{} scanner failed: {}",
+                    scanner.getResourceType(), e.getMessage(), e);
+                return List.of(); // Return empty list on error
+              }
+            });
+        scanFutures.add(future);
+      }
 
       // Wait for all scanners to complete
-      CompletableFuture<Void> allScans = CompletableFuture.allOf(s3Future, cloudFrontFuture);
+      CompletableFuture<Void> allScans = CompletableFuture.allOf(
+          scanFutures.toArray(new CompletableFuture[0]));
       allScans.join();
 
       // Collect all discovered resources
       List<AwsResource> discoveredResources = new ArrayList<>();
-      discoveredResources.addAll(s3Future.join());
-      discoveredResources.addAll(cloudFrontFuture.join());
+      for (CompletableFuture<List<AwsResource>> future : scanFutures) {
+        discoveredResources.addAll(future.join());
+      }
 
-      log.info("Discovered {} total resources (S3: {}, CloudFront: {})",
-          discoveredResources.size(),
-          s3Future.join().size(),
-          cloudFrontFuture.join().size());
+      log.info("Discovered {} total resources from {} scanners",
+          discoveredResources.size(), resourceScanners.size());
 
       // Step 3: Save or update resources and evaluate compliance
       int resourcesScanned = 0;

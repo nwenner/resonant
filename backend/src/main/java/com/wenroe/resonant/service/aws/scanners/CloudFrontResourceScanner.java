@@ -29,11 +29,24 @@ import software.amazon.awssdk.services.cloudfront.model.Tags;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CloudFrontResourceScanner {
+public class CloudFrontResourceScanner implements ResourceScanner {
 
   private static final String RESOURCE_TYPE = "cloudfront:distribution";
 
   private final AwsClientFactory clientFactory;
+
+  @Override
+  public String getResourceType() {
+    return RESOURCE_TYPE;
+  }
+
+  /**
+   * Scans all CloudFront distributions for an AWS account. CloudFront is a global service.
+   */
+  @Override
+  public List<AwsResource> scan(AwsAccount account) {
+    return scanDistributions(account);
+  }
 
   /**
    * Scans all CloudFront distributions for an AWS account. CloudFront is a global service.

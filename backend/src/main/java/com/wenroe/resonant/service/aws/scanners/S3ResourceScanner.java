@@ -34,11 +34,25 @@ import software.amazon.awssdk.services.s3.model.Tag;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class S3ResourceScanner {
+public class S3ResourceScanner implements ResourceScanner {
 
   private static final String RESOURCE_TYPE = "s3:bucket";
 
   private final AwsClientFactory clientFactory;
+
+  @Override
+  public String getResourceType() {
+    return RESOURCE_TYPE;
+  }
+
+  /**
+   * Scans all S3 buckets for an AWS account. S3 is global, but bucket operations require
+   * region-specific clients.
+   */
+  @Override
+  public List<AwsResource> scan(AwsAccount account) {
+    return scanS3Buckets(account);
+  }
 
   /**
    * Scans all S3 buckets for an AWS account. S3 is global, but bucket operations require
