@@ -113,7 +113,7 @@ class VpcResourceScannerTest {
     assertThat(resource.getResourceId()).isEqualTo("vpc-123");
     assertThat(resource.getResourceArn()).isEqualTo(
         "arn:aws:ec2:us-east-1:123456789012:vpc/vpc-123");
-    assertThat(resource.getResourceType()).isEqualTo("vpc:vpc");
+    assertThat(resource.getResourceType()).isEqualTo("ec2:vpc");
     assertThat(resource.getName()).isEqualTo("test-vpc");
     assertThat(resource.getRegion()).isEqualTo("us-east-1");
     assertThat(resource.getTags())
@@ -354,7 +354,7 @@ class VpcResourceScannerTest {
     String resourceType = scanner.getResourceType();
 
     // Then
-    assertThat(resourceType).isEqualTo("vpc:vpc");
+    assertThat(resourceType).isEqualTo("ec2:vpc");
   }
 
   @Test

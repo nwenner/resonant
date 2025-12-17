@@ -31,7 +31,7 @@ import software.amazon.awssdk.services.ec2.model.Vpc;
 @Slf4j
 public class VpcResourceScanner implements ResourceScanner {
 
-  private static final String RESOURCE_TYPE = "vpc:vpc";
+  private static final String RESOURCE_TYPE = "ec2:vpc";
 
   private final AwsClientFactory clientFactory;
   private final AwsAccountRegionService regionService;
