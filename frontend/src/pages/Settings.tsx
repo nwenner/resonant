@@ -3,7 +3,7 @@ import {Settings as SettingsIcon} from 'lucide-react';
 import {Layout} from '@/components/Layout';
 import {ResourceTypeSettings} from '@/components/settings/ResourceTypeSettings';
 
-export const SettingsPage: React.FC = () => {
+export const Settings: React.FC = () => {
   return (
       <Layout>
         <div className="container mx-auto px-4 py-8">
