@@ -34,10 +34,10 @@ export const Layout = ({children}: LayoutProps) => {
   };
 
   const navItems = [
-    {path: '/dashboard', label: 'Dashboard', icon: BarChart3},
-    {path: '/aws-accounts', label: 'AWS Accounts', icon: Cloud},
-    {path: '/tag-policies', label: 'Tag Policies', icon: Shield},
-    {path: '/settings', label: 'Settings', icon: Settings, disabled: true},
+    {path: '/dashboard', label: 'Dashboard', icon: BarChart3, disabled: false},
+    {path: '/aws-accounts', label: 'AWS Accounts', icon: Cloud, disabled: false},
+    {path: '/tag-policies', label: 'Tag Policies', icon: Shield, disabled: false},
+    {path: '/settings', label: 'Settings', icon: Settings, disabled: false},
   ];
 
   return (

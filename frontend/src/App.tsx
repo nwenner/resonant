@@ -9,6 +9,7 @@ import {AwsAccounts} from '@/pages/AwsAccounts';
 import {AwsAccountDetail} from '@/pages/AwsAccountDetail';
 import {AwsAccountSettings} from '@/pages/AwsAccountSettings';
 import {TagPolicies} from '@/pages/TagPolicies';
+import {Settings} from "@/pages/Settings";
 import {Toaster} from '@/components/ui/toaster';
 
 const queryClient = new QueryClient({
@@ -69,6 +70,14 @@ function App() {
                     element={
                       <ErrorBoundary>
                         <TagPolicies/>
+                      </ErrorBoundary>
+                    }
+                />
+                <Route
+                    path="/settings"
+                    element={
+                      <ErrorBoundary>
+                        <Settings/>
                       </ErrorBoundary>
                     }
                 />
