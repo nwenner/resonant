@@ -3,6 +3,7 @@ package com.wenroe.resonant.service;
 import com.wenroe.resonant.model.entity.AwsAccount;
 import com.wenroe.resonant.model.entity.AwsResource;
 import com.wenroe.resonant.model.entity.ComplianceViolation;
+import com.wenroe.resonant.model.entity.ResourceTypeSetting;
 import com.wenroe.resonant.model.entity.ScanJob;
 import com.wenroe.resonant.model.entity.TagPolicy;
 import com.wenroe.resonant.model.entity.User;
@@ -16,8 +17,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,13 +174,19 @@ public class ScanOrchestrationService {
       }
 
       // Step 2: Run all scanners in parallel
-      log.info("Starting parallel resource scans with {} scanners for account {}",
-          resourceScanners.size(), account.getAccountId());
+      Set<String> enabledResourceTypes = resourceTypeSettingService.getEnabledResourceTypes()
+          .stream()
+          .map(ResourceTypeSetting::getResourceType)
+          .collect(Collectors.toSet());
+
+      log.info(
+          "Starting parallel resource scans with {} scanners for account {} (enabled types: {})",
+          resourceScanners.size(), account.getAccountId(), enabledResourceTypes);
 
       List<CompletableFuture<List<AwsResource>>> scanFutures = new ArrayList<>();
 
       for (ResourceScanner scanner : resourceScanners) {
-        if (resourceTypeSettingService.isResourceTypeEnabled(scanner.getResourceType())) {
+        if (enabledResourceTypes.contains(scanner.getResourceType())) {
           CompletableFuture<List<AwsResource>> future = CompletableFuture.supplyAsync(
               () -> {
                 log.info("Running {} scanner for account {}",

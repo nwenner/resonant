@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.wenroe.resonant.model.entity.AwsAccount;
 import com.wenroe.resonant.model.entity.AwsResource;
+import com.wenroe.resonant.model.entity.ResourceTypeSetting;
 import com.wenroe.resonant.model.entity.ScanJob;
 import com.wenroe.resonant.model.entity.TagPolicy;
 import com.wenroe.resonant.model.entity.User;
@@ -225,6 +226,14 @@ class ScanOrchestrationServiceTest {
     when(tagPolicyService.getEnabledPoliciesByUserId(testUser.getId()))
         .thenReturn(List.of(new TagPolicy()));
 
+    // Mock enabled resource types
+    List<ResourceTypeSetting> enabledSettings = List.of(
+        createResourceTypeSetting("s3:bucket", "S3 Buckets"),
+        createResourceTypeSetting("cloudfront:distribution", "CloudFront Distributions"),
+        createResourceTypeSetting("vpc:vpc", "VPCs")
+    );
+    when(resourceTypeSettingService.getEnabledResourceTypes()).thenReturn(enabledSettings);
+
     AwsResource s3Resource = new AwsResource();
     s3Resource.setResourceArn("arn:aws:s3:::test-bucket");
     s3Resource.setResourceType("s3:bucket");
@@ -244,8 +253,6 @@ class ScanOrchestrationServiceTest {
     when(awsResourceRepository.findByResourceArn(any())).thenReturn(Optional.empty());
     when(awsResourceRepository.save(any(AwsResource.class))).thenAnswer(i -> i.getArgument(0));
     when(complianceEvaluationService.evaluateResource(any(), any())).thenReturn(new ArrayList<>());
-
-    when(resourceTypeSettingService.isResourceTypeEnabled(any())).thenReturn(true);
 
     // When
     orchestrationService.executeScan(testScanJob.getId());
@@ -277,6 +284,14 @@ class ScanOrchestrationServiceTest {
     when(tagPolicyService.getEnabledPoliciesByUserId(testUser.getId()))
         .thenReturn(List.of(new TagPolicy()));
 
+    // Mock enabled resource types
+    List<ResourceTypeSetting> enabledSettings = List.of(
+        createResourceTypeSetting("s3:bucket", "S3 Buckets"),
+        createResourceTypeSetting("cloudfront:distribution", "CloudFront Distributions"),
+        createResourceTypeSetting("vpc:vpc", "VPCs")
+    );
+    when(resourceTypeSettingService.getEnabledResourceTypes()).thenReturn(enabledSettings);
+
     AwsResource cfResource = new AwsResource();
     cfResource.setResourceArn("arn:aws:cloudfront::123456789012:distribution/DIST123");
     cfResource.setResourceType("cloudfront:distribution");
@@ -292,8 +307,6 @@ class ScanOrchestrationServiceTest {
     when(awsResourceRepository.save(any(AwsResource.class))).thenAnswer(i -> i.getArgument(0));
     when(complianceEvaluationService.evaluateResource(any(), any())).thenReturn(new ArrayList<>());
 
-    when(resourceTypeSettingService.isResourceTypeEnabled(any())).thenReturn(true);
-
     // When
     orchestrationService.executeScan(testScanJob.getId());
 
@@ -302,6 +315,49 @@ class ScanOrchestrationServiceTest {
     ScanJob finalState = scanJobCaptor.getValue();
     assertThat(finalState.getStatus()).isEqualTo(ScanStatus.SUCCESS);
     assertThat(finalState.getResourcesScanned()).isEqualTo(1); // Only CloudFront resource
+  }
+
+  @Test
+  @DisplayName("Should skip disabled resource types")
+  void shouldSkipDisabledResourceTypes() {
+    // Given
+    when(s3Scanner.getResourceType()).thenReturn("s3:bucket");
+    when(cloudFrontScanner.getResourceType()).thenReturn("cloudfront:distribution");
+    when(vpcScanner.getResourceType()).thenReturn("vpc:vpc");
+
+    when(scanJobRepository.findById(testScanJob.getId())).thenReturn(Optional.of(testScanJob));
+    when(tagPolicyService.getEnabledPoliciesByUserId(testUser.getId()))
+        .thenReturn(List.of(new TagPolicy()));
+
+    // Only S3 is enabled, others disabled
+    List<ResourceTypeSetting> enabledSettings = List.of(
+        createResourceTypeSetting("s3:bucket", "S3 Buckets")
+    );
+    when(resourceTypeSettingService.getEnabledResourceTypes()).thenReturn(enabledSettings);
+
+    AwsResource s3Resource = new AwsResource();
+    s3Resource.setResourceArn("arn:aws:s3:::test-bucket");
+    s3Resource.setResourceType("s3:bucket");
+
+    when(s3Scanner.scan(testAccount)).thenReturn(List.of(s3Resource));
+
+    when(awsResourceRepository.findByResourceArn(any())).thenReturn(Optional.empty());
+    when(awsResourceRepository.save(any(AwsResource.class))).thenAnswer(i -> i.getArgument(0));
+    when(complianceEvaluationService.evaluateResource(any(), any())).thenReturn(new ArrayList<>());
+
+    // When
+    orchestrationService.executeScan(testScanJob.getId());
+
+    // Then - Only S3 scanner should run
+    verify(s3Scanner).scan(testAccount);
+    verify(cloudFrontScanner, times(0)).scan(any());
+    verify(vpcScanner, times(0)).scan(any());
+    verify(awsResourceRepository, times(1)).save(any(AwsResource.class));
+
+    verify(scanJobRepository, times(2)).save(scanJobCaptor.capture());
+    ScanJob finalState = scanJobCaptor.getValue();
+    assertThat(finalState.getStatus()).isEqualTo(ScanStatus.SUCCESS);
+    assertThat(finalState.getResourcesScanned()).isEqualTo(1);
   }
 
   @Test
@@ -379,5 +435,14 @@ class ScanOrchestrationServiceTest {
     // Then
     assertThat(result).isPresent();
     assertThat(result.get()).isEqualTo(testScanJob);
+  }
+
+  private ResourceTypeSetting createResourceTypeSetting(String resourceType, String displayName) {
+    ResourceTypeSetting setting = new ResourceTypeSetting();
+    setting.setId(UUID.randomUUID());
+    setting.setResourceType(resourceType);
+    setting.setDisplayName(displayName);
+    setting.setEnabled(true);
+    return setting;
   }
 }
