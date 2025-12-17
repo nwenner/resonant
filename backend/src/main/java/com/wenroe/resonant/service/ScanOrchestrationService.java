@@ -46,6 +46,7 @@ public class ScanOrchestrationService {
   private final ComplianceEvaluationService complianceEvaluationService;
   private final UserRepository userRepository;
   private final AwsAccountRegionService regionService;
+  private final ResourceTypeSettingService resourceTypeSettingService;
 
   // Spring auto-injects all ResourceScanner implementations
   private final List<ResourceScanner> resourceScanners;
@@ -176,22 +177,32 @@ public class ScanOrchestrationService {
       List<CompletableFuture<List<AwsResource>>> scanFutures = new ArrayList<>();
 
       for (ResourceScanner scanner : resourceScanners) {
-        CompletableFuture<List<AwsResource>> future = CompletableFuture.supplyAsync(
-            () -> {
-              log.info("Running {} scanner for account {}",
-                  scanner.getResourceType(), account.getAccountId());
-              try {
-                List<AwsResource> resources = scanner.scan(account);
-                log.info("{} scanner found {} resources",
-                    scanner.getResourceType(), resources.size());
-                return resources;
-              } catch (Exception e) {
-                log.error("{} scanner failed: {}",
-                    scanner.getResourceType(), e.getMessage(), e);
-                return List.of(); // Return empty list on error
-              }
-            });
-        scanFutures.add(future);
+        if (resourceTypeSettingService.isResourceTypeEnabled(scanner.getResourceType())) {
+          CompletableFuture<List<AwsResource>> future = CompletableFuture.supplyAsync(
+              () -> {
+                log.info("Running {} scanner for account {}",
+                    scanner.getResourceType(), account.getAccountId());
+                try {
+                  List<AwsResource> resources = scanner.scan(account);
+                  log.info("{} scanner found {} resources",
+                      scanner.getResourceType(), resources.size());
+                  return resources;
+                } catch (Exception e) {
+                  log.error("{} scanner failed: {}",
+                      scanner.getResourceType(), e.getMessage(), e);
+                  return List.of(); // Return empty list on error
+                }
+              });
+          scanFutures.add(future);
+        } else {
+          log.info("Skipping {} scanner for account {}", scanner.getResourceType(),
+              account.getAccountId());
+        }
+      }
+
+      if (scanFutures.isEmpty()) {
+        log.info("No resources found for user {} -- skipping the scan", account.getAccountId());
+        return;
       }
 
       // Wait for all scanners to complete

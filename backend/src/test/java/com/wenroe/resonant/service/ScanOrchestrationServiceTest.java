@@ -67,6 +67,9 @@ class ScanOrchestrationServiceTest {
   @Mock
   private AwsAccountRegionService regionService;
 
+  @Mock
+  private ResourceTypeSettingService resourceTypeSettingService;
+
   private ScanOrchestrationService orchestrationService;
 
   @Captor
@@ -107,6 +110,7 @@ class ScanOrchestrationServiceTest {
         complianceEvaluationService,
         userRepository,
         regionService,
+        resourceTypeSettingService,
         scanners
     );
 
@@ -241,6 +245,8 @@ class ScanOrchestrationServiceTest {
     when(awsResourceRepository.save(any(AwsResource.class))).thenAnswer(i -> i.getArgument(0));
     when(complianceEvaluationService.evaluateResource(any(), any())).thenReturn(new ArrayList<>());
 
+    when(resourceTypeSettingService.isResourceTypeEnabled(any())).thenReturn(true);
+
     // When
     orchestrationService.executeScan(testScanJob.getId());
 
@@ -285,6 +291,8 @@ class ScanOrchestrationServiceTest {
     when(awsResourceRepository.findByResourceArn(any())).thenReturn(Optional.empty());
     when(awsResourceRepository.save(any(AwsResource.class))).thenAnswer(i -> i.getArgument(0));
     when(complianceEvaluationService.evaluateResource(any(), any())).thenReturn(new ArrayList<>());
+
+    when(resourceTypeSettingService.isResourceTypeEnabled(any())).thenReturn(true);
 
     // When
     orchestrationService.executeScan(testScanJob.getId());
