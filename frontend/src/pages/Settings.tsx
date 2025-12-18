@@ -6,7 +6,7 @@ import {ResourceTypeSettings} from '@/components/settings/ResourceTypeSettings';
 export const Settings: React.FC = () => {
   return (
       <Layout>
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 px-4 py-8">
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
               <SettingsIcon className="h-8 w-8 text-icon-blue"/>
