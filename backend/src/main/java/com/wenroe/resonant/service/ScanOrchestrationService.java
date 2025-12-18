@@ -50,6 +50,7 @@ public class ScanOrchestrationService {
   private final UserRepository userRepository;
   private final AwsAccountRegionService regionService;
   private final ResourceTypeSettingService resourceTypeSettingService;
+  private final ResourceCleanupService resourceCleanupService;
 
   // Spring auto-injects all ResourceScanner implementations
   private final List<ResourceScanner> resourceScanners;
@@ -163,6 +164,11 @@ public class ScanOrchestrationService {
       AwsAccount account = scanJob.getAwsAccount();
       UUID userId = scanJob.getUser().getId();
 
+      // Step 0: Clean up out-of-scope resources based on current settings
+      log.info("=== CLEANUP: Removing out-of-scope resources for account {}",
+          account.getAccountId());
+      resourceCleanupService.cleanupOutOfScopeResources(account);
+
       // Step 1: Get enabled policies for the user
       List<TagPolicy> enabledPolicies = tagPolicyService.getEnabledPoliciesByUserId(userId);
       log.info("Found {} enabled policies for user {}", enabledPolicies.size(), userId);
@@ -204,13 +210,18 @@ public class ScanOrchestrationService {
               });
           scanFutures.add(future);
         } else {
-          log.info("Skipping {} scanner for account {}", scanner.getResourceType(),
-              account.getAccountId());
+          log.info("Skipping {} scanner (disabled): {}",
+              scanner.getResourceType(), account.getAccountId());
         }
       }
 
       if (scanFutures.isEmpty()) {
-        log.info("No resources found for user {} -- skipping the scan", account.getAccountId());
+        log.info("No enabled scanners for account {} -- completing scan with zero resources",
+            account.getAccountId());
+
+        // Complete scan job with zero resources
+        scanJob.complete(0, 0, 0);
+        scanJobRepository.save(scanJob);
         return;
       }
 

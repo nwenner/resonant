@@ -3,6 +3,7 @@ package com.wenroe.resonant.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,6 +72,9 @@ class ScanOrchestrationServiceTest {
   @Mock
   private ResourceTypeSettingService resourceTypeSettingService;
 
+  @Mock
+  private ResourceCleanupService resourceCleanupService;
+
   private ScanOrchestrationService orchestrationService;
 
   @Captor
@@ -112,6 +116,7 @@ class ScanOrchestrationServiceTest {
         userRepository,
         regionService,
         resourceTypeSettingService,
+        resourceCleanupService,
         scanners
     );
 
@@ -223,6 +228,7 @@ class ScanOrchestrationServiceTest {
     when(vpcScanner.getResourceType()).thenReturn("vpc:vpc");
 
     when(scanJobRepository.findById(testScanJob.getId())).thenReturn(Optional.of(testScanJob));
+    doNothing().when(resourceCleanupService).cleanupOutOfScopeResources(testAccount);
     when(tagPolicyService.getEnabledPoliciesByUserId(testUser.getId()))
         .thenReturn(List.of(new TagPolicy()));
 
@@ -258,6 +264,7 @@ class ScanOrchestrationServiceTest {
     orchestrationService.executeScan(testScanJob.getId());
 
     // Then
+    verify(resourceCleanupService).cleanupOutOfScopeResources(testAccount);
     verify(s3Scanner).scan(testAccount);
     verify(cloudFrontScanner).scan(testAccount);
     verify(vpcScanner).scan(testAccount);
@@ -281,6 +288,7 @@ class ScanOrchestrationServiceTest {
     when(vpcScanner.getResourceType()).thenReturn("vpc:vpc");
 
     when(scanJobRepository.findById(testScanJob.getId())).thenReturn(Optional.of(testScanJob));
+    doNothing().when(resourceCleanupService).cleanupOutOfScopeResources(testAccount);
     when(tagPolicyService.getEnabledPoliciesByUserId(testUser.getId()))
         .thenReturn(List.of(new TagPolicy()));
 
@@ -311,6 +319,7 @@ class ScanOrchestrationServiceTest {
     orchestrationService.executeScan(testScanJob.getId());
 
     // Then - Should still complete successfully with CloudFront resource
+    verify(resourceCleanupService).cleanupOutOfScopeResources(testAccount);
     verify(scanJobRepository, times(2)).save(scanJobCaptor.capture());
     ScanJob finalState = scanJobCaptor.getValue();
     assertThat(finalState.getStatus()).isEqualTo(ScanStatus.SUCCESS);
@@ -326,6 +335,7 @@ class ScanOrchestrationServiceTest {
     when(vpcScanner.getResourceType()).thenReturn("vpc:vpc");
 
     when(scanJobRepository.findById(testScanJob.getId())).thenReturn(Optional.of(testScanJob));
+    doNothing().when(resourceCleanupService).cleanupOutOfScopeResources(testAccount);
     when(tagPolicyService.getEnabledPoliciesByUserId(testUser.getId()))
         .thenReturn(List.of(new TagPolicy()));
 
@@ -349,6 +359,7 @@ class ScanOrchestrationServiceTest {
     orchestrationService.executeScan(testScanJob.getId());
 
     // Then - Only S3 scanner should run
+    verify(resourceCleanupService).cleanupOutOfScopeResources(testAccount);
     verify(s3Scanner).scan(testAccount);
     verify(cloudFrontScanner, times(0)).scan(any());
     verify(vpcScanner, times(0)).scan(any());
@@ -365,6 +376,7 @@ class ScanOrchestrationServiceTest {
   void shouldHandleScanExecutionFailure() {
     // Given
     when(scanJobRepository.findById(testScanJob.getId())).thenReturn(Optional.of(testScanJob));
+    doNothing().when(resourceCleanupService).cleanupOutOfScopeResources(testAccount);
     when(tagPolicyService.getEnabledPoliciesByUserId(testUser.getId()))
         .thenThrow(new RuntimeException("Database connection failed"));
 

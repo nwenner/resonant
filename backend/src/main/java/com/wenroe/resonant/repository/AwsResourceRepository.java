@@ -22,6 +22,9 @@ public interface AwsResourceRepository extends JpaRepository<AwsResource, UUID> 
    */
   List<AwsResource> findByAwsAccountId(UUID accountId);
 
+  @Query("SELECT DISTINCT r FROM AwsResource r LEFT JOIN FETCH r.violations WHERE r.awsAccount.id = :accountId")
+  List<AwsResource> findByAwsAccountIdWithViolations(@Param("accountId") UUID accountId);
+
   /**
    * Find all resources for a user.
    */

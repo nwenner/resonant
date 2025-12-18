@@ -66,9 +66,10 @@ public class VpcResourceScanner implements ResourceScanner {
       try {
         List<AwsResource> regionResources = scanVpcsInRegion(account, region);
         resources.addAll(regionResources);
-        log.info("Found {} VPCs in region {}", regionResources.size(), region);
+        log.info("Found {} VPCs in region {}", regionResources.size(), region.getRegionCode());
       } catch (Exception e) {
-        log.error("Failed to scan VPCs in region {}: {}", region, e.getMessage(), e);
+        log.error("Failed to scan VPCs in region {}: {}", region.getRegionCode(), e.getMessage(),
+            e);
       }
     }
 
@@ -91,28 +92,28 @@ public class VpcResourceScanner implements ResourceScanner {
       );
 
       if (!response.hasVpcs()) {
-        log.debug("No VPCs found in region {}", region);
+        log.debug("No VPCs found in region {}", region.getRegionCode());
         return resources;
       }
 
       log.debug("Found {} VPCs in region {} for account {}",
-          response.vpcs().size(), region, account.getAccountId());
+          response.vpcs().size(), region.getRegionCode(), account.getAccountId());
 
       for (Vpc vpc : response.vpcs()) {
         try {
           AwsResource resource = scanVpc(ec2Client, account, vpc, region.getRegionCode());
           resources.add(resource);
-          log.debug("Scanned VPC: {} in region {}", vpc.vpcId(), region);
+          log.debug("Scanned VPC: {} in region {}", vpc.vpcId(), region.getRegionCode());
         } catch (Exception e) {
           log.error("Failed to scan VPC {} in region {}: {}",
-              vpc.vpcId(), region, e.getMessage(), e);
+              vpc.vpcId(), region.getRegionCode(), e.getMessage(), e);
         }
       }
 
     } catch (Exception e) {
-      log.error("Failed to list VPCs in region {}: {}", region, e.getMessage());
+      log.error("Failed to list VPCs in region {}: {}", region.getRegionCode(), e.getMessage());
       throw new RuntimeException(
-          "VPC scan failed in region " + region + ": " + e.getMessage(), e);
+          "VPC scan failed in region " + region.getRegionCode() + ": " + e.getMessage(), e);
     }
 
     return resources;
