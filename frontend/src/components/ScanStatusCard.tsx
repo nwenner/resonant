@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import {useEffect, useRef} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {scanService} from '@/services/scanService';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
@@ -7,6 +7,7 @@ import {Progress} from '@/components/ui/progress';
 import {AlertCircle, CheckCircle, Clock, Loader2, XCircle} from 'lucide-react';
 import {ScanJob} from '@/types/scanJob';
 import {formatDistanceToNow} from 'date-fns';
+import {useToast} from '@/hooks/useToast';
 import './ScanStatusCard.css';
 
 interface ScanStatusCardProps {
@@ -49,6 +50,9 @@ const getStatusConfig = (status: ScanJob['status']) => {
 };
 
 export const ScanStatusCard = ({scanJobId, onComplete}: ScanStatusCardProps) => {
+  const {toast} = useToast();
+  const hasNotifiedRef = useRef(false);
+
   const {data: scanJob, isLoading} = useQuery({
     queryKey: ['scan-job', scanJobId],
     queryFn: () => scanService.getScanJob(scanJobId),
@@ -59,12 +63,27 @@ export const ScanStatusCard = ({scanJobId, onComplete}: ScanStatusCardProps) => 
     },
   });
 
-  // Call onComplete when scan finishes
+  // Call onComplete and show toast when scan finishes
   useEffect(() => {
-    if (scanJob && (scanJob.status === 'SUCCESS' || scanJob.status === 'FAILED')) {
+    if (scanJob && (scanJob.status === 'SUCCESS' || scanJob.status === 'FAILED') && !hasNotifiedRef.current) {
+      hasNotifiedRef.current = true;
+
+      if (scanJob.status === 'SUCCESS') {
+        toast({
+          title: 'Scan Completed',
+          description: `Found ${scanJob.violationsFound} violations across ${scanJob.resourcesScanned} resources`,
+        });
+      } else {
+        toast({
+          title: 'Scan Failed',
+          description: scanJob.errorMessage || 'An error occurred during the scan',
+          variant: 'destructive',
+        });
+      }
+
       onComplete?.();
     }
-  }, [scanJob, onComplete]);
+  }, [scanJob, onComplete, toast]);
 
   if (isLoading || !scanJob) {
     return (
