@@ -96,7 +96,7 @@ export const ScanStatusCard = ({scanJobId, onComplete}: ScanStatusCardProps) => 
                 </CardTitle>
                 <CardDescription>
                   {scanJob.accountAlias} •
-                  Started {formatDistanceToNow(new Date(scanJob.startedAt), {addSuffix: true})}
+                  Started {formatDistanceToNow(new Date(scanJob.createdAt), {addSuffix: true})}
                 </CardDescription>
               </div>
             </div>
