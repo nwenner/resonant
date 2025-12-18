@@ -152,144 +152,33 @@ public class ScanOrchestrationService {
     ScanJob scanJob = scanJobRepository.findById(scanJobId)
         .orElseThrow(() -> new RuntimeException("Scan job not found"));
 
-    log.info("=== SCAN JOB FOUND: id={}, current status={}", scanJob.getId(), scanJob.getStatus());
-
     scanJob.start();
-    log.info("=== SCAN JOB STATUS CHANGED TO: {}", scanJob.getStatus());
 
     scanJobRepository.save(scanJob);
-    log.info("=== SCAN JOB SAVED WITH STATUS: {}", scanJob.getStatus());
 
     try {
       AwsAccount account = scanJob.getAwsAccount();
       UUID userId = scanJob.getUser().getId();
 
-      // Step 0: Clean up out-of-scope resources based on current settings
-      log.info("=== CLEANUP: Removing out-of-scope resources for account {}",
-          account.getAccountId());
+      // Pre-action: Clean up out-of-scope resources based on current settings
       resourceCleanupService.cleanupOutOfScopeResources(account);
 
       // Step 1: Get enabled policies for the user
-      List<TagPolicy> enabledPolicies = tagPolicyService.getEnabledPoliciesByUserId(userId);
-      log.info("Found {} enabled policies for user {}", enabledPolicies.size(), userId);
-
-      if (enabledPolicies.isEmpty()) {
-        log.warn(
-            "No enabled policies found for user {}. Scan will discover resources but not check compliance.",
-            userId);
-      }
+      List<TagPolicy> enabledPolicies = getEnabledPolicies(userId);
 
       // Step 2: Run all scanners in parallel
-      Set<String> enabledResourceTypes = resourceTypeSettingService.getEnabledResourceTypes()
-          .stream()
-          .map(ResourceTypeSetting::getResourceType)
-          .collect(Collectors.toSet());
+      List<CompletableFuture<List<AwsResource>>> scanFutures = getCompletableFutures(
+          account);
 
-      log.info(
-          "Starting parallel resource scans with {} scanners for account {} (enabled types: {})",
-          resourceScanners.size(), account.getAccountId(), enabledResourceTypes);
-
-      List<CompletableFuture<List<AwsResource>>> scanFutures = new ArrayList<>();
-
-      for (ResourceScanner scanner : resourceScanners) {
-        if (enabledResourceTypes.contains(scanner.getResourceType())) {
-          CompletableFuture<List<AwsResource>> future = CompletableFuture.supplyAsync(
-              () -> {
-                log.info("Running {} scanner for account {}",
-                    scanner.getResourceType(), account.getAccountId());
-                try {
-                  List<AwsResource> resources = scanner.scan(account);
-                  log.info("{} scanner found {} resources",
-                      scanner.getResourceType(), resources.size());
-                  return resources;
-                } catch (Exception e) {
-                  log.error("{} scanner failed: {}",
-                      scanner.getResourceType(), e.getMessage(), e);
-                  return List.of(); // Return empty list on error
-                }
-              });
-          scanFutures.add(future);
-        } else {
-          log.info("Skipping {} scanner (disabled): {}",
-              scanner.getResourceType(), account.getAccountId());
-        }
-      }
-
-      if (scanFutures.isEmpty()) {
-        log.info("No enabled scanners for account {} -- completing scan with zero resources",
-            account.getAccountId());
-
-        // Complete scan job with zero resources
-        scanJob.complete(0, 0, 0);
-        scanJobRepository.save(scanJob);
+      if (allScannersDisabled(scanFutures, account, scanJob)) {
         return;
       }
 
-      // Wait for all scanners to complete
-      CompletableFuture<Void> allScans = CompletableFuture.allOf(
-          scanFutures.toArray(new CompletableFuture[0]));
-      allScans.join();
-
-      // Collect all discovered resources
-      List<AwsResource> discoveredResources = new ArrayList<>();
-      for (CompletableFuture<List<AwsResource>> future : scanFutures) {
-        discoveredResources.addAll(future.join());
-      }
-
-      log.info("Discovered {} total resources from {} scanners",
-          discoveredResources.size(), resourceScanners.size());
+      List<AwsResource> discoveredResources = collectScanResults(
+          scanFutures);
 
       // Step 3: Save or update resources and evaluate compliance
-      int resourcesScanned = 0;
-      int violationsFound = 0;
-      int violationsResolved = 0;
-
-      for (AwsResource discovered : discoveredResources) {
-        // Check if resource already exists
-        Optional<AwsResource> existing = awsResourceRepository.findByResourceArn(
-            discovered.getResourceArn());
-
-        AwsResource resource;
-        if (existing.isPresent()) {
-          // Update existing resource
-          resource = existing.get();
-          resource.setTags(discovered.getTags());
-          resource.setMetadata(discovered.getMetadata());
-          resource.setName(discovered.getName());
-          resource.setRegion(discovered.getRegion());
-          resource.updateLastSeen();
-          log.debug("Updated existing resource: {}", resource.getResourceArn());
-        } else {
-          // Save new resource
-          resource = discovered;
-          log.debug("Discovered new resource: {}", resource.getResourceArn());
-        }
-
-        resource = awsResourceRepository.save(resource);
-        resourcesScanned++;
-
-        // Step 4: Evaluate compliance for this resource
-        List<ComplianceViolation> violations = complianceEvaluationService
-            .evaluateResource(resource, enabledPolicies);
-
-        // Link violations to this scan job
-        for (ComplianceViolation violation : violations) {
-          violation.setScanJob(scanJob);
-        }
-
-        violationsFound += violations.size();
-      }
-
-      // Step 5: Update account last scan time
-      account.setLastScanAt(LocalDateTime.now());
-      awsAccountRepository.save(account);
-
-      // Step 6: Complete scan job
-      scanJob.complete(resourcesScanned, violationsFound, violationsResolved);
-      scanJobRepository.save(scanJob);
-
-      log.info("Scan job {} completed successfully. Scanned {} resources, found {} violations",
-          scanJob.getId(), resourcesScanned, violationsFound);
+      persistResourcesAndCheckCompliance(discoveredResources, enabledPolicies, scanJob, account);
 
     } catch (Exception e) {
       log.error("Scan job {} failed: {}", scanJob.getId(), e.getMessage(), e);
@@ -297,6 +186,143 @@ public class ScanOrchestrationService {
       scanJobRepository.save(scanJob);
       throw e;
     }
+  }
+
+  private List<TagPolicy> getEnabledPolicies(UUID userId) {
+    List<TagPolicy> enabledPolicies = tagPolicyService.getEnabledPoliciesByUserId(userId);
+    log.info("Found {} enabled policies for user {}", enabledPolicies.size(), userId);
+
+    if (enabledPolicies.isEmpty()) {
+      log.warn(
+          "No enabled policies found for user {}. Scan will discover resources but not check compliance.",
+          userId);
+    }
+    return enabledPolicies;
+  }
+
+  private List<CompletableFuture<List<AwsResource>>> getCompletableFutures(AwsAccount account) {
+    Set<String> enabledResourceTypes = resourceTypeSettingService.getEnabledResourceTypes()
+        .stream()
+        .map(ResourceTypeSetting::getResourceType)
+        .collect(Collectors.toSet());
+
+    log.info(
+        "Starting parallel resource scans with {} scanners for account {} (enabled types: {})",
+        resourceScanners.size(), account.getAccountId(), enabledResourceTypes);
+
+    List<CompletableFuture<List<AwsResource>>> scanFutures = new ArrayList<>();
+
+    for (ResourceScanner scanner : resourceScanners) {
+      if (enabledResourceTypes.contains(scanner.getResourceType())) {
+        CompletableFuture<List<AwsResource>> future = CompletableFuture.supplyAsync(
+            () -> {
+              log.info("Running {} scanner for account {}",
+                  scanner.getResourceType(), account.getAccountId());
+              try {
+                List<AwsResource> resources = scanner.scan(account);
+                log.info("{} scanner found {} resources",
+                    scanner.getResourceType(), resources.size());
+                return resources;
+              } catch (Exception e) {
+                log.error("{} scanner failed: {}",
+                    scanner.getResourceType(), e.getMessage(), e);
+                return List.of(); // Return empty list on error
+              }
+            });
+        scanFutures.add(future);
+      } else {
+        log.info("Skipping {} scanner (disabled): {}",
+            scanner.getResourceType(), account.getAccountId());
+      }
+    }
+    return scanFutures;
+  }
+
+  private boolean allScannersDisabled(List<CompletableFuture<List<AwsResource>>> scanFutures,
+      AwsAccount account, ScanJob scanJob) {
+    if (scanFutures.isEmpty()) {
+      log.info("No enabled scanners for account {} -- completing scan with zero resources",
+          account.getAccountId());
+
+      // Complete scan job with zero resources
+      scanJob.complete(0, 0, 0);
+      scanJobRepository.save(scanJob);
+      return true;
+    }
+    return false;
+  }
+
+  private void persistResourcesAndCheckCompliance(List<AwsResource> discoveredResources,
+      List<TagPolicy> enabledPolicies,
+      ScanJob scanJob, AwsAccount account) {
+    int resourcesScanned = 0;
+    int violationsFound = 0;
+    int violationsResolved = 0;
+
+    for (AwsResource discovered : discoveredResources) {
+      // Check if resource already exists
+      Optional<AwsResource> existing = awsResourceRepository.findByResourceArn(
+          discovered.getResourceArn());
+
+      AwsResource resource;
+      if (existing.isPresent()) {
+        // Update existing resource
+        resource = existing.get();
+        resource.setTags(discovered.getTags());
+        resource.setMetadata(discovered.getMetadata());
+        resource.setName(discovered.getName());
+        resource.setRegion(discovered.getRegion());
+        resource.updateLastSeen();
+        log.debug("Updated existing resource: {}", resource.getResourceArn());
+      } else {
+        // Save new resource
+        resource = discovered;
+        log.debug("Discovered new resource: {}", resource.getResourceArn());
+      }
+
+      resource = awsResourceRepository.save(resource);
+      resourcesScanned++;
+
+      // Step 4: Evaluate compliance for this resource
+      List<ComplianceViolation> violations = complianceEvaluationService
+          .evaluateResource(resource, enabledPolicies);
+
+      // Link violations to this scan job
+      for (ComplianceViolation violation : violations) {
+        violation.setScanJob(scanJob);
+      }
+
+      violationsFound += violations.size();
+    }
+
+    // Step 5: Update account last scan time
+    account.setLastScanAt(LocalDateTime.now());
+    awsAccountRepository.save(account);
+
+    // Step 6: Complete scan job
+    scanJob.complete(resourcesScanned, violationsFound, violationsResolved);
+    scanJobRepository.save(scanJob);
+
+    log.info("Scan job {} completed successfully. Scanned {} resources, found {} violations",
+        scanJob.getId(), resourcesScanned, violationsFound);
+  }
+
+  private List<AwsResource> collectScanResults(
+      List<CompletableFuture<List<AwsResource>>> scanFutures) {
+    // Wait for all scanners to complete
+    CompletableFuture<Void> allScans = CompletableFuture.allOf(
+        scanFutures.toArray(new CompletableFuture[0]));
+    allScans.join();
+
+    // Collect all discovered resources
+    List<AwsResource> discoveredResources = new ArrayList<>();
+    for (CompletableFuture<List<AwsResource>> future : scanFutures) {
+      discoveredResources.addAll(future.join());
+    }
+
+    log.info("Discovered {} total resources from {} scanners",
+        discoveredResources.size(), resourceScanners.size());
+    return discoveredResources;
   }
 
   /**
