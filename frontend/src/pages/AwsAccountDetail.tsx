@@ -24,8 +24,8 @@ export const AwsAccountDetail = () => {
 
   const {data: account, isLoading: accountLoading} = useAwsAccount(accountId!);
   const {data: latestScan, refetch: refetchLatestScan} = useLatestScan(accountId!);
-  const {data: violations = []} = useAccountViolations(accountId!);
-  const {data: resources = []} = useAccountResources(accountId!);
+  const {data: violations = [], refetch: refetchViolations} = useAccountViolations(accountId!);
+  const {data: resources = [], refetch: refetchResources} = useAccountResources(accountId!);
 
   useEffect(() => {
     if (latestScan && (latestScan.status === 'PENDING' || latestScan.status === 'RUNNING')) {
@@ -38,7 +38,11 @@ export const AwsAccountDetail = () => {
   };
 
   const handleScanComplete = () => {
-    refetchLatestScan().catch(() => {
+    Promise.all([
+      refetchLatestScan(),
+      refetchViolations(),
+      refetchResources()
+    ]).catch(() => {
       // Handle error silently
     });
     setActiveScanId(null);

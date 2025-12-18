@@ -4,6 +4,7 @@ import {Badge} from '@/components/ui/badge';
 import {ScanButton} from '@/components/ScanButton';
 import {ArrowLeft, Cloud, Settings} from 'lucide-react';
 import {AwsAccount} from "@/types/awsAccount.ts";
+import {useResourceTypeSettings} from '@/hooks/useResourceTypeSettings';
 import './AccountHeader.css';
 
 interface AccountHeaderProps {
@@ -14,6 +15,9 @@ interface AccountHeaderProps {
 
 export const AccountHeader = ({account, isScanning, onScanStarted}: AccountHeaderProps) => {
   const navigate = useNavigate();
+  const {data: resourceSettings = []} = useResourceTypeSettings();
+
+  const hasEnabledResources = resourceSettings.some(s => s.enabled);
 
   return (
       <div className="mb-6">
@@ -56,6 +60,7 @@ export const AccountHeader = ({account, isScanning, onScanStarted}: AccountHeade
                 accountId={account.id}
                 accountAlias={account.accountAlias}
                 disabled={isScanning}
+                hasEnabledResources={hasEnabledResources}
                 onScanStarted={onScanStarted}
             />
           </div>

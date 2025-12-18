@@ -3,24 +3,33 @@ import {scanService} from '@/services/scanService';
 import {Button} from '@/components/ui/button';
 import {Loader2, PlayCircle} from 'lucide-react';
 import {useToast} from "@/hooks/useToast";
+import {useNavigate} from 'react-router-dom';
 import {AxiosError} from 'axios';
 
 interface ScanButtonProps {
   accountId: string;
   accountAlias: string;
   disabled?: boolean;
+  hasEnabledResources?: boolean;
   onScanStarted?: (scanJobId: string) => void;
 }
 
-export const ScanButton = ({accountId, accountAlias, disabled, onScanStarted}: ScanButtonProps) => {
+export const ScanButton = ({
+                             accountId,
+                             accountAlias,
+                             disabled,
+                             hasEnabledResources = true,
+                             onScanStarted
+                           }: ScanButtonProps) => {
   const {toast} = useToast();
+  const navigate = useNavigate();
 
   const scanMutation = useMutation({
     mutationFn: () => scanService.triggerScan(accountId),
     onSuccess: (data) => {
       toast({
-        title: 'Scan Complete!',
-        description: `Scanned ${accountAlias} for compliance violations`,
+        title: 'Scan Started',
+        description: `Scanning ${accountAlias} for compliance violations`,
       });
       onScanStarted?.(data.id);
     },
@@ -33,11 +42,35 @@ export const ScanButton = ({accountId, accountAlias, disabled, onScanStarted}: S
     },
   });
 
+  const handleClick = () => {
+    if (!hasEnabledResources) {
+      toast({
+        title: 'No Resource Types Enabled',
+        description: 'Please enable at least one resource type in Settings before scanning.',
+        variant: 'destructive',
+        action: (
+            <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate('/settings')}
+            >
+              Go to Settings
+            </Button>
+        ),
+      });
+      return;
+    }
+    scanMutation.mutate();
+  };
+
+  const isDisabled = disabled || scanMutation.isPending || !hasEnabledResources;
+
   return (
       <Button
-          onClick={() => scanMutation.mutate()}
-          disabled={disabled || scanMutation.isPending}
+          onClick={handleClick}
+          disabled={isDisabled}
           size="sm"
+          title={!hasEnabledResources ? 'No resource types enabled' : undefined}
       >
         {scanMutation.isPending ? (
             <>
